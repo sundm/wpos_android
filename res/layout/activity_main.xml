@@ -60,7 +60,7 @@
     <com.zc.app.mpos.view.MyRelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/color_background" >
+        android:background="@drawable/abc_ab_solid_light_holo" >
 
         <RelativeLayout
             android:id="@+id/rl_title"
@@ -88,15 +88,12 @@
                 android:textSize="20sp" />
         </RelativeLayout>
 
-        <GridView
-            android:id="@+id/gv_img"
+        <FrameLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/rl_title"
-            android:cacheColorHint="#00000000"
-            android:numColumns="4"
-            android:verticalSpacing="20dp" >
-        </GridView>
+            android:layout_height="match_parent"
+            android:layout_below="@id/rl_title" />
     </com.zc.app.mpos.view.MyRelativeLayout>
 
 </com.zc.app.mpos.view.DragLayout>

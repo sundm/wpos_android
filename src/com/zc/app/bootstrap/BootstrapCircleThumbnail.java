@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -142,7 +141,7 @@ public class BootstrapCircleThumbnail extends FrameLayout
         }
 
         //convert padding to pixels
-        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        //DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         int paddingPX = (int)((padding * scale) + 0.5);
 
         //convert image size to pixels

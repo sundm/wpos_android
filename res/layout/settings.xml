@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
+    xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/pop_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/white"
+        android:gravity="center_horizontal"
+        android:orientation="vertical" >
+        
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="20.0dp"
+            android:background="@drawable/abc_ab_solid_light_holo" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <com.zc.app.bootstrap.FontAwesomeText
+                android:id="@+id/user_icon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:textColor="@color/bbutton_warning"
+                android:textSize="50sp"
+                fontawesometext:fa_icon="fa-user" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left|center_horizontal"
+                android:orientation="vertical"
+                android:padding="5dp" >
+
+                <TextView
+                    android:id="@+id/user_nick_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="正在获取昵称"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/pos_number"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="终端序列号：正在查询"
+                    android:textColor="@color/green"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="20.0dp"
+            android:background="@drawable/abc_ab_solid_light_holo" />
+
+        <LinearLayout
+            android:id="@+id/change_pwd"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <com.zc.app.bootstrap.FontAwesomeText
+                android:id="@+id/change_pwd_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:textColor="@color/bbutton_warning"
+                android:textSize="30sp"
+                fontawesometext:fa_icon="fa-user" />
+
+            <TextView
+                android:id="@+id/change_pwd_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="修改密码"
+                android:textColor="@color/black"
+                android:textSize="15dip" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="20.0dp"
+            android:background="@drawable/abc_ab_solid_light_holo" />
+
+        <LinearLayout
+            android:id="@+id/active_pos"
+            android:clickable="true"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <com.zc.app.bootstrap.FontAwesomeText
+                android:id="@+id/active_pos_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:textColor="@color/bbutton_warning"
+                android:textSize="30sp"
+                fontawesometext:fa_icon="fa-user" />
+
+            <TextView
+                android:id="@+id/active_pos_active_text"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="开通终端"
+                android:textColor="@color/black"
+                android:textSize="15dip" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="0.2dp"
+            android:background="@color/grey" />
+
+        <LinearLayout
+            android:id="@+id/change_pos"
+            android:clickable="true"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <com.zc.app.bootstrap.FontAwesomeText
+                android:id="@+id/change_pos_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:textColor="@color/bbutton_warning"
+                android:textSize="30sp"
+                fontawesometext:fa_icon="fa-user" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="更换终端"
+                android:textColor="@color/black"
+                android:textSize="15dip" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="0.2dp"
+            android:background="@color/grey" />
+
+        <LinearLayout
+            android:id="@+id/apply_change_pos"
+            android:clickable="true"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <com.zc.app.bootstrap.FontAwesomeText
+                android:id="@+id/apply_change_pos_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:textColor="@color/bbutton_warning"
+                android:textSize="30sp"
+                fontawesometext:fa_icon="fa-user" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="申请更换终端"
+                android:textColor="@color/black"
+                android:textSize="15dip" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

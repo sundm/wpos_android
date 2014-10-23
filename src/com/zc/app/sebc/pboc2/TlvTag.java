@@ -1,0 +1,94 @@
+package com.zc.app.sebc.pboc2;
+
+public final class TlvTag {
+
+	public final static byte[] TAG_B_8A = {(byte)0x8A};
+	public final static byte[] TAG_B_8F = {(byte)0x8F};
+	public final static byte[] TAG_B_90 = {(byte)0x90};
+	public final static byte[] TAG_B_92 = {(byte)0x92};
+	public final static byte[] TAG_B_95 = {(byte)0x95};
+	public final static byte[] TAG_B_91 = {(byte)0x91};
+	public final static byte[] TAG_B_9A = {(byte)0x9A};
+	public final static byte[] TAG_B_9C = {(byte)0x9C};
+	public final static byte[] TAG_B_AIP = {(byte)0x82};
+	public final static byte[] TAG_B_CDOL1 = {(byte)0x8C};
+	public final static byte[] TAG_B_CDOL2 = {(byte)0x8D};
+	public final static byte[] TAG_B_TRACK2 = {(byte)0x57};
+	public final static byte[] TAG_B_5F24 = {(byte)0x5F, (byte)0x24};
+	public final static byte[] TAG_B_5F25 = {(byte)0x5F, (byte)0x25};
+	public final static byte[] TAG_B_5F2A = {(byte)0x5F, (byte)0x2A};
+	public final static byte[] TAG_B_5F34 = {(byte)0x5F, (byte)0x34};
+	public final static byte[] TAG_B_9F02 = {(byte)0x9F, (byte)0x02};
+	public final static byte[] TAG_B_9F03 = {(byte)0x9F, (byte)0x03};
+	public final static byte[] TAG_B_9F10 = {(byte)0x9F, (byte)0x10};
+	public final static byte[] TAG_B_9F1A = {(byte)0x9F, (byte)0x1A};
+	public final static byte[] TAG_B_9F21 = {(byte)0x9F, (byte)0x21};
+	public final static byte[] TAG_B_9F26 = {(byte)0x9F, (byte)0x26};
+	public final static byte[] TAG_B_9F27 = {(byte)0x9F, (byte)0x27};
+	public final static byte[] TAG_B_9F32 = {(byte)0x9F, (byte)0x32};
+	public final static byte[] TAG_B_9F36 = {(byte)0x9F, (byte)0x36};
+	public final static byte[] TAG_B_9F37 = {(byte)0x9F, (byte)0x37};
+	public final static byte[] TAG_B_9F46 = {(byte)0x9F, (byte)0x46};
+	public final static byte[] TAG_B_9F47 = {(byte)0x9F, (byte)0x47};
+	public final static byte[] TAG_B_9F48 = {(byte)0x9F, (byte)0x48};
+	public final static byte[] TAG_B_9F4A = {(byte)0x9F, (byte)0x4A};
+	public final static byte[] TAG_B_9F4D = {(byte)0x9F, (byte)0x4D};
+	public final static byte[] TAG_B_9F4E = {(byte)0x9F, (byte)0x4E};
+	public final static byte[] TAG_B_9F4F = {(byte)0x9F, (byte)0x4F};
+	public final static byte[] TAG_B_9F66 = {(byte)0x9F, (byte)0x66};
+	public final static byte[] TAG_B_9F77 = {(byte)0x9F, (byte)0x77};
+	public final static byte[] TAG_B_9F79 = {(byte)0x9F, (byte)0x79};
+	public final static byte[] TAG_B_DF4D = {(byte)0xDF, (byte)0x4D};
+	public final static byte[] TAG_B_DF4F = {(byte)0xDF, (byte)0x4F};
+	public final static byte[] TAG_B_DDOL = {(byte)0x9F, (byte)0x49};
+	public final static byte[] TAG_B_PDOL = {(byte)0x9F, (byte)0x38};
+	
+	public final static byte[] VAL_B_D_95 = {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+	public final static byte[] VAL_B_D_9C = {(byte)0x28};
+	public final static byte[] VAL_B_D_9C_LOAD = {(byte)0x60};
+	public final static byte[] VAL_B_D_5F2A = {(byte)0x01, (byte)0x56};
+	public final static byte[] VAL_B_D_5F34 = {(byte)0x00};
+	public final static byte[] VAL_B_D_9F02 = {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+	public final static byte[] VAL_B_D_9F03 = {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+	public final static byte[] VAL_B_D_9F1A = {(byte)0x01, (byte)0x56};
+	public final static byte[] VAL_B_D_9F37 = {(byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04};
+	public final static byte[] VAL_B_D_9F66 = {(byte)0x48, (byte)0x00, (byte)0x00, (byte)0x00};
+	
+	public final static String TAG_95 = "95";
+	public final static String TAG_9A = "9A";
+	public final static String TAG_9C = "9C";
+	public final static String TAG_AIP = "82";
+	public final static String TAG_5F2A = "5F2A";
+	public final static String TAG_9F02 = "9F02";
+	public final static String TAG_9F03 = "9F03";
+	public final static String TAG_9F10 = "9F10";
+	public final static String TAG_9F1A = "9F1A";
+	public final static String TAG_9F21 = "9F21";
+	public final static String TAG_9F36 = "9F36";
+	public final static String TAG_9F4E = "9F4E";
+	
+	public final static String VAL_D_95 = "0000000000";
+	public final static String VAL_D_9C = "28";
+	public final static String VAL_D_9C_LOAD = "60";
+	public final static String VAL_D_5F2A = "0156";
+	public final static String VAL_D_5F34 = "00";
+	public final static String VAL_D_9F02 = "000000000000";
+	public final static String VAL_D_9F03 = "000000000000";
+	public final static String VAL_D_9F1A = "0156";
+	public final static String VAL_D_9F33 = "200880";
+	public final static String VAL_D_9F37 = "01020304";
+	
+	public final static String TAG_LEN_95 = "9505";
+	public final static String TAG_LEN_9A = "9A03";
+	public final static String TAG_LEN_9C = "9C01";
+	public final static String TAG_LEN_AIP = "8202";
+	public final static String TAG_LEN_5F2A = "5F2A02";
+	public final static String TAG_LEN_9F02 = "9F0206";
+	public final static String TAG_LEN_9F03 = "9F0306";
+	public final static String TAG_LEN_9F1A = "9F1A02";
+	public final static String TAG_LEN_9F26 = "9F2608";
+	public final static String TAG_LEN_9F27 = "9F2701";
+	public final static String TAG_LEN_9F33 = "9F3303";
+	public final static String TAG_LEN_9F36 = "9F3602";
+	public final static String TAG_LEN_9F37 = "9F3704";
+}
