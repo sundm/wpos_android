@@ -14,6 +14,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.nfc.NfcAdapter;
@@ -67,6 +69,7 @@ import com.zc.app.sebc.pboc2.TransUtil;
 import com.zc.app.utils.MircoPOState;
 import com.zc.app.utils.PurchaseInitInfo;
 import com.zc.app.utils.PurchaseUpdateInfo;
+import com.zc.app.utils.UserInfo;
 import com.zc.app.utils.WPosInfo;
 import com.zc.app.utils.ZCLog;
 import com.zc.app.utils.ZCWebService;
@@ -117,6 +120,8 @@ public class MainActivity extends FragmentActivity implements
 	private MircoPOState state;
 	private String keyIDString;
 	private String psamIDString;
+
+	private String userNameString;
 	private String nickNameString;
 
 	private NfcAdapter nfcAdapter;
@@ -136,21 +141,19 @@ public class MainActivity extends FragmentActivity implements
 
 		initDragLayout();
 		initView();
-		
+
 		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(
-				this, getClass())
-				.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-		
+		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
 	}
 
-	
 	@Override
 	public void onNewIntent(Intent intent) {
-	    setIntent(intent);
-	    NfcEnv.initNfcEnvironment(intent);
+		setIntent(intent);
+		NfcEnv.initNfcEnvironment(intent);
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -167,7 +170,7 @@ public class MainActivity extends FragmentActivity implements
 		NfcEnv.disableNfcForegroundDispatch(this);
 
 	}
-	
+
 	private void initDragLayout() {
 		dl = (DragLayout) findViewById(R.id.dl);
 		dl.setDragListener(new DragListener() {
@@ -268,6 +271,7 @@ public class MainActivity extends FragmentActivity implements
 				args.putBoolean(SettingFragment.POS_ACTIVED, true);
 			}
 
+			userNameString = requestLoginUtilObj.getUsername();
 			nickNameString = requestLoginUtilObj.getNickname();
 			args.putString(SettingFragment.NICK_NAME, this.nickNameString);
 			settingPageFragment.setBundle(args);
@@ -298,8 +302,15 @@ public class MainActivity extends FragmentActivity implements
 
 				switch (position) {
 				case 0: {
-					fragmentTag = PursePosFragment.TAG;
-					fragementFragment = pursePosPageFragment;
+					if (role == ACTIVE) {
+						fragmentTag = PursePosFragment.TAG;
+						fragementFragment = pursePosPageFragment;
+					}
+					else {
+						Toast.makeText(MainActivity.this, "请先开通终端", Toast.LENGTH_SHORT).show();
+						fragmentTag = SettingFragment.TAG;
+						fragementFragment = settingPageFragment;
+					}
 					break;
 				}
 
@@ -372,7 +383,7 @@ public class MainActivity extends FragmentActivity implements
 						break;
 					}
 
-					default:{
+					default: {
 						break;
 					}
 					}
@@ -531,9 +542,93 @@ public class MainActivity extends FragmentActivity implements
 
 	// Login Page
 	@Override
-	public void onSignin() {
+	public void onSignin(final String userNameString,
+			final String passWordString) {
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onSignin");
+
+		UserInfo info = new UserInfo();
+		info.setUsername(userNameString);
+		info.setPassword(passWordString);
+
+		String fingerprint = state.getUniqueIDString();
+
+		ZCWebService.getInstance().userLogin(info, fingerprint, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FINISH:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FAILED:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_SUCCESS:
+					Toast.makeText(getApplicationContext(), "登录成功",
+							Toast.LENGTH_SHORT).show();
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					SharedPreferences sharedPreferences = getApplicationContext()
+							.getSharedPreferences("configer",
+									Context.MODE_PRIVATE);
+					// 编辑配置
+					Editor editor = sharedPreferences.edit();// 获取编辑器
+					editor.putString("_user_", userNameString);
+					editor.commit();// 提交修改
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+
+						requestLoginUtilObj = mapper.readValue(detailString,
+								requestLoginUtil.class);
+
+						hiddenKeyboard();
+						initView();
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+					break;
+
+				case ZCWebServiceParams.HTTP_UNAUTH:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_THROWABLE:
+					Throwable e = (Throwable) msg.obj;
+					ZCLog.e(TAG, "catch thowable:", e);
+					break;
+
+				default:
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+			}
+		});
 	}
 
 	@Override
@@ -552,17 +647,84 @@ public class MainActivity extends FragmentActivity implements
 
 	// register page
 	@Override
-	public void onRegister(String userNameString, String pwdStrings) {
+	public void onRegister(final UserInfo info) {
 		// TODO Auto-generated method stub
-		Log.i("onLinster", "onRegister, user:" + userNameString + " pwd:"
-				+ pwdStrings);
+		Log.i("onLinster", "onRegister, user:" + info.getUsername());
 
-		Bundle args = new Bundle();
-		args.putString(LoginFragment.USERNAME, "sundm");
-		loginPageFragment.setBundle(args);
+		ZCWebService.getInstance().register(info, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
 
-		clearBackStack();
-		switchContent(loginPageFragment, false, LoginFragment.TAG);
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FINISH:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FAILED:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_SUCCESS:
+					Toast.makeText(getApplicationContext(), "注册成功",
+							Toast.LENGTH_LONG).show();
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					SharedPreferences sharedPreferences = getApplicationContext()
+							.getSharedPreferences("configer",
+									Context.MODE_PRIVATE);
+					// 编辑配置
+					Editor editor = sharedPreferences.edit();// 获取编辑器
+					editor.putString("_user_", info.getUsername());
+					editor.commit();// 提交修改
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						ZCLog.i(TAG, requestObj.getDetail().toString());
+
+						hiddenKeyboard();
+						clearBackStack();
+						switchContent(loginPageFragment, false,
+								LoginFragment.TAG);
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+					break;
+
+				case ZCWebServiceParams.HTTP_UNAUTH:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_THROWABLE:
+					Throwable e = (Throwable) msg.obj;
+					ZCLog.e(TAG, "catch thowable:", e);
+					break;
+
+				default:
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+			}
+		});
 
 	}
 
@@ -581,8 +743,8 @@ public class MainActivity extends FragmentActivity implements
 		Log.i("onLinster", "onChangePwd");
 
 		Bundle args = new Bundle();
-		// args.putString(RegisterFragment.USERNAME, "sundm");
-		changePwdFragment.setArguments(args);
+		args.putString(ChangePwdFragment.USERNAME, userNameString);
+		changePwdFragment.setBundle(args);
 
 		switchContent(changePwdFragment, true, ChangePwdFragment.TAG);
 	}
@@ -592,9 +754,9 @@ public class MainActivity extends FragmentActivity implements
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onActivePOS");
 
-		Bundle args = new Bundle();
+		// Bundle args = new Bundle();
 		// args.putString(RegisterFragment.USERNAME, "sundm");
-		activePosPageFragment.setArguments(args);
+		// activePosPageFragment.setArguments(args);
 
 		switchContent(activePosPageFragment, true, ActivePosFragment.TAG);
 	}
@@ -613,15 +775,15 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onApplyChangePos() {
+	public void onApplyChangePos(final String terID) {
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onApplyChangePos");
 
 		Bundle args = new Bundle();
-		args.putString(ApplyChangePosFragment.POS_NUMBER, "1234ABCD");
+		args.putString(ApplyChangePosFragment.POS_NUMBER, terID);
 		args.putString(ApplyChangePosFragment.POS_CODE, "");
 
-		applyChangePosFragment.setArguments(args);
+		applyChangePosFragment.setBundle(args);
 
 		switchContent(applyChangePosFragment, true, ApplyChangePosFragment.TAG);
 
@@ -630,18 +792,79 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void onApplyChangeSubmit() {
 		// TODO Auto-generated method stub
-		Bundle args = new Bundle();
-		args.putString(ApplyChangePosFragment.POS_CODE, "abcd1234");
-		applyChangePosFragment.updateView(args);
+		ZCWebService.getInstance().changePOSCode(new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FINISH:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FAILED:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_SUCCESS:
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+					Toast.makeText(getApplicationContext(), "申请成功",
+							Toast.LENGTH_SHORT).show();
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						Bundle args = new Bundle();
+						args.putString(ApplyChangePosFragment.POS_CODE,
+								requestObj.getDetail().toString());
+						applyChangePosFragment.updateView(args);
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+					break;
+
+				case ZCWebServiceParams.HTTP_UNAUTH:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_THROWABLE:
+					Throwable e = (Throwable) msg.obj;
+					ZCLog.e(TAG, "catch thowable:", e);
+					break;
+
+				default:
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+			}
+		});
+
 	}
 
 	@Override
 	public void onDoPurse(final String amountString) {
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onDoPurse");
-		
+
 		purchase(amountString);
-		
 
 		// Bundle args = new Bundle();
 		// args.putString(ApplyChangePosFragment.POS_NUMBER, "1234ABCD");
@@ -649,7 +872,8 @@ public class MainActivity extends FragmentActivity implements
 		//
 		// applyChangePosFragment.setArguments(args);
 
-		//switchContent(purseResultPosFragment, true, PurseResultPosFragment.TAG);
+		// switchContent(purseResultPosFragment, true,
+		// PurseResultPosFragment.TAG);
 	}
 
 	@Override
@@ -685,7 +909,17 @@ public class MainActivity extends FragmentActivity implements
 
 				case ZCWebServiceParams.HTTP_SUCCESS:
 					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+					Toast.makeText(getApplicationContext(), "开通成功",
+							Toast.LENGTH_SHORT).show();
+
+					hiddenKeyboard();
 					clearBackStack();
+					
+					role = ACTIVE;
+					final Bundle args = new Bundle();
+					args.putBoolean(SettingFragment.POS_ACTIVED, true);
+					settingPageFragment.setBundle(args);
+					
 					switchContent(settingPageFragment, false,
 							SettingFragment.TAG);
 					break;
@@ -717,7 +951,6 @@ public class MainActivity extends FragmentActivity implements
 		switchContent(loginPageFragment, false, LoginFragment.TAG);
 	}
 
-	
 	private void purchase(final String amount) {
 		ZCLog.i("consume", "doPurchase, amount: " + amount);
 		ZCLog.i("consume", "keyId: " + keyIDString);
@@ -805,7 +1038,26 @@ public class MainActivity extends FragmentActivity implements
 
 												switch (msg.what) {
 												case ZCWebServiceParams.HTTP_SUCCESS: {
-													
+													Bundle args = new Bundle();
+													args.putString(
+															PurseResultPosFragment.AMOUNT,
+															amount);
+
+													args.putString(
+															PurseResultPosFragment.BALANCE,
+															lastBalance);
+
+													args.putString(
+															PurseResultPosFragment.HINT,
+															"完成交易");
+
+													purseResultPosFragment
+															.setBundle(args);
+
+													switchContent(
+															purseResultPosFragment,
+															true,
+															PurseResultPosFragment.TAG);
 													break;
 												}
 												default:
@@ -838,4 +1090,123 @@ public class MainActivity extends FragmentActivity implements
 		}
 
 	}
+
+	@Override
+	public void onFinish() {
+		// TODO Auto-generated method stub
+		clearBackStack();
+		switchContent(pursePosPageFragment, false, PursePosFragment.TAG);
+	}
+
+	@Override
+	public void onChangePos(String posNumber, String posCode) {
+		// TODO Auto-generated method stub
+		WPosInfo info = new WPosInfo();
+		String uniqueID = state.getUniqueIDString();
+
+		info.setTerminalId(posNumber);
+		info.setValidateCode(posCode);
+		info.setFingerprint(uniqueID);
+
+		ZCWebService.getInstance().changePOS(info, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FINISH:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FAILED:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_SUCCESS:
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+					Toast.makeText(getApplicationContext(), "更换成功",
+							Toast.LENGTH_SHORT).show();
+
+					hiddenKeyboard();
+					clearBackStack();
+					switchContent(settingPageFragment, false,
+							SettingFragment.TAG);
+					break;
+
+				case ZCWebServiceParams.HTTP_UNAUTH:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_THROWABLE:
+					Throwable e = (Throwable) msg.obj;
+					ZCLog.e(TAG, "catch thowable:", e);
+					break;
+
+				default:
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onChangePwd(UserInfo info) {
+		// TODO Auto-generated method stub
+		ZCWebService.getInstance().changePassword(info, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FINISH:
+					ZCLog.i(TAG, msg.obj.toString());
+					break;
+
+				case ZCWebServiceParams.HTTP_FAILED:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_SUCCESS:
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+					Toast.makeText(getApplicationContext(), "修改密码成功",
+							Toast.LENGTH_SHORT).show();
+
+					hiddenKeyboard();
+					clearBackStack();
+					switchContent(settingPageFragment, false,
+							SettingFragment.TAG);
+					break;
+
+				case ZCWebServiceParams.HTTP_UNAUTH:
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+
+				case ZCWebServiceParams.HTTP_THROWABLE:
+					Throwable e = (Throwable) msg.obj;
+					ZCLog.e(TAG, "catch thowable:", e);
+					break;
+
+				default:
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+			}
+		});
+	}
+
 }

@@ -71,6 +71,11 @@ public class PosInfo implements Serializable {
 	 * 终端交易流水号，以卡片脱机消费交易终端交易序号为准,和卡交易用
 	 */
 	private Long psamSerialNo;
+	
+	/**
+	 * 终端显示状态
+	 */
+	private String wposDisplayStatus;
 
 	/**
 	 * @return the id
@@ -237,38 +242,27 @@ public class PosInfo implements Serializable {
 		this.psamSerialNo = psamSerialNo;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
+	
+	
+	public String getWposDisplayStatus() {
+		return wposDisplayStatus;
+	}
+
+	public void setWposDisplayStatus(String wposDisplayStatus) {
+		this.wposDisplayStatus = wposDisplayStatus;
+	}
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("PosInfo [id=");
-		builder.append(id);
-		builder.append(", createTime=");
-		builder.append(createTime);
-		builder.append(", merchantId=");
-		builder.append(merchantId);
-		builder.append(", terminalId=");
-		builder.append(terminalId);
-		builder.append(", terminalName=");
-		builder.append(terminalName);
-		builder.append(", terminalSeq=");
-		builder.append(terminalSeq);
-		builder.append(", psamId=");
-		builder.append(psamId);
-		builder.append(", hardwareSerial=");
-		builder.append(hardwareSerial);
-		builder.append(", batchNo=");
-		builder.append(batchNo);
-		builder.append(", serialNo=");
-		builder.append(serialNo);
-		builder.append(", psamSerialNo=");
-		builder.append(psamSerialNo);
-		builder.append("]");
-		return builder.toString();
+		return "PosInfo [id=" + id + ", createTime=" + createTime
+				+ ", merchantId=" + merchantId + ", terminalId=" + terminalId
+				+ ", terminalName=" + terminalName + ", terminalSeq="
+				+ terminalSeq + ", psamId=" + psamId + ", hardwareSerial="
+				+ hardwareSerial + ", batchNo=" + batchNo + ", serialNo="
+				+ serialNo + ", psamSerialNo=" + psamSerialNo
+				+ ", wposDisplayStatus=" + wposDisplayStatus + "]";
 	}
+
+	
 
 }

@@ -81,7 +81,6 @@ public class ApplyChangePosFragment extends Fragment implements OnClickListener 
 		super.onResume();
 		Log.d(TAG, "onResume");
 
-		this.bundle = getArguments();
 		if (bundle != null) {
 			updateView(this.bundle);
 		}

@@ -43,6 +43,7 @@
     
     <string name="change_pos_number_txt">终端号</string>
     <string name="change_pos_code_txt">激活码</string>
+    <string name="change_pos_number_hint">您的终端号</string>
     <string name="change_pos_code_hint">新的激活码</string>
     <string name="change_submit_txt">更换终端</string>
     <string name="change_hint_txt">新的激活码可从已激活设备上，通过申请更换终端获取。<a></a></string>

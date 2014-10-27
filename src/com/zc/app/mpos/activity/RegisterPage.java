@@ -52,9 +52,6 @@ public class RegisterPage extends Activity {
 
 		userNameBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_username_edit);
 
-		// userNameBootstrapEditText.setText(getIntent().getExtras().getString(
-		// "user"));
-
 		userPasswordBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_password_edit);
 
 		userPasswordAgainBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_password_agine_edit);

@@ -77,34 +77,32 @@ public class keyboardUtil {
 			} else { // 将要输入的数字现在编辑框中
 				String currentString = editable.toString();
 				if ((45 < primaryCode) && (primaryCode < 60)) {
-					//只能有一个"."
+					// 只能有一个"."
 					if ((currentString.contains(".")) && primaryCode == 46) {
 						return;
 					}
-					//小数点后只可以有两位。
+					// 小数点后只可以有两位。
 					if ((currentString.contains("."))
 							&& (currentString.length() - currentString
 									.indexOf(".")) == 3) {
 						return;
 					}
-					
-					if (((currentString.length() - currentString
-							.indexOf(".")) > 3) && (primaryCode != 46)){
+
+					if (((currentString.length() - currentString.indexOf(".")) > 3)
+							&& (primaryCode != 46)) {
 						return;
 					}
-					
-					if ((currentString.length() == 0) && (primaryCode == 46)){
-						editable.insert(0,
-								Character.toString((char) 48));
-						
-						editable.insert(1,
-								Character.toString((char) 46));
-						
+
+					if ((currentString.length() == 0) && (primaryCode == 46)) {
+						editable.insert(0, Character.toString((char) 48));
+
+						editable.insert(1, Character.toString((char) 46));
+
 						start += 2;
-						
+
 						return;
 					}
-					
+
 					editable.insert(start,
 							Character.toString((char) primaryCode));
 				}
@@ -120,6 +118,7 @@ public class keyboardUtil {
 		int visibility = keyboardView.getVisibility();
 		if (visibility == View.GONE || visibility == View.INVISIBLE) {
 			keyboardView.setVisibility(View.VISIBLE);
+			ed.setSelection(ed.getText().length());
 		}
 	}
 

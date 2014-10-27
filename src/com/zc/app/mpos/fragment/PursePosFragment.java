@@ -45,6 +45,7 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 	private int recLen = 0;
 	private String amountString;
+	private String balanceString;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -99,6 +100,12 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 		if (bundle != null) {
 			updateView(this.bundle);
+		} else {
+			balancEditText.setText("");
+		}
+
+		if (mKeyboardUtil != null) {
+			mKeyboardUtil.hideKeyboard();
 		}
 
 		getBalance();
@@ -135,15 +142,22 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		Log.d(TAG, "onDetach");
 	}
 
-	private void getBalance() {
+	private boolean getBalance() {
 		LongxingcardInfo requestInfo = Longxingcard.getLongxingcardInfo();
 		ZCLog.i("getBalance", requestInfo.toString());
 
+		balancEditText.setText("");
+
 		if (requestInfo.getStatus().equals(StatusCheck.SW1SW2_OK)) {
 
-			String balanceString = requestInfo.getFloatBalance();
+			balanceString = requestInfo.getFloatBalance();
 
 			balancEditText.setText(balanceString);
+			return true;
+		} else {
+			balancEditText.setText("");
+			doPurseBootstrapButton.setText("等待刷卡");
+			return false;
 		}
 	}
 
@@ -170,13 +184,16 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		balancEditText.setKeyListener(null);
 
 		final Handler handler = new Handler();
-		final Runnable runnable = new Runnable() {
+
+		final Runnable purseRunnable = new Runnable() {
 			@Override
 			public void run() {
 				recLen++;
-				doPurseBootstrapButton.setText("将在"
-						+ String.valueOf(3 - recLen) + "秒后开始交易");
+				doPurseBootstrapButton.setText("请勿移动卡片"
+						+ String.valueOf(3 - recLen));
 				if (recLen == 3) {
+					recLen = 0;
+					doPurseBootstrapButton.setText("正在操作卡片");
 					mCallback.onDoPurse(amountString);
 				} else {
 					handler.postDelayed(this, 1000);
@@ -205,6 +222,10 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 			public void afterTextChanged(Editable s) {
 				// TODO Auto-generated method stub
 				recLen = 0;
+				handler.removeCallbacks(purseRunnable);
+
+				if (s.toString().isEmpty())
+					return;
 
 				amountString = amountBootstrapEditText.getText().toString();
 				if (amountString.isEmpty()) {
@@ -217,20 +238,28 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 					String strAmount = checkResult.substring(4,
 							checkResult.length());
 
-					if (Integer.parseInt(strAmount) == 0) {
+					if (strAmount.isEmpty() || Integer.parseInt(strAmount) == 0) {
 						doPurseBootstrapButton.setText("交易金额不能为零");
 						return;
 					}
 
-					int bl = Integer.parseInt(s.toString())
+					checkResult = TransUtil.checkInputAmount(s.toString(), 8,
+							2, true);
+
+					String strBalance = checkResult.substring(4,
+							checkResult.length());
+
+					if (strBalance.isEmpty())
+						return;
+
+					int bl = Integer.parseInt(strBalance)
 							- Integer.parseInt(strAmount);
 
 					if (bl < 0) {
 						doPurseBootstrapButton.setText("余额不足");
 						return;
 					} else {
-						handler.postDelayed(runnable, 1000);
-
+						handler.postDelayed(purseRunnable, 1000);
 					}
 				}
 			}

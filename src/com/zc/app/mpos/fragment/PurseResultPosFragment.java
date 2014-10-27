@@ -18,6 +18,10 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 	public static final String TAG = PurseResultPosFragment.class
 			.getSimpleName();
 
+	public static final String AMOUNT = "amount";
+	public static final String BALANCE = "balance";
+	public static final String HINT = "hint";
+	
 	private OnPurseResultPosPageListener mCallback;
 
 	private Bundle bundle;
@@ -142,7 +146,21 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 	}
 
 	private void updateView(Bundle bundle) {
-
+		String amountString = bundle.getString(AMOUNT, "0.00");
+		String balanceString = bundle.getString(BALANCE, "000");
+		String hintString = bundle.getString(HINT, "");
+		
+		amountTextView.setText(amountString + " 元");
+		
+		String endString = "." + balanceString.substring(balanceString.length() - 2);
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(balanceString.substring(0, balanceString.length() - 2));
+		buffer.append(endString);
+		
+		balancetTextView.setText(buffer.toString() + " 元");
+		
+		resultHinTextView.setText(hintString);
+		
 	}
 
 	@Override
@@ -150,6 +168,7 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 		switch (v.getId()) {
 		case R.id.purse_result_pos_button: {
 			Log.i(TAG, "purse_result_pos_button");
+			mCallback.onFinish();
 			break;
 		}
 
@@ -160,5 +179,7 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 
 	public interface OnPurseResultPosPageListener {
 		public void setTag(String tag);
+		
+		public void onFinish();
 	}
 }

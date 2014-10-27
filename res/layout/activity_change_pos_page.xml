@@ -39,6 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/change_pos_number_txt"
             android:layout_toRightOf="@id/change_pos_number_txt"
+            android:hint="@string/change_pos_number_hint"
             bootstrapbutton:be_roundedCorners="true"
             bootstrapbutton:be_state="success" />
 

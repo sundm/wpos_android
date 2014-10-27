@@ -34,7 +34,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 	public static final String POS_NUMBER = "posNumber";
 	public static final String POS_STATE = "posState";
 	public static final String POS_ACTIVED = "actived";
-
+	
 	private OnSettingPageListener mCallback;
 
 	private Bundle bundle;
@@ -43,6 +43,8 @@ public class SettingFragment extends Fragment implements OnClickListener {
 	private TextView posNumberTextView;
 	private TextView activeTextView;
 	private LinearLayout activePOSLayout;
+	
+	private String terID;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -136,6 +138,8 @@ public class SettingFragment extends Fragment implements OnClickListener {
 						bundle.putString(SettingFragment.POS_NUMBER,
 								posInfo.getTerminalSeq());
 						updateView(bundle);
+						
+						terID = posInfo.getTerminalId();
 
 					} catch (JsonParseException e1) {
 						// TODO Auto-generated catch block
@@ -293,7 +297,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 
 		case R.id.apply_change_pos: {
 			Log.i(TAG, "apply change pos");
-			mCallback.onApplyChangePos();
+			mCallback.onApplyChangePos(terID);
 			break;
 		}
 
@@ -313,7 +317,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 
 		public void onChangePOS();
 
-		public void onApplyChangePos();
+		public void onApplyChangePos(final String terID);
 
 	}
 }

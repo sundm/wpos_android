@@ -24,8 +24,11 @@ public class LongxingcardInfo {
 	
 	public String getFloatBalance(){
 		String baString = this.balance;
-		String endString = baString.substring(baString.length() - 2);
-		return baString.replace(endString, "."+endString);	
+		String endString = "." + baString.substring(baString.length() - 2);
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(baString.substring(0, baString.length() - 2));
+		buffer.append(endString);
+		return buffer.toString();	
 	}
 	
 	public String getCardNumber() {

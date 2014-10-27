@@ -67,7 +67,7 @@
             android:hint="@string/changePwd_old_password_hint"
             android:inputType="textPassword"
             fontawesometext:be_roundedCorners="true"
-            fontawesometext:be_state="success" >
+            fontawesometext:be_state="danger" >
         </com.zc.app.bootstrap.BootstrapEditText>
 
         <!-- 新密码 -->
@@ -94,7 +94,7 @@
             android:hint="@string/changePwd_password_hint"
             android:inputType="textPassword"
             fontawesometext:be_roundedCorners="true"
-            fontawesometext:be_state="success" >
+            fontawesometext:be_state="danger" >
         </com.zc.app.bootstrap.BootstrapEditText>
 
         <!-- 再一次新密码 -->
@@ -121,7 +121,7 @@
             android:hint="@string/changePwd_password_agine_hint"
             android:inputType="textPassword"
             bootstrapbutton:be_roundedCorners="true"
-            bootstrapbutton:be_state="success" />
+            bootstrapbutton:be_state="danger" />
 
         <!-- 修改button -->
 

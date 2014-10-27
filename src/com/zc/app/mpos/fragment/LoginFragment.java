@@ -1,8 +1,12 @@
 package com.zc.app.mpos.fragment;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +24,18 @@ public class LoginFragment extends Fragment implements OnClickListener {
 
 	public static final String USERNAME = "username";
 
+	private final int minLength = 3;
+
 	private OnLoginPageListener mCallback;
 
 	private BootstrapEditText userNameBootstrapEditText;
 	private BootstrapEditText pwdBootstrapEditText;
+	private BootstrapButton loginBtnBootstrapButton;
 
 	private Bundle bundle;
+
+	private String userNameString;
+	private String passWordString;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -77,15 +87,10 @@ public class LoginFragment extends Fragment implements OnClickListener {
 	public void onResume() {
 		super.onResume();
 		Log.d(TAG, "onResume");
-		
+
 		if (bundle != null) {
 			updateView(this.bundle);
 		}
-
-		// Bundle bundle = getArguments();
-		// if (bundle != null) {
-		// updateView(bundle);
-		// }
 	}
 
 	@Override
@@ -126,19 +131,112 @@ public class LoginFragment extends Fragment implements OnClickListener {
 
 	private void findView(View view) {
 		Log.e(TAG, "findView");
-		
-		TextView titleView = (TextView) getActivity().findViewById(R.id.iv_title_text);
+
+		TextView titleView = (TextView) getActivity().findViewById(
+				R.id.iv_title_text);
 		titleView.setText(R.string.loginTitle);
+
+		SharedPreferences sharedPreferences = getActivity()
+				.getApplicationContext().getSharedPreferences("configer",
+						Context.MODE_PRIVATE);
+		String name = sharedPreferences.getString("_user_", "");
 
 		userNameBootstrapEditText = (BootstrapEditText) view
 				.findViewById(R.id.login_username_edit);
+		userNameBootstrapEditText.setText(name);
+
+		userNameBootstrapEditText.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// TODO Auto-generated method stub
+				userNameString = s.toString();
+				passWordString = pwdBootstrapEditText.getText().toString();
+
+				if (userNameString.isEmpty()
+						|| userNameString.length() < minLength) {
+					userNameBootstrapEditText.setDanger();
+					loginBtnBootstrapButton.setEnabled(false);
+					return;
+				} else {
+					userNameBootstrapEditText.setSuccess();
+				}
+
+				if (passWordString.isEmpty()
+						|| passWordString.length() < minLength) {
+					pwdBootstrapEditText.setDanger();
+					loginBtnBootstrapButton.setEnabled(false);
+					return;
+				} else {
+					pwdBootstrapEditText.setSuccess();
+					loginBtnBootstrapButton.setEnabled(true);
+				}
+			}
+		});
 
 		pwdBootstrapEditText = (BootstrapEditText) view
 				.findViewById(R.id.login_password_edit);
+		pwdBootstrapEditText.addTextChangedListener(new TextWatcher() {
 
-		BootstrapButton bt_signin = (BootstrapButton) view
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// TODO Auto-generated method stub
+				passWordString = s.toString();
+				userNameString = userNameBootstrapEditText.getText().toString();
+
+				if (passWordString.isEmpty()
+						|| passWordString.length() < minLength) {
+					pwdBootstrapEditText.setDanger();
+					loginBtnBootstrapButton.setEnabled(false);
+					return;
+				} else {
+					pwdBootstrapEditText.setSuccess();
+				}
+
+				if (userNameString.isEmpty()
+						|| userNameString.length() < minLength) {
+					userNameBootstrapEditText.setDanger();
+					loginBtnBootstrapButton.setEnabled(false);
+					return;
+				} else {
+					userNameBootstrapEditText.setSuccess();
+					loginBtnBootstrapButton.setEnabled(true);
+				}
+			}
+		});
+
+		loginBtnBootstrapButton = (BootstrapButton) view
 				.findViewById(R.id.signin_button);
-		bt_signin.setOnClickListener(this);
+		loginBtnBootstrapButton.setOnClickListener(this);
+		loginBtnBootstrapButton.setEnabled(false);
 
 		TextView registerLink = (TextView) view
 				.findViewById(R.id.register_link);
@@ -159,7 +257,7 @@ public class LoginFragment extends Fragment implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.signin_button: {
 			Log.i(TAG, "signin enter");
-			mCallback.onSignin();
+			mCallback.onSignin(userNameString, passWordString);
 
 			break;
 		}
@@ -178,7 +276,8 @@ public class LoginFragment extends Fragment implements OnClickListener {
 	public interface OnLoginPageListener {
 		public void setTag(String tag);
 
-		public void onSignin();
+		public void onSignin(final String userNameString,
+				final String passWordString);
 
 		public void onOpenRegisterPage();
 	}
