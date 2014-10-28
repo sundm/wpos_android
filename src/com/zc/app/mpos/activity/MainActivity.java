@@ -42,6 +42,7 @@ import com.zc.app.bootstrap.BootstrapCircleThumbnail;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
 import com.zc.app.mpos.fragment.ActivePosFragment;
+import com.zc.app.mpos.fragment.OfflineLogFragment;
 import com.zc.app.mpos.fragment.ActivePosFragment.OnActivePosPageListener;
 import com.zc.app.mpos.fragment.ApplyChangePosFragment;
 import com.zc.app.mpos.fragment.ApplyChangePosFragment.OnApplyChangePosPageListener;
@@ -51,6 +52,7 @@ import com.zc.app.mpos.fragment.ChangePwdFragment;
 import com.zc.app.mpos.fragment.ChangePwdFragment.OnChangePwdPageListener;
 import com.zc.app.mpos.fragment.LoginFragment;
 import com.zc.app.mpos.fragment.LoginFragment.OnLoginPageListener;
+import com.zc.app.mpos.fragment.OfflineLogFragment.OnOfflineLogPageListener;
 import com.zc.app.mpos.fragment.PursePosFragment;
 import com.zc.app.mpos.fragment.PursePosFragment.OnPursePosPageListener;
 import com.zc.app.mpos.fragment.PurseResultPosFragment;
@@ -82,7 +84,7 @@ public class MainActivity extends FragmentActivity implements
 		OnPurseResultPosPageListener, OnRegisterPageListener,
 		OnSettingPageListener, OnActivePosPageListener,
 		OnChangePosPageListener, OnChangePwdPageListener,
-		OnApplyChangePosPageListener {
+		OnApplyChangePosPageListener, OnOfflineLogPageListener {
 
 	private DragLayout dl;
 	private ListView lv;
@@ -95,6 +97,7 @@ public class MainActivity extends FragmentActivity implements
 	private LoginFragment loginPageFragment = null;
 	private PursePosFragment pursePosPageFragment = null;
 	private PurseResultPosFragment purseResultPosFragment = null;
+	private OfflineLogFragment offlineLogFragment = null;
 	private RegisterFragment registerFragment = null;
 
 	private SettingFragment settingPageFragment = null;
@@ -222,6 +225,8 @@ public class MainActivity extends FragmentActivity implements
 
 		pursePosPageFragment = new PursePosFragment();
 		purseResultPosFragment = new PurseResultPosFragment();
+		
+		offlineLogFragment = new OfflineLogFragment();
 
 		registerFragment = new RegisterFragment();
 
@@ -319,6 +324,8 @@ public class MainActivity extends FragmentActivity implements
 				}
 
 				case 2: {
+					fragmentTag = OfflineLogFragment.TAG;
+					fragementFragment = offlineLogFragment;
 					break;
 				}
 

@@ -1,10 +1,8 @@
 package com.zc.app.bootstrap.utils;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.os.Build;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
