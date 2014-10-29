@@ -15,13 +15,13 @@ public final class TransType {
 	public final static int TYPE_07 = 7;
 	public final static int TYPE_08 = 8;
 	
-	public final static String READ_TYPE_01 = "ED圈存";
-	public final static String READ_TYPE_02 = "EP圈存";
+	public final static String READ_TYPE_01 = "存折圈存";
+	public final static String READ_TYPE_02 = "钱包圈存";
 	public final static String READ_TYPE_03 = "圈提";
-	public final static String READ_TYPE_04 = "ED取款";
-	public final static String READ_TYPE_05 = "ED消费";
-	public final static String READ_TYPE_06 = "EP消费";
-	public final static String READ_TYPE_07 = "ED修改透支限额";
+	public final static String READ_TYPE_04 = "存折取款";
+	public final static String READ_TYPE_05 = "存折消费";
+	public final static String READ_TYPE_06 = "钱包消费";
+	public final static String READ_TYPE_07 = "修改透支限额";
 	public final static String READ_TYPE_08 = "信用消费";
 	
 	public final static String READ_TYPE_UNKNOWN = "未知";

@@ -15,7 +15,7 @@
     -->
 
     <RelativeLayout
-        android:id="@+id/offline_log_div"
+        android:id="@+id/online_log_div"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dip"
@@ -24,7 +24,7 @@
 
         <com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView
             xmlns:ptr="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/offline_log_list"
+            android:id="@+id/online_log_list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:cacheColorHint="#00000000"

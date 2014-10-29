@@ -132,7 +132,6 @@ public class ZCWebService {
 			JSONArray cryptoArray = null;
 			RequestParams params = new RequestParams();
 
-			// not have _crypto_ tag in json
 			if (cryptoString == null || cryptoString.isEmpty()) {
 				Iterator<String> it = _paramMaps.keySet().iterator();
 				while (it.hasNext()) {
@@ -141,7 +140,7 @@ public class ZCWebService {
 				}
 
 				doPost(params, url, _handler);
-			} else {// has _crypto_ tag
+			} else {
 				try {
 					cryptoArray = new JSONArray(cryptoString);
 				} catch (JSONException e) {
@@ -234,10 +233,9 @@ public class ZCWebService {
 	 *            UI回调句柄
 	 * @return
 	 */
-	public boolean userLogin(final UserInfo info, 
-							 final String fingerprint, 
-							 final Handler _handler) {
-		
+	public boolean userLogin(final UserInfo info, final String fingerprint,
+			final Handler _handler) {
+
 		if (_handler == null || info == null || fingerprint == null) {
 			return false;
 		}
@@ -254,16 +252,16 @@ public class ZCWebService {
 		doPost(params, postURL, _handler);
 		return true;
 	}
-	
-	public boolean userLogout(final Handler _handler){
+
+	public boolean userLogout(final Handler _handler) {
 		if (_handler == null) {
 			return false;
 		}
-		
+
 		String postURL = ZCWebServiceParams.LOGOUT_URL;
 
 		doBasicPost(postURL, null, _handler);
-		
+
 		return true;
 	}
 
@@ -300,57 +298,58 @@ public class ZCWebService {
 
 		return true;
 	}
-	
-	public boolean getPosInfo(final Handler _handler){
+
+	public boolean getPosInfo(final Handler _handler) {
 		if (_handler == null) {
 			return false;
 		}
-		
+
 		String posURL = ZCWebServiceParams.GETPOSINFO_URL;
-		
+
 		doPost(null, posURL, _handler);
-		
+
 		return true;
 	}
-	
-	public boolean initForPurchase(PurchaseInitInfo info, final Handler _handler){
+
+	public boolean initForPurchase(PurchaseInitInfo info, final Handler _handler) {
 		if (info == null || _handler == null) {
 			return false;
 		}
-		
+
 		String postUrl = ZCWebServiceParams.INITPURCHASE_URL;
-		
+
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
-		
+
 		paramsMap.put("initResponse", info.getInitResponse());
 		paramsMap.put("amount", info.getAmount());
 		paramsMap.put("pan", info.getPan());
 		paramsMap.put("issuerId", info.getIssuerId());
 		paramsMap.put("lng", info.getLng());
 		paramsMap.put("lat", info.getLat());
-		
+
 		doBasicPost(postUrl, paramsMap, _handler);
-		
+
 		return true;
 	}
-	
-	public boolean updateForPurchase(PurchaseUpdateInfo info, final Handler _handler){
+
+	public boolean updateForPurchase(PurchaseUpdateInfo info,
+			final Handler _handler) {
 		if (info == null || _handler == null) {
 			return false;
 		}
-		
+
 		String postUrl = ZCWebServiceParams.UPDATEMAC2_URL;
-		
+
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
-		
+
 		paramsMap.put("sw", info.getSw());
 		paramsMap.put("purchaseLogId", info.getLogId());
 		paramsMap.put("tac", info.getTac());
 		paramsMap.put("mac2", info.getMac2());
 		paramsMap.put("walletBalanceLater", info.getBalance());
-		
+
 		doBasicPost(postUrl, paramsMap, _handler);
-		
+
 		return true;
 	}
 
@@ -680,31 +679,26 @@ public class ZCWebService {
 						msg.obj = _responseString;
 
 						ZCLog.i(tagString, "success!");
-						
+
 						isLogin = true;
-					}
-					else if (res.getCode().equals("UN_AUTH")) {
+					} else if (res.getCode().equals("UN_AUTH")) {
 						msg.what = ZCWebServiceParams.HTTP_UNAUTH;
 						msg.obj = res.getDetail();
 
 						ZCLog.i(tagString, msg.obj.toString());
-						
+
 						isLogin = true;
-					}
-					else {
+					} else {
 						msg.what = ZCWebServiceParams.HTTP_FAILED;
 						if (res.getDetail() != null) {
 							msg.obj = res.getDetail();
 							ZCLog.i(tagString, msg.obj.toString());
-						}
-						else {
+						} else {
 							msg.obj = res.getCode();
 							ZCLog.i(tagString, msg.obj.toString());
 						}
-						
-					}
 
-					
+					}
 
 				} catch (JsonParseException e) {
 					// TODO Auto-generated catch block

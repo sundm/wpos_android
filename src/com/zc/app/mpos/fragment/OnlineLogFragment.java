@@ -31,11 +31,11 @@ import com.zc.app.sebc.lx.Longxingcard;
 import com.zc.app.sebc.util.StatusCheck;
 import com.zc.app.utils.ZCLog;
 
-public class OfflineLogFragment extends Fragment implements OnClickListener {
+public class OnlineLogFragment extends Fragment implements OnClickListener {
 
-	public static final String TAG = OfflineLogFragment.class.getSimpleName();
+	public static final String TAG = OnlineLogFragment.class.getSimpleName();
 
-	private OnOfflineLogPageListener mCallback;
+	private OnOnlineLogPageListener mCallback;
 
 	private Bundle bundle;
 
@@ -74,7 +74,7 @@ public class OfflineLogFragment extends Fragment implements OnClickListener {
 	public void onAttach(Activity activity) {
 		Log.e(TAG, "onAttach");
 		try {
-			mCallback = (OnOfflineLogPageListener) activity;
+			mCallback = (OnOnlineLogPageListener) activity;
 		} catch (ClassCastException e) {
 			throw new ClassCastException(activity.toString()
 					+ " must implement OnLoginPageListener");
@@ -87,7 +87,7 @@ public class OfflineLogFragment extends Fragment implements OnClickListener {
 			Bundle savedInstanceState) {
 		Log.e(TAG, "onCreateView");
 
-		View view = inflater.inflate(R.layout.activity_offline_log_page,
+		View view = inflater.inflate(R.layout.activity_online_log_page,
 				container, false);
 		findView(view);
 
@@ -174,10 +174,10 @@ public class OfflineLogFragment extends Fragment implements OnClickListener {
 		titleView.setText(R.string.queryLogOffTitle);
 
 		mPullRefreshListView = (PullToRefreshListView) view
-				.findViewById(R.id.offline_log_list);
+				.findViewById(R.id.online_log_list);
 
 		// 设置你需要的模式可选值为：disabled,pullFromStart,PULL_FROM_END,both,manualOnly
-		mPullRefreshListView.setMode(Mode.DISABLED);
+		mPullRefreshListView.setMode(Mode.PULL_FROM_END);
 
 		// 设置适配器
 		mAdapter = new DetailItemAdpater(getActivity(), mListItems);
@@ -309,7 +309,7 @@ public class OfflineLogFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	public interface OnOfflineLogPageListener {
+	public interface OnOnlineLogPageListener {
 		public void setTag(String tag);
 	}
 }

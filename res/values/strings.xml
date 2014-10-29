@@ -13,6 +13,7 @@
     <string name="activePOSTitle">开通终端</string>
     <string name="changePOSTitle">更新终端</string>
     <string name="applyChangePOSTitle">申请更新终端</string>
+    <string name="queryLogOffTitle">查询龙行卡日志</string>
     <string name="queryLogOlTitle">查询交易日志</string>
     
     <string name="enter">进入微POS</string>
