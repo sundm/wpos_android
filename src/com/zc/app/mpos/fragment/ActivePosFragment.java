@@ -134,7 +134,7 @@ public class ActivePosFragment extends Fragment implements OnClickListener {
 
 		storeNumberBootstrapEditText = (BootstrapEditText) view
 				.findViewById(R.id.activePOS_StoreNumber_edit);
-		storeNumberBootstrapEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+		storeNumberBootstrapEditText.setInputType(InputType.TYPE_CLASS_TEXT);
 		storeNumberBootstrapEditText.addTextChangedListener(new TextWatcher() {
 
 			@Override
@@ -166,7 +166,7 @@ public class ActivePosFragment extends Fragment implements OnClickListener {
 
 		posNumberBootstrapEditText = (BootstrapEditText) view
 				.findViewById(R.id.activePOS_POSNumber_edit);
-		posNumberBootstrapEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+		posNumberBootstrapEditText.setInputType(InputType.TYPE_CLASS_TEXT);
 		posNumberBootstrapEditText.addTextChangedListener(new TextWatcher() {
 
 			@Override

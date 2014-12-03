@@ -1,7 +1,12 @@
 package com.zc.app.mpos.fragment;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -17,19 +22,22 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zc.app.mpos.R;
-import com.zc.app.mpos.adapter.DetailItem;
-import com.zc.app.mpos.adapter.DetailItemAdpater;
+import com.zc.app.mpos.adapter.LogItem;
+import com.zc.app.mpos.adapter.LogItemAdpater;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.Mode;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.OnRefreshListener;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView;
-import com.zc.app.sebc.lx.CardLogEntry;
-import com.zc.app.sebc.lx.CardLogObject;
-import com.zc.app.sebc.lx.Longxingcard;
-import com.zc.app.sebc.util.StatusCheck;
+import com.zc.app.sebc.lx.PurchaseLog;
+import com.zc.app.sebc.lx.PurchaseLogPage;
+import com.zc.app.sebc.lx.PurchaseLogQuery;
 import com.zc.app.utils.ZCLog;
+import com.zc.app.utils.ZCWebService;
+import com.zc.app.utils.ZCWebServiceParams;
+import com.zc.app.utils.requestUtil;
 
 public class OnlineLogFragment extends Fragment implements OnClickListener {
 
@@ -39,36 +47,21 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	private Bundle bundle;
 
-	private List<DetailItem> mListItems = new ArrayList<DetailItem>();
+	private List<LogItem> mListItems = new ArrayList<LogItem>();
 
 	/**
 	 * 上拉刷新的控件
 	 */
 	private PullToRefreshListView mPullRefreshListView;
 
-	private DetailItemAdpater mAdapter;
+	private LogItemAdpater mAdapter;
 
-	private CardLogObject cardLogObject;
-	private List<CardLogEntry> transactionDetails;
-	private CardThread cardThread;
+	private List<PurchaseLog> logs;
 
 	private int mItemCount = 9;
 	private int maxCount = 5;
 
-	private Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			String message = (String) msg.obj;
-
-			if (message.equals("1")) {
-				if (cardThread != null) {
-					cardThread.interrupt();
-					cardThread = null;
-				}
-				initDatas(cardLogObject);
-			}
-		}
-	};
+	
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -180,7 +173,7 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		mPullRefreshListView.setMode(Mode.PULL_FROM_END);
 
 		// 设置适配器
-		mAdapter = new DetailItemAdpater(getActivity(), mListItems);
+		mAdapter = new LogItemAdpater(getActivity(), mListItems);
 
 		mPullRefreshListView.setAdapter(mAdapter);
 		// 设置监听事件
@@ -206,71 +199,105 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	}
 
-	class CardThread extends Thread {
-
-		public CardThread() {
-
-		}
-
-		public void run() {
-			cardLogObject = Longxingcard.getTransactionDetails();
-			Message toMain = handler.obtainMessage();
-			toMain.obj = "1";
-			handler.sendMessage(toMain);
-		}
-	}
-
 	public void getTransactionDetails() {
 
-		if (cardThread == null) {
-			cardThread = this.new CardThread();
-		}
-		
-		if (!cardThread.isAlive()) {
-			cardThread.start();
-		}
-		
+		PurchaseLogQuery logQuery = new PurchaseLogQuery();
+		logQuery.setStart("20141001");
+		logQuery.setEnd("20141030");
+
+		ZCWebService.getInstance().queryPurchaseLog(logQuery, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getActivity(), msg.obj.toString(),
+							Toast.LENGTH_SHORT).show();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+
+						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
+
+						PurchaseLogPage logPage = mapper.readValue(
+								detailString, PurchaseLogPage.class);
+
+						logs = logPage.getContent();
+
+						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + logs.toString());
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getActivity(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
+			}
+		});
+
 		return;
 	}
 
-	private void initDatas(CardLogObject obj) {
-		String status = obj.getStatus();
-		if ((status.equals(StatusCheck.SW1SW2_OK) == false)
-				&& (status.equals(StatusCheck.SW1SW2_OK1) == false)) {
-			ZCLog.i(TAG, obj.toString());
-			return;
-		}
-
+	private void initDatas() {
 		// 初始化数据和数据源
 		mAdapter.clear();
-		
-		transactionDetails = obj.getDetails();
 
-		mListItems = new ArrayList<DetailItem>();
+		mListItems = new ArrayList<LogItem>();
 
-		CardLogEntry cardLogEntry = null;
+		PurchaseLog logEntry = null;
 
-		for (int i = 0; i < transactionDetails.size(); i++) {
-			cardLogEntry = transactionDetails.get(i);
+		for (int i = 0; i < logs.size(); i++) {
+			logEntry = logs.get(i);
 
-			ZCLog.i(TAG, cardLogEntry.toString());
-			DetailItem itemDetailFormat = new DetailItem();
+			ZCLog.i(TAG, logEntry.toString());
+			LogItem itemDetailFormat = new LogItem();
 
-			itemDetailFormat.setTradeType(cardLogEntry.getType());
-			itemDetailFormat.setTradeAmount(cardLogEntry.getAmount());
-			itemDetailFormat.setTradeDate(cardLogEntry.getDate());
-			itemDetailFormat.setTradeTime(cardLogEntry.getTime());
+			itemDetailFormat.setTradePan(logEntry.getPan());
+			itemDetailFormat.setTradeAmount(String.valueOf(logEntry.getAmount()));
+			itemDetailFormat.setTradeDate(logEntry.getPosDate());
+			itemDetailFormat.setTradeTime(logEntry.getPosTime());
 
 			mAdapter.add(itemDetailFormat);
 		}
-		
+
 	}
 
-	private class GetDataTask extends AsyncTask<Void, Void, DetailItem> {
+	private class GetDataTask extends AsyncTask<Void, Void, LogItem> {
 
 		@Override
-		protected DetailItem doInBackground(Void... params) {
-			DetailItem itemDetailFormat = new DetailItem();
+		protected LogItem doInBackground(Void... params) {
+			LogItem itemDetailFormat = new LogItem();
 
 			try {
 				Thread.sleep(1000);
@@ -283,7 +310,7 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		}
 
 		@Override
-		protected void onPostExecute(DetailItem result) {
+		protected void onPostExecute(LogItem result) {
 			mListItems.add(result);
 			mAdapter.notifyDataSetChanged();
 			// Call onRefreshComplete when the list has been refreshed.
@@ -292,7 +319,6 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 	}
 
 	private void updateView(Bundle bundle) {
-
 	}
 
 	@Override

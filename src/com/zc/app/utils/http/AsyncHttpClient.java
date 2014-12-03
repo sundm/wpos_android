@@ -254,7 +254,7 @@ public class AsyncHttpClient {
 	 */
 	public void setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
 		this.httpClient.getConnectionManager().getSchemeRegistry()
-				.register(new Scheme("https", sslSocketFactory, 8443));
+				.register(new Scheme("https", sslSocketFactory, 443));
 	}
 
 	/**

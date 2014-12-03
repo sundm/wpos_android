@@ -1,17 +1,17 @@
 package com.zc.app.mpos.adapter;
 
-public class DetailItem {
-	private String tradeType;
+public class LogItem {
+	private String tradePan;
 	private String tradeDate;
 	private String tradeTime;
 	private String tradeAmount;
 
-	public String getTradeType() {
-		return tradeType;
+	public String getTradePan() {
+		return tradePan;
 	}
 
-	public void setTradeType(String tradeType) {
-		this.tradeType = tradeType;
+	public void setTradePan(String tradePan) {
+		this.tradePan = tradePan;
 	}
 
 	public String getTradeDate() {
@@ -40,7 +40,7 @@ public class DetailItem {
 
 	@Override
 	public String toString() {
-		return "DetailItem [tradeType=" + tradeType + ", tradeDate="
+		return "DetailItem [tradePan=" + tradePan + ", tradeDate="
 				+ tradeDate + ", tradeTime=" + tradeTime + ", tradeAmount="
 				+ tradeAmount + "]";
 	}

@@ -1,7 +1,18 @@
 package com.zc.app.mpos.activity;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -92,6 +103,47 @@ public class LoginPage extends Activity {
 					info.setPassword(password);
 
 					String fingerprint = state.getUniqueIDString();
+
+					InputStream ins;
+					try {
+						ins = getApplicationContext().getAssets()
+								.open("wpos.key");
+						CertificateFactory cerFactory = CertificateFactory
+								.getInstance("X.509");
+						Certificate cer = cerFactory.generateCertificate(ins);
+						KeyStore keyStore = KeyStore
+								.getInstance("PKCS12", "BC");
+						keyStore.load(null, null);
+						keyStore.setCertificateEntry("trust", cer);
+						SSLSocketFactory socketFactory = new SSLSocketFactory(
+								keyStore);
+						socketFactory
+								.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+						ZCWebService.getInstance().setSSLSocketFactory(
+								socketFactory);
+
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (CertificateException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (KeyStoreException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (NoSuchProviderException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (NoSuchAlgorithmException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (KeyManagementException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnrecoverableKeyException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 
 					ZCWebService.getInstance().userLogin(info, fingerprint,
 							new MyHandler());

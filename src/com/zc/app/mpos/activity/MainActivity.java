@@ -1,16 +1,26 @@
 package com.zc.app.mpos.activity;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.PendingIntent;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,8 +28,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
-import android.nfc.NfcAdapter;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -42,7 +53,6 @@ import com.zc.app.bootstrap.BootstrapCircleThumbnail;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
 import com.zc.app.mpos.fragment.ActivePosFragment;
-import com.zc.app.mpos.fragment.OfflineLogFragment;
 import com.zc.app.mpos.fragment.ActivePosFragment.OnActivePosPageListener;
 import com.zc.app.mpos.fragment.ApplyChangePosFragment;
 import com.zc.app.mpos.fragment.ApplyChangePosFragment.OnApplyChangePosPageListener;
@@ -52,7 +62,10 @@ import com.zc.app.mpos.fragment.ChangePwdFragment;
 import com.zc.app.mpos.fragment.ChangePwdFragment.OnChangePwdPageListener;
 import com.zc.app.mpos.fragment.LoginFragment;
 import com.zc.app.mpos.fragment.LoginFragment.OnLoginPageListener;
+import com.zc.app.mpos.fragment.OfflineLogFragment;
 import com.zc.app.mpos.fragment.OfflineLogFragment.OnOfflineLogPageListener;
+import com.zc.app.mpos.fragment.OnlineLogFragment;
+import com.zc.app.mpos.fragment.OnlineLogFragment.OnOnlineLogPageListener;
 import com.zc.app.mpos.fragment.PursePosFragment;
 import com.zc.app.mpos.fragment.PursePosFragment.OnPursePosPageListener;
 import com.zc.app.mpos.fragment.PurseResultPosFragment;
@@ -61,7 +74,10 @@ import com.zc.app.mpos.fragment.RegisterFragment;
 import com.zc.app.mpos.fragment.RegisterFragment.OnRegisterPageListener;
 import com.zc.app.mpos.fragment.SettingFragment;
 import com.zc.app.mpos.fragment.SettingFragment.OnSettingPageListener;
+import com.zc.app.mpos.util.ApkUpdateUtil;
+import com.zc.app.mpos.util.CurrentVersion;
 import com.zc.app.mpos.util.imageUtil;
+import com.zc.app.mpos.util.userRole;
 import com.zc.app.mpos.view.DragLayout;
 import com.zc.app.mpos.view.DragLayout.DragListener;
 import com.zc.app.sebc.lx.LongxingcardPurchase;
@@ -84,7 +100,8 @@ public class MainActivity extends FragmentActivity implements
 		OnPurseResultPosPageListener, OnRegisterPageListener,
 		OnSettingPageListener, OnActivePosPageListener,
 		OnChangePosPageListener, OnChangePwdPageListener,
-		OnApplyChangePosPageListener, OnOfflineLogPageListener {
+		OnApplyChangePosPageListener, OnOfflineLogPageListener,
+		OnOnlineLogPageListener {
 
 	private DragLayout dl;
 	private ListView lv;
@@ -97,6 +114,7 @@ public class MainActivity extends FragmentActivity implements
 	private LoginFragment loginPageFragment = null;
 	private PursePosFragment pursePosPageFragment = null;
 	private PurseResultPosFragment purseResultPosFragment = null;
+	private OnlineLogFragment onlineLogFragment = null;
 	private OfflineLogFragment offlineLogFragment = null;
 	private RegisterFragment registerFragment = null;
 
@@ -108,11 +126,8 @@ public class MainActivity extends FragmentActivity implements
 
 	private String fragmentTag = "";
 
-	private final int ACTIVE = 0;
-	private final int NORMAL = 1;
-	private final int UNAUTH = -1;
+	private userRole role;
 
-	private int role = UNAUTH;
 	private boolean isAuth = false;
 	private boolean dragIsOpened = false;
 
@@ -127,28 +142,33 @@ public class MainActivity extends FragmentActivity implements
 	private String userNameString;
 	private String nickNameString;
 
-	private NfcAdapter nfcAdapter;
-	private PendingIntent pendingIntent;
+	// apk 更新
+	// private PopDialog popDialog;
 
-	// private final static String loginTag = LoginFragment.TAG;
-	// private final static String registerTag = RegisterFragment.TAG;
-	// private final static String settingTag = SettingFragment.TAG;
-	//
-	// private final static List<String> tagList = Arrays.asList(loginTag,
-	// settingTag);
+	private ProgressDialog pBar;
+	private String appCheckUrl = "http://192.168.2.68/ftp/";
+
+	private String appUrl = "WPOS/wpos_version.json";
+
+	private String appName = "sebankdemo.apk";
+	private String appDownPathString;
+
+	private String currentVerNameString = "";
+	private String newVerName = "";
+	private String description = "";
+	private Handler handler = new Handler();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		getServerVersion();
+
 		initDragLayout();
 		initView();
 
-		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
-				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
+		onNewIntent(getIntent());
 	}
 
 	@Override
@@ -172,6 +192,148 @@ public class MainActivity extends FragmentActivity implements
 
 		NfcEnv.disableNfcForegroundDispatch(this);
 
+	}
+
+	/**
+	 * apk update
+	 */
+	private void getServerVersion() {
+		currentVerNameString = CurrentVersion.getVerName(this);
+
+		String urlString = appCheckUrl + appUrl;
+		ZCLog.i(TAG, urlString);
+
+		ZCWebService.getInstance().doBasicPost(urlString, null,
+				new updateHandler());
+
+	}
+
+	private void showUpdateDialog() {
+
+		StringBuffer sb = new StringBuffer();
+		sb.append("当前版本：");
+		sb.append(currentVerNameString);
+		sb.append("\n");
+		sb.append("发现新版本：");
+		sb.append(newVerName);
+		sb.append("\n");
+		sb.append("描述：\n");
+		sb.append(description);
+		sb.append("\n");
+		sb.append("是否更新？");
+
+		Dialog dialog = new AlertDialog.Builder(this)
+				.setTitle("软件更新")
+				.setMessage(sb.toString())
+				.setPositiveButton("更新", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						showProgressBar();// 更新当前版本
+					}
+				})
+				.setNegativeButton("暂不更新",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// TODO Auto-generated method stub
+							}
+						}).create();
+		dialog.show();
+	}
+
+	protected void showProgressBar() {
+		// TODO Auto-generated method stub
+		pBar = new ProgressDialog(this);
+		pBar.setTitle("正在下载");
+		pBar.setMessage("请稍后...");
+		pBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		downAppFile(appDownPathString);
+	}
+
+	protected void downAppFile(final String url) {
+		pBar.show();
+		new Thread() {
+			public void run() {
+				HttpClient client = new DefaultHttpClient();
+				HttpGet get = new HttpGet(url);
+				HttpResponse response;
+				try {
+					response = client.execute(get);
+					HttpEntity entity = response.getEntity();
+					long length = entity.getContentLength();
+					Log.isLoggable("DownTag", (int) length);
+					InputStream is = entity.getContent();
+					FileOutputStream fileOutputStream = null;
+					if (is == null) {
+						throw new RuntimeException("isStream is null");
+					}
+					File file = new File(
+							Environment.getExternalStorageDirectory(), appName);
+					fileOutputStream = new FileOutputStream(file);
+					byte[] buf = new byte[1024];
+					int ch = -1;
+					do {
+						ch = is.read(buf);
+						if (ch <= 0)
+							break;
+						fileOutputStream.write(buf, 0, ch);
+					} while (true);
+					is.close();
+					fileOutputStream.close();
+					haveDownLoad();
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+	}
+
+	// cancel progressBar and start new App
+	protected void haveDownLoad() {
+		// TODO Auto-generated method stub
+		handler.post(new Runnable() {
+			public void run() {
+				pBar.cancel();
+				// 弹出警告框 提示是否安装新的版本
+				Dialog installDialog = new AlertDialog.Builder(
+						MainActivity.this)
+						.setTitle("下载完成")
+						.setMessage("是否安装新的应用")
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// TODO Auto-generated method stub
+										installNewApk();
+										finish();
+									}
+								})
+						.setNegativeButton("取消",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// TODO Auto-generated method stub
+										finish();
+									}
+								}).create();
+				installDialog.show();
+			}
+		});
+	}
+
+	// 安装新的应用
+	protected void installNewApk() {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		intent.setDataAndType(Uri.fromFile(new File(Environment
+				.getExternalStorageDirectory(), appName)),
+				"application/vnd.android.package-archive");
+		startActivity(intent);
 	}
 
 	private void initDragLayout() {
@@ -218,15 +380,16 @@ public class MainActivity extends FragmentActivity implements
 
 	private void initView() {
 		requestLoginUtilObj = null;
-		role = UNAUTH;
+		role = userRole.UNAUTH;
 		state = new MircoPOState(this);
 
 		loginPageFragment = new LoginFragment();
 
 		pursePosPageFragment = new PursePosFragment();
 		purseResultPosFragment = new PurseResultPosFragment();
-		
+
 		offlineLogFragment = new OfflineLogFragment();
+		onlineLogFragment = new OnlineLogFragment();
 
 		registerFragment = new RegisterFragment();
 
@@ -266,13 +429,13 @@ public class MainActivity extends FragmentActivity implements
 			final Bundle args = new Bundle();
 
 			if (requestLoginUtilObj.getRole().equals("Normal")) {
-				role = NORMAL;
-				Toast.makeText(this, "请先开通终端", Toast.LENGTH_SHORT).show();
+				role = userRole.NORMAL;
+				Toast.makeText(this, "非绑定终端，功能受限", Toast.LENGTH_SHORT).show();
 				args.putBoolean(SettingFragment.POS_ACTIVED, false);
 			}
 
 			if (requestLoginUtilObj.getRole().equals("Active")) {
-				role = ACTIVE;
+				role = userRole.ACTIVE;
 				args.putBoolean(SettingFragment.POS_ACTIVED, true);
 			}
 
@@ -283,7 +446,7 @@ public class MainActivity extends FragmentActivity implements
 
 		} else {
 			isAuth = false;
-			role = UNAUTH;
+			role = userRole.UNAUTH;
 		}
 
 		ZCLog.i(TAG, "role:" + String.valueOf(role));
@@ -307,12 +470,12 @@ public class MainActivity extends FragmentActivity implements
 
 				switch (position) {
 				case 0: {
-					if (role == ACTIVE) {
+					if (role == userRole.ACTIVE) {
 						fragmentTag = PursePosFragment.TAG;
 						fragementFragment = pursePosPageFragment;
-					}
-					else {
-						Toast.makeText(MainActivity.this, "请先开通终端", Toast.LENGTH_SHORT).show();
+					} else {
+						Toast.makeText(MainActivity.this, "请先开通终端",
+								Toast.LENGTH_SHORT).show();
 						fragmentTag = SettingFragment.TAG;
 						fragementFragment = settingPageFragment;
 					}
@@ -320,6 +483,8 @@ public class MainActivity extends FragmentActivity implements
 				}
 
 				case 1: {
+					fragmentTag = OnlineLogFragment.TAG;
+					fragementFragment = onlineLogFragment;
 					break;
 				}
 
@@ -921,12 +1086,12 @@ public class MainActivity extends FragmentActivity implements
 
 					hiddenKeyboard();
 					clearBackStack();
-					
-					role = ACTIVE;
+
+					role = userRole.ACTIVE;
 					final Bundle args = new Bundle();
 					args.putBoolean(SettingFragment.POS_ACTIVED, true);
 					settingPageFragment.setBundle(args);
-					
+
 					switchContent(settingPageFragment, false,
 							SettingFragment.TAG);
 					break;
@@ -1044,7 +1209,8 @@ public class MainActivity extends FragmentActivity implements
 													Message msg) {
 
 												switch (msg.what) {
-												case ZCWebServiceParams.HTTP_SUCCESS: {
+												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
+													ZCLog.i(TAG, "消费结果上传成功");
 													Bundle args = new Bundle();
 													args.putString(
 															PurseResultPosFragment.AMOUNT,
@@ -1216,4 +1382,80 @@ public class MainActivity extends FragmentActivity implements
 		});
 	}
 
+	// apk update
+	class updateHandler extends Handler {
+
+		@Override
+		public void dispatchMessage(Message msg) {
+			switch (msg.what) {
+			case ZCWebServiceParams.HTTP_START:
+				ZCLog.i(TAG, msg.obj.toString());
+				break;
+
+			case ZCWebServiceParams.HTTP_FINISH:
+				ZCLog.i(TAG, msg.obj.toString());
+				break;
+
+			case ZCWebServiceParams.HTTP_FAILED:
+				ZCLog.i(TAG, msg.obj.toString());
+
+				break;
+
+			case ZCWebServiceParams.HTTP_SUCCESS:
+				String resString = msg.obj.toString();
+				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + resString);
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					requestUtil res = mapper.readValue(resString,
+							requestUtil.class);
+
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + res.toString());
+
+					String detail = mapper.writeValueAsString(res.getDetail());
+
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detail);
+
+					ApkUpdateUtil apkUpdateUtil = mapper.readValue(detail,
+							ApkUpdateUtil.class);
+
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + apkUpdateUtil.toString());
+
+					newVerName = apkUpdateUtil.getVersion();
+					appDownPathString = appCheckUrl + apkUpdateUtil.getPath();
+					description = apkUpdateUtil.getDescription();
+
+					boolean needupdate = currentVerNameString
+							.equals(newVerName);
+
+					ZCLog.i(TAG, String.valueOf(needupdate));
+					ZCLog.i(TAG, CurrentVersion.getVerName(MainActivity.this));
+
+					if (!needupdate) {
+						showUpdateDialog();
+					}
+
+				} catch (JsonParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JsonMappingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				break;
+			case ZCWebServiceParams.HTTP_THROWABLE:
+				Throwable e = (Throwable) msg.obj;
+				ZCLog.e(TAG, "catch thowable:", e);
+
+				break;
+
+			default:
+				ZCLog.i(TAG, "http nothing to do");
+				break;
+			}
+		}
+	}
 }

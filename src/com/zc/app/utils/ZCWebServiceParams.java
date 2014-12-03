@@ -4,15 +4,16 @@ public class ZCWebServiceParams {
 	public static final int OK = 0x00000000;
 
 	public static final int HTTP_SUCCESS = 0x90000000;
+	public static final int HTTP_PURCHASE_SUCCESS = 0x80000000;
 	public static final int HTTP_START = 0x90000001;
 	public static final int HTTP_FINISH = 0x90000002;
 	public static final int HTTP_FAILED = 0x90000003;
 	public static final int HTTP_UNAUTH = 0x90000004;
 	public static final int HTTP_THROWABLE = 0x90000009;
 
-	public static final String BASE_SSL_URL = "https://192.168.2.108:8443/ZCTest/";
+	public static final String BASE_SSL_URL = "https://192.168.2.68/wpos-front";
 
-	public static final String BASE_URL = "http://192.168.2.117:8088/wpos-front";
+	public static final String BASE_URL = "http://192.168.2.117:8088/wpos-front";// "http://192.168.2.117:8088/wpos-front";
 	public static final String RES_URL = "http://192.168.2.117:8080/resources-console/version";
 
 	// 根据用户名,密码登录
@@ -50,6 +51,10 @@ public class ZCWebServiceParams {
 	// 上传交易结果
 	public static final String UPDATEMAC2_URL = BASE_URL
 			+ "/purchase/update.json";
+	
+	// 查询交易日志
+	public static final String QUERY_LOG_URL = BASE_URL
+			+ "/purchase/querypurchaselog.json";
 
 	public static final String ZIP_URL = RES_URL + "/checkZip.json";
 	public static final String ZIP_DOWNLOAD = RES_URL + "/hdp.zip/download.do";

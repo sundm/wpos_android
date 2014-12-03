@@ -127,7 +127,12 @@ public class SettingFragment extends Fragment implements OnClickListener {
 					try {
 						requestUtil requestObj = mapper.readValue(
 								msg.obj.toString(), requestUtil.class);
-
+						
+						if (requestObj.getDetail() == null) {
+							//todo
+							return;
+						}
+						
 						String detailString = mapper
 								.writeValueAsString(requestObj.getDetail());
 
@@ -137,6 +142,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 								PosInfo.class);
 						bundle.putString(SettingFragment.POS_NUMBER,
 								posInfo.getTerminalSeq());
+						
 						updateView(bundle);
 						
 						terID = posInfo.getTerminalId();
