@@ -28,7 +28,6 @@ import org.json.JSONException;
 import android.os.Handler;
 import android.os.Message;
 
-import com.zc.app.sebc.lx.PurchaseLogQuery;
 import com.zc.app.utils.crypto.RSA;
 import com.zc.app.utils.http.AsyncHttpClient;
 import com.zc.app.utils.http.AsyncHttpResponseHandler;
@@ -449,20 +448,17 @@ public class ZCWebService {
 	}
 
 	// 查询交易日志
-	public boolean queryPurchaseLog(final PurchaseLogQuery queryInfo,
-			final Handler _handler) {
-		if (queryInfo == null || _handler == null) {
+	public boolean queryPurchaseLog(final String date, final Handler _handler) {
+		if (date == null || _handler == null) {
 			return false;
 		}
 
 		String postURL = ZCWebServiceParams.QUERY_LOG_URL;
 
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
-		paramsMap.put("start", queryInfo.getStart());
-		paramsMap.put("end", queryInfo.getStart());
-		paramsMap.put("page", queryInfo.getPage());
+		paramsMap.put("date", date);
 
-		doBasicPost(postURL, null, _handler);
+		doBasicPost(postURL, paramsMap, _handler);
 		return true;
 	}
 

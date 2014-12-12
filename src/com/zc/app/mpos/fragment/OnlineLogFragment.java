@@ -1,7 +1,9 @@
 package com.zc.app.mpos.fragment;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
@@ -26,14 +28,14 @@ import android.widget.Toast;
 
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.LogItem;
-import com.zc.app.mpos.adapter.LogItemAdpater;
+import com.zc.app.mpos.adapter.TimeAxisAdapter;
+import com.zc.app.mpos.view.EmptyLayout;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.Mode;
-import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.OnRefreshListener;
+import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.OnRefreshListener2;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView;
 import com.zc.app.sebc.lx.PurchaseLog;
 import com.zc.app.sebc.lx.PurchaseLogPage;
-import com.zc.app.sebc.lx.PurchaseLogQuery;
 import com.zc.app.utils.ZCLog;
 import com.zc.app.utils.ZCWebService;
 import com.zc.app.utils.ZCWebServiceParams;
@@ -47,21 +49,33 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	private Bundle bundle;
 
-	private List<LogItem> mListItems = new ArrayList<LogItem>();
+	List<HashMap<String, Object>> logList = new ArrayList<HashMap<String, Object>>();
 
 	/**
 	 * 上拉刷新的控件
 	 */
 	private PullToRefreshListView mPullRefreshListView;
 
-	private LogItemAdpater mAdapter;
+	private TimeAxisAdapter mAdapter;
 
 	private List<PurchaseLog> logs;
 
-	private int mItemCount = 9;
-	private int maxCount = 5;
+	private List<PurchaseLogPage> listPages;
 
-	
+	private EmptyLayout mEmptyLayout;
+
+	final Handler handler = new Handler() {
+		public void handleMessage() {
+			HashMap<String, Object> map0 = new HashMap<String, Object>();
+			LogItem logItem = new LogItem();
+			logItem.setTradeTime("12:12:32");
+			logItem.setTradeAmount("120");
+			map0.put("content", logItem);
+			// logList.add(map0);
+
+			mAdapter.add(map0);
+		}
+	};
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -85,6 +99,8 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		findView(view);
 
 		mCallback.setTag(TAG);
+
+		mEmptyLayout = new EmptyLayout(this.getActivity(), mPullRefreshListView);
 
 		return view;
 
@@ -119,7 +135,9 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 			updateView(this.bundle);
 		}
 
-		getTransactionDetails();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		String date = sdf.format(new java.util.Date());
+		getTransactionDetails(date);
 	}
 
 	@Override
@@ -170,18 +188,20 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 				.findViewById(R.id.online_log_list);
 
 		// 设置你需要的模式可选值为：disabled,pullFromStart,PULL_FROM_END,both,manualOnly
-		mPullRefreshListView.setMode(Mode.PULL_FROM_END);
+		mPullRefreshListView.setMode(Mode.BOTH);
 
 		// 设置适配器
-		mAdapter = new LogItemAdpater(getActivity(), mListItems);
+		mAdapter = new TimeAxisAdapter(getActivity(), logList);
 
 		mPullRefreshListView.setAdapter(mAdapter);
 		// 设置监听事件
 		mPullRefreshListView
-				.setOnRefreshListener(new OnRefreshListener<ListView>() {
+				.setOnRefreshListener(new OnRefreshListener2<ListView>() {
+
 					@Override
-					public void onRefresh(
+					public void onPullDownToRefresh(
 							PullToRefreshBase<ListView> refreshView) {
+						// TODO Auto-generated method stub
 						String label = DateUtils.formatDateTime(getActivity()
 								.getApplicationContext(), System
 								.currentTimeMillis(),
@@ -193,28 +213,59 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 								.setLastUpdatedLabel(label);
 
 						// 模拟加载任务
+
 						new GetDataTask().execute();
 					}
+
+					@Override
+					public void onPullUpToRefresh(
+							PullToRefreshBase<ListView> refreshView) {
+						// TODO Auto-generated method stub
+						String label = DateUtils.formatDateTime(getActivity()
+								.getApplicationContext(), System
+								.currentTimeMillis(),
+								DateUtils.FORMAT_SHOW_TIME
+										| DateUtils.FORMAT_SHOW_DATE
+										| DateUtils.FORMAT_ABBREV_ALL);
+						// 显示最后更新的时间
+						refreshView.getLoadingLayoutProxy()
+								.setLastUpdatedLabel(label);
+
+						// 模拟加载任务
+
+						new GetDataTask().execute();
+					}
+
 				});
 
 	}
 
-	public void getTransactionDetails() {
+	public void getTransactionDetails(final String date) {
 
-		PurchaseLogQuery logQuery = new PurchaseLogQuery();
-		logQuery.setStart("20141001");
-		logQuery.setEnd("20141030");
+		// PurchaseLogQuery logQuery = new PurchaseLogQuery();
+		// logQuery.setStart("20141001");
+		// logQuery.setEnd("20141030");
 
-		ZCWebService.getInstance().queryPurchaseLog(logQuery, new Handler() {
+		ZCLog.i(TAG, date);
+
+		ZCWebService.getInstance().queryPurchaseLog(date, new Handler() {
 			@Override
 			public void dispatchMessage(Message msg) {
 
 				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
+					ZCLog.i(TAG, msg.obj.toString());
+					listPages.clear();
+					mEmptyLayout.showLoading();
+					break;
+				}
 
 				case ZCWebServiceParams.HTTP_FAILED: {
 					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getActivity(), msg.obj.toString(),
-							Toast.LENGTH_SHORT).show();
+					// Toast.makeText(getActivity(), msg.obj.toString(),
+					// Toast.LENGTH_SHORT).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
 					break;
 				}
 				case ZCWebServiceParams.HTTP_SUCCESS: {
@@ -233,9 +284,15 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 						PurchaseLogPage logPage = mapper.readValue(
 								detailString, PurchaseLogPage.class);
 
-						logs = logPage.getContent();
+						listPages.add(logPage);
+
+						if (Integer.valueOf(logPage.getCount()) < 10) {
+
+						}
 
 						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + logs.toString());
+
+						initDatas();
 
 					} catch (JsonParseException e1) {
 						// TODO Auto-generated catch block
@@ -271,36 +328,35 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	private void initDatas() {
 		// 初始化数据和数据源
-		mAdapter.clear();
+		for (int i = 0; i < listPages.size(); i++) {
 
-		mListItems = new ArrayList<LogItem>();
+			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();
+			for (int j = 0; j < list.size(); j++) {
+				HashMap<String, Object> map = new HashMap<String, Object>();
+				LogItem logItem = new LogItem();
+				logItem.setTradeTime(list.get(i).getTime());
+				logItem.setTradeAmount(list.get(i).getAmount());
+				map.put("content", logItem);
+			}
 
-		PurchaseLog logEntry = null;
-
-		for (int i = 0; i < logs.size(); i++) {
-			logEntry = logs.get(i);
-
-			ZCLog.i(TAG, logEntry.toString());
-			LogItem itemDetailFormat = new LogItem();
-
-			itemDetailFormat.setTradePan(logEntry.getPan());
-			itemDetailFormat.setTradeAmount(String.valueOf(logEntry.getAmount()));
-			itemDetailFormat.setTradeDate(logEntry.getPosDate());
-			itemDetailFormat.setTradeTime(logEntry.getPosTime());
-
-			mAdapter.add(itemDetailFormat);
 		}
 
 	}
 
-	private class GetDataTask extends AsyncTask<Void, Void, LogItem> {
+	private class GetDataTask extends
+			AsyncTask<Void, Void, HashMap<String, Object>> {
 
 		@Override
-		protected LogItem doInBackground(Void... params) {
-			LogItem itemDetailFormat = new LogItem();
+		protected HashMap<String, Object> doInBackground(Void... params) {
+			HashMap<String, Object> itemDetailFormat = new HashMap<String, Object>();
 
 			try {
 				Thread.sleep(1000);
+
+				LogItem logItem = new LogItem();
+				logItem.setTradeTime("12:12:32");
+				logItem.setTradeAmount("120");
+				itemDetailFormat.put("content", logItem);
 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -310,11 +366,15 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		}
 
 		@Override
-		protected void onPostExecute(LogItem result) {
-			mListItems.add(result);
+		protected void onPostExecute(HashMap<String, Object> result) {
+			ZCLog.i(TAG, result.toString());
+
+			logList.add(0, result);
 			mAdapter.notifyDataSetChanged();
 			// Call onRefreshComplete when the list has been refreshed.
 			mPullRefreshListView.onRefreshComplete();
+
+			super.onPostExecute(result);
 		}
 	}
 

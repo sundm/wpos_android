@@ -5,7 +5,7 @@
     xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/background_login"
+    android:background="@drawable/login_bg"
     android:orientation="vertical" >
 
     <!--
@@ -13,107 +13,136 @@
         android:layout_alignParentTop 布局的位置是否处于顶部
     -->
 
+
+    <!-- 头像 -->
+
+    <com.zc.app.bootstrap.BootstrapCircleThumbnail
+        android:id="@+id/login_user_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="80dp"
+        fontawesometext:bct_image="@drawable/pos"
+        fontawesometext:bct_size="medium" >
+    </com.zc.app.bootstrap.BootstrapCircleThumbnail>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="11dp"
+        android:src="@drawable/login_logo_word" />
+
     <RelativeLayout
         android:id="@+id/login_div"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dip"
-        android:background="@drawable/background_login_div"
-        android:padding="15dip" >
-
-        <!-- 头像 -->
-
-        <com.zc.app.bootstrap.BootstrapCircleThumbnail
-            android:id="@+id/login_user_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="15dp"
-            fontawesometext:bct_image="@drawable/pos"
-            fontawesometext:bct_size="medium" >
-        </com.zc.app.bootstrap.BootstrapCircleThumbnail>
+        android:layout_width="285dp"
+        android:layout_height="81dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="45dp"
+        android:background="@drawable/layout_radius" >
 
         <!-- 账号 -->
 
-        <com.zc.app.bootstrap.FontAwesomeText
-            android:id="@+id/login_username_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/login_user_icon"
-            android:layout_marginBottom="10dp"
-            android:layout_marginRight="10dp"
-            android:textColor="@color/bbutton_warning"
-            android:textSize="30sp"
-            fontawesometext:fa_icon="fa-user" />
+        <RelativeLayout
+            android:id="@+id/login_username_layout"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:background="@drawable/username_radius" >
 
-        <com.zc.app.bootstrap.BootstrapEditText
+            <ImageView
+                android:id="@+id/login_username_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/login_username" />
+        </RelativeLayout>
+
+        <EditText
             android:id="@+id/login_username_edit"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/login_username_txt"
-            android:layout_marginBottom="10dp"
-            android:layout_toRightOf="@id/login_username_txt"
+            android:layout_alignBottom="@id/login_username_layout"
+            android:layout_alignTop="@id/login_username_layout"
+            android:layout_marginLeft="8dp"
+            android:layout_toRightOf="@id/login_username_layout"
+            android:background="@drawable/edittext_radius"
             android:hint="@string/login_username_hint"
             android:inputType="text"
-            bootstrapbutton:be_roundedCorners="true"
-            bootstrapbutton:be_state="success" />
+            android:textColor="#ffffffff"
+            android:textColorHint="#80ffffff"
+            android:textSize="12sp" />
+
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="284dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/login_username_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#80ffffff" />
 
         <!-- 密码 text -->
 
-        <com.zc.app.bootstrap.FontAwesomeText
-            android:id="@+id/login_password_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/login_username_txt"
-            android:layout_below="@id/login_username_txt"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"
-            android:textColor="@color/bbutton_warning"
-            android:textSize="30sp"
-            fontawesometext:fa_icon="fa-key" />
+        <RelativeLayout
+            android:id="@+id/login_password_layout"
+            android:layout_width="40dp"
+            android:layout_height="41dp"
+            android:layout_alignLeft="@+id/login_username_layout"
+            android:layout_below="@id/login_username_layout"
+            android:layout_gravity="center"
+            android:background="@drawable/password_radius" >
 
-        <com.zc.app.bootstrap.BootstrapEditText
+            <ImageView
+                android:id="@+id/login_password_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/login_password" />
+        </RelativeLayout>
+
+        <EditText
             android:id="@+id/login_password_edit"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/login_password_layout"
             android:layout_alignLeft="@+id/login_username_edit"
-            android:layout_alignTop="@id/login_password_txt"
+            android:layout_alignTop="@id/login_password_layout"
             android:layout_below="@id/login_username_edit"
+            android:background="@drawable/edittext_radius"
             android:hint="@string/login_password_hint"
             android:inputType="textPassword"
-            bootstrapbutton:be_roundedCorners="true"
-            bootstrapbutton:be_state="success" />
-
-        <!-- 登录button -->
-
-        <com.zc.app.bootstrap.BootstrapButton
-            android:id="@+id/signin_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/login_password_txt"
-            android:layout_alignRight="@id/login_password_edit"
-            android:layout_below="@id/login_password_edit"
-            android:layout_marginTop="15dp"
-            android:text="@string/signin"
-            android:textSize="20sp"
-            bootstrapbutton:bb_roundedCorners="true"
-            bootstrapbutton:bb_type="success" />
+            android:textColor="#ffffffff"
+            android:textColorHint="#80ffffff"
+            android:textSize="12sp" />
     </RelativeLayout>
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+    <!-- 登录button -->
 
-        <TextView
-            android:id="@+id/register_link"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:linksClickable="true"
-            android:text="@string/login_register_link"
-            android:textColor="#888"
-            android:textColorLink="#FF0066CC" />
-    </RelativeLayout>
+    <Button
+        android:id="@+id/signin_button"
+        android:layout_width="285dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_radius"
+        android:text="@string/signin"
+        android:textColor="#ffffffff"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/register_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="27dp"
+        android:linksClickable="true"
+        android:text="@string/login_register_link"
+        android:textColor="#ffFFFFFF"
+        android:textColorLink="#ffffffff"
+        android:textSize="12sp" />
 
 </LinearLayout>

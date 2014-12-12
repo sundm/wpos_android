@@ -315,8 +315,6 @@ public class RegisterFragment extends Fragment implements OnClickListener {
 					}
 				});
 
-		userNickNameBootstrapEditText = (BootstrapEditText) view
-				.findViewById(R.id.regsiter_nickname_edit);
 		userNickNameBootstrapEditText.addTextChangedListener(new TextWatcher() {
 
 			@Override

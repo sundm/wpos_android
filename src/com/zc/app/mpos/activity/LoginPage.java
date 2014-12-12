@@ -29,14 +29,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.zc.app.bootstrap.BootstrapButton;
-import com.zc.app.bootstrap.BootstrapEditText;
 import com.zc.app.mpos.R;
 import com.zc.app.utils.MircoPOState;
 import com.zc.app.utils.UserInfo;
@@ -47,12 +50,15 @@ import com.zc.app.utils.requestUtil;
 
 public class LoginPage extends Activity {
 
-	BootstrapEditText userNameBootstrapEditText;
-	BootstrapEditText userPasswordBootstrapEditText;
+	EditText userNameBootstrapEditText;
+	EditText userPasswordBootstrapEditText;
 
-	BootstrapButton signInBootstrapButton;
+	Button signInBootstrapButton;
 
 	TextView registerTextView;
+
+	ImageView userImageView;
+	ImageView passwordImageView;
 
 	private String username;
 
@@ -67,7 +73,10 @@ public class LoginPage extends Activity {
 
 		state = new MircoPOState(this.getApplicationContext());
 
-		userNameBootstrapEditText = (BootstrapEditText) findViewById(R.id.login_username_edit);
+		userNameBootstrapEditText = (EditText) findViewById(R.id.login_username_edit);
+
+		passwordImageView = (ImageView) findViewById(R.id.login_password_txt);
+		userImageView = (ImageView) findViewById(R.id.login_username_txt);
 
 		SharedPreferences sharedPreferences = getApplicationContext()
 				.getSharedPreferences("configer", Context.MODE_PRIVATE);
@@ -75,11 +84,37 @@ public class LoginPage extends Activity {
 
 		userNameBootstrapEditText.setText(name);
 
-		userPasswordBootstrapEditText = (BootstrapEditText) findViewById(R.id.login_password_edit);
+		userPasswordBootstrapEditText = (EditText) findViewById(R.id.login_password_edit);
 
-		// userPasswordBootstrapEditText.setOnTouchListener(this);
+		userNameBootstrapEditText.setOnTouchListener(new OnTouchListener() {
 
-		signInBootstrapButton = (BootstrapButton) findViewById(R.id.signin_button);
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+
+				passwordImageView.setImageResource(R.drawable.login_password);
+
+				userImageView
+						.setImageResource(R.drawable.login_username_highlight);
+				return false;
+			}
+		});
+
+		userPasswordBootstrapEditText.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+
+				userImageView.setImageResource(R.drawable.login_username);
+
+				passwordImageView
+						.setImageResource(R.drawable.login_password_highlight);
+				return false;
+			}
+		});
+
+		signInBootstrapButton = (Button) findViewById(R.id.signin_button);
 
 		signInBootstrapButton.setOnClickListener(new OnClickListener() {
 
@@ -106,8 +141,8 @@ public class LoginPage extends Activity {
 
 					InputStream ins;
 					try {
-						ins = getApplicationContext().getAssets()
-								.open("wpos.key");
+						ins = getApplicationContext().getAssets().open(
+								"wpos.key");
 						CertificateFactory cerFactory = CertificateFactory
 								.getInstance("X.509");
 						Certificate cer = cerFactory.generateCertificate(ins);

@@ -15,61 +15,64 @@
     <string name="applyChangePOSTitle">申请更新终端</string>
     <string name="queryLogOffTitle">查询龙行卡日志</string>
     <string name="queryLogOlTitle">查询交易日志</string>
-    
     <string name="enter">进入微POS</string>
     <string name="ok">确定</string>
-    <string name="login_username_hint">输入用户名</string>
+    <string name="login_username_hint">请输入用户名</string>
     <string name="login_password_hint">请输入密码</string>
-    <string name="signin">登录</string>
-    <string name="regsiter">注册</string>
-    <string name="login_register_link">没有账号？<a href="register">立即注册！</a></string>
+    <string name="signin">登&#160;&#160;录</string>
+    <string name="regsiter">注&#160;&#160;册</string>
+    <string name="login_register_link"><a href="register">新用户注册</a></string>
     <string name="login_rember_username">记住我</string>
-    <string name="regsiter_username_hint">输入用户名,用于登录,不能更换</string>
-    <string name="regsiter_password_hint">新的密码</string>
-    <string name="regsiter_password_agine_hint">再来一遍</string>
+    <string name="regsiter_username_hint">请输入4-16位用户名</string>
+    <string name="regsiter_password_hint">请输入6-14位密码</string>
+    <string name="regsiter_password_agine_hint">请再输一次密码</string>
     <string name="regsiter_nickname_hint">您的昵称</string>
     <string name="regsiter_phone_hint">您的手机号</string>
-    
     <string name="changePwd_username_hint">用户名</string>
+    <string name="username">用户名:</string>
+    <string name="password">密码:</string>
+    <string name="password_again">确认密码:</string>
+    <string name="phone">手机号:</string>
+    <string name="getCheckCode">发送验证码</string>
+    <string name="checkCode">验证码</string>
     <string name="changePwd_old_password_hint">现在的密码</string>
     <string name="changePwd">修改密码</string>
     <string name="changePwd_password_hint">新的密码</string>
     <string name="changePwd_password_agine_hint">再来一遍</string>
-   
     <string name="apply_change_pos_number_txt">终端号</string>
     <string name="apply_change_pos_code_txt">激活码</string>
     <string name="apply_change_pos_code_hint">此处显示新的激活码</string>
     <string name="apply_change_submit_txt">申请更换终端</string>
     <string name="apply_change_hint_txt">该激活码用于更换新设备。有效期为7天，请牢记您的激活码，并及时使用。<a></a></string>
-    
     <string name="change_pos_number_txt">终端号</string>
     <string name="change_pos_code_txt">激活码</string>
     <string name="change_pos_number_hint">您的终端号</string>
     <string name="change_pos_code_hint">新的激活码</string>
     <string name="change_submit_txt">更换终端</string>
     <string name="change_hint_txt">新的激活码可从已激活设备上，通过申请更换终端获取。<a></a></string>
-    
-    
     <string name="activePOS_StoreNumber_txt">商户号</string>
     <string name="activePOS_POSNumber_txt">终端号</string>
     <string name="activePOS_hint_txt">开通即绑定本机。</string>
     <string name="activePOS_active_txt">开通</string>
     <string name="activePOS_StoreNumber_hint">您的商户号</string>
     <string name="activePOS_POSNumber_hint">您的终端号</string>
-    
     <string name="purse_pos_amount_txt">交易金额</string>
     <string name="purse_pos_amount_hint">￥</string>
     <string name="purse_pos_balance_txt">钱包余额</string>
     <string name="purse_pos_balance_hint">请刷龙行卡</string>
     <string name="purse_pos_hint_txt">将龙行卡贴向手机背部，并保持。</string>
-	<string name="purse_pos_button_text">消费</string>
-	
-	<string name="purse_result_pos_amount_txt">交易金额</string>
+    <string name="purse_pos_button_text">消费</string>
+    <string name="purse_result_pos_amount_txt">交易金额</string>
     <string name="purse_result_pos_balance_txt">钱包余额</string>
     <string name="purse_result_pos_hint_txt">交易信息</string>
-	<string name="purse_result_pos_button_text">交易成功！</string>
-	
-	<string name="drop_down_list_header_default_text">点击可以刷新</string>
+    <string name="purse_result_pos_button_text">交易成功！</string>
+    <string name="empty_message">最近三月没有交易日志</string>
+    <string name="loading_message">正在查询,请稍后</string>
+    <string name="error_message">糟糕，查询失败！</string>
+    <string name="empty_button">再试一次</string>
+    <string name="loading_button">取消</string>
+    <string name="error_button">再试一次</string>
+    <string name="drop_down_list_header_default_text">点击可以刷新</string>
     <string name="drop_down_list_header_pull_text">下拉可以刷新</string>
     <string name="drop_down_list_header_release_text">松开可以刷新</string>
     <string name="drop_down_list_header_loading_text">加载中…</string>

@@ -20,10 +20,10 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
-import com.zc.app.bootstrap.BootstrapButton;
-import com.zc.app.bootstrap.BootstrapEditText;
 import com.zc.app.mpos.R;
 import com.zc.app.utils.UserInfo;
 import com.zc.app.utils.ZCLog;
@@ -33,13 +33,13 @@ import com.zc.app.utils.requestUtil;
 
 public class RegisterPage extends Activity {
 
-	BootstrapEditText userNameBootstrapEditText;
-	BootstrapEditText userPasswordBootstrapEditText;
-	BootstrapEditText userPasswordAgainBootstrapEditText;
-	BootstrapEditText userNickNameBootstrapEditText;
-	BootstrapEditText userPhoneBootstrapEditText;
+	EditText userNameBootstrapEditText;
+	EditText userPasswordBootstrapEditText;
+	EditText userPasswordAgainBootstrapEditText;
+	EditText userNickNameBootstrapEditText;
+	EditText userPhoneBootstrapEditText;
 
-	BootstrapButton registerBootstrapButton;
+	Button registerBootstrapButton;
 
 	private String username;
 
@@ -50,12 +50,12 @@ public class RegisterPage extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register_page);
 
-		userNameBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_username_edit);
+		userNameBootstrapEditText = (EditText) findViewById(R.id.regsiter_username_edit);
 
-		userPasswordBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_password_edit);
+		userPasswordBootstrapEditText = (EditText) findViewById(R.id.regsiter_password_edit);
 
-		userPasswordAgainBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_password_agine_edit);
-		userPasswordAgainBootstrapEditText.setDanger();
+		userPasswordAgainBootstrapEditText = (EditText) findViewById(R.id.regsiter_password_agine_edit);
+
 		userPasswordAgainBootstrapEditText
 				.addTextChangedListener(new TextWatcher() {
 
@@ -78,19 +78,17 @@ public class RegisterPage extends Activity {
 						// TODO Auto-generated method stub
 						if (userPasswordBootstrapEditText.getText().toString()
 								.equals(s.toString())) {
-							userPasswordAgainBootstrapEditText.setSuccess();
+
 						} else {
-							userPasswordAgainBootstrapEditText.setDanger();
+
 						}
 					}
 				});
 
-		userNickNameBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_nickname_edit);
-
-		userPhoneBootstrapEditText = (BootstrapEditText) findViewById(R.id.regsiter_phone_edit);
+		userPhoneBootstrapEditText = (EditText) findViewById(R.id.regsiter_phone_edit);
 		userPhoneBootstrapEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-		registerBootstrapButton = (BootstrapButton) findViewById(R.id.regsiter_button);
+		registerBootstrapButton = (Button) findViewById(R.id.regsiter_button);
 		registerBootstrapButton.setOnClickListener(new OnClickListener() {
 
 			@Override

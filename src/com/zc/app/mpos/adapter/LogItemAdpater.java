@@ -6,13 +6,9 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
-
-import com.zc.app.mpos.R;
 
 public class LogItemAdpater extends BaseAdapter {
 	int index;
@@ -33,8 +29,8 @@ public class LogItemAdpater extends BaseAdapter {
 		this.logs.add(contact);
 		this.notifyDataSetChanged();
 	}
-	
-	public void clear(){
+
+	public void clear() {
 		this.logs.clear();
 		this.notifyDataSetChanged();
 	}
@@ -60,21 +56,22 @@ public class LogItemAdpater extends BaseAdapter {
 
 		Log.d("getView", "This is position:" + position);
 		// if (convertView == null) {
-		convertView = LayoutInflater.from(context).inflate(
-				R.layout.log_item_layout, null);
-
-		TextView amountText = (TextView) convertView
-				.findViewById(R.id.log_amount);
-		TextView dateText = (TextView) convertView.findViewById(R.id.log_date);
-		TextView panText = (TextView) convertView.findViewById(R.id.log_pan);
-		LogItem log = logs.get(position);
-		panText.setText(log.getTradePan());
-
-		dateText.setText(log.getTradeDate() + " " + log.getTradeTime());
-
-		amountText.setText("-" + log.getTradeAmount() + "元");
-		amountText.setTextColor(convertView.getResources().getColor(
-				R.color.green));
+		// convertView = LayoutInflater.from(context).inflate(
+		// R.layout.log_item_layout, null);
+		//
+		// TextView amountText = (TextView) convertView
+		// .findViewById(R.id.log_amount);
+		// TextView dateText = (TextView)
+		// convertView.findViewById(R.id.log_date);
+		// TextView panText = (TextView) convertView.findViewById(R.id.log_pan);
+		// LogItem log = logs.get(position);
+		// panText.setText(log.getTradePan());
+		//
+		// dateText.setText(log.getTradeDate() + " " + log.getTradeTime());
+		//
+		// amountText.setText("-" + log.getTradeAmount() + "元");
+		// amountText.setTextColor(convertView.getResources().getColor(
+		// R.color.green));
 
 		return convertView;
 	}
