@@ -209,12 +209,16 @@ public class LoginPage extends Activity {
 		switch (resultCode) {
 		case RESULT_OK: {
 			// register的返回数据
-			userNameBootstrapEditText.setText(data.getExtras()
-					.getString("user"));
+			Bundle MarsBuddle = data.getExtras();
+			String username = MarsBuddle.getString("user");
+			userNameBootstrapEditText.setText(username);
+			ZCLog.i(TAG, "result: " + username);
 			break;
 		}
-		default:
+		default: {
+			ZCLog.i(TAG, "result:null");
 			break;
+		}
 		}
 	}
 

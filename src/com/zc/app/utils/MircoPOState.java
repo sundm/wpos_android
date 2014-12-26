@@ -77,6 +77,7 @@ public class MircoPOState {
 
 					Message msg2 = _handler.obtainMessage();
 					msg2.what = ZCWebServiceParams.HTTP_FAILED;
+					msg2.obj = msg.obj;
 					_handler.sendMessage(msg2);
 
 					break;

@@ -17,7 +17,7 @@
     <color name="bbutton_danger_disabled_edge">#a5d43f3a</color>
     <color name="bbutton_success">#ff00cf8d</color>
     <color name="bbutton_success_edge">#00ffffff</color>
-    <color name="bbutton_success_pressed">#ff47a447</color>
+    <color name="bbutton_success_pressed">#ff029f6d</color>
     <color name="bbutton_success_pressed_edge">#ff398439</color>
     <color name="bbutton_success_disabled">#a55cb85c</color>
     <color name="bbutton_success_disabled_edge">#a54cae4c</color>
@@ -347,5 +347,8 @@
     <color name="titleBackColor">#0088cf</color>
     <color name="hintColor">#999999</color>
     <color name="textColor">#333333</color>
+    <color name="amountColor">#cf0005</color>
+    <color name="textview_blue">#87cefa</color>
+    <color name="textview_background">#ffffff</color>
 
 </resources>

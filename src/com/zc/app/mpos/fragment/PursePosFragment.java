@@ -1,13 +1,13 @@
 package com.zc.app.mpos.fragment;
 
+import java.math.BigDecimal;
+
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.AbsoluteSizeSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,17 +15,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.zc.app.bootstrap.BootstrapButton;
-import com.zc.app.bootstrap.BootstrapEditText;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.util.keyboardUtil;
 import com.zc.app.sebc.lx.Longxingcard;
 import com.zc.app.sebc.lx.LongxingcardInfo;
-import com.zc.app.sebc.pboc2.TransUtil;
-import com.zc.app.sebc.util.StatusCheck;
 import com.zc.app.utils.ZCLog;
 
 public class PursePosFragment extends Fragment implements OnClickListener,
@@ -37,15 +34,16 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 	private Bundle bundle;
 
-	private BootstrapEditText amountBootstrapEditText;
-	private BootstrapEditText balancEditText;
-	private BootstrapButton doPurseBootstrapButton;
+	private TextView amountTextView;
+	private Button doPurseButton;
 
 	private keyboardUtil mKeyboardUtil;
 
 	private int recLen = 0;
 	private String amountString;
 	private String balanceString;
+
+	private float amount = 0.00f;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -64,8 +62,7 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 			Bundle savedInstanceState) {
 		Log.e(TAG, "onCreateView");
 
-		View view = inflater.inflate(R.layout.activity_purse_page, container,
-				false);
+		View view = inflater.inflate(R.layout.activity_purse, container, false);
 		findView(view);
 
 		mCallback.setTag(TAG);
@@ -98,17 +95,17 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		super.onResume();
 		Log.d(TAG, "onResume");
 
-		if (bundle != null) {
-			updateView(this.bundle);
-		} else {
-			balancEditText.setText("");
-		}
-
-		if (mKeyboardUtil != null) {
-			mKeyboardUtil.hideKeyboard();
-		}
-
-		getBalance();
+		// if (bundle != null) {
+		// updateView(this.bundle);
+		// } else {
+		// balancEditText.setText("");
+		// }
+		//
+		// if (mKeyboardUtil != null) {
+		// mKeyboardUtil.hideKeyboard();
+		// }
+		//
+		// getBalance();
 	}
 
 	@Override
@@ -145,20 +142,20 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 	private boolean getBalance() {
 		LongxingcardInfo requestInfo = Longxingcard.getLongxingcardInfo();
 		ZCLog.i("getBalance", requestInfo.toString());
-
-		balancEditText.setText("");
-
-		if (requestInfo.getStatus().equals(StatusCheck.SW1SW2_OK)) {
-
-			balanceString = requestInfo.getFloatBalance();
-
-			balancEditText.setText(balanceString);
-			return true;
-		} else {
-			balancEditText.setText("");
-			doPurseBootstrapButton.setText("等待刷卡");
-			return false;
-		}
+		return false;
+		// balancEditText.setText("");
+		//
+		// if (requestInfo.getStatus().equals(StatusCheck.SW1SW2_OK)) {
+		//
+		// balanceString = requestInfo.getFloatBalance();
+		//
+		// balancEditText.setText(balanceString);
+		// return true;
+		// } else {
+		// balancEditText.setText("");
+		// doPurseBootstrapButton.setText("等待刷卡");
+		// return false;
+		// }
 	}
 
 	public void setBundle(Bundle bundle) {
@@ -174,101 +171,49 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 				R.id.iv_title_text);
 		titleView.setText(R.string.purseTitle);
 
-		amountBootstrapEditText = (BootstrapEditText) view
-				.findViewById(R.id.purse_pos_amount_edit);
-		amountBootstrapEditText.setOnTouchListener(this);
+		amountTextView = (TextView) view.findViewById(R.id.purse_amount_txt);
 
-		balancEditText = (BootstrapEditText) view
-				.findViewById(R.id.purse_pos_balance_edit);
-		balancEditText.setOnTouchListener(this);
-		balancEditText.setKeyListener(null);
+		setAmount("0.00");
 
-		final Handler handler = new Handler();
+		doPurseButton = (Button) view.findViewById(R.id.purse_active_button);
+		doPurseButton.setOnClickListener(this);
 
-		final Runnable purseRunnable = new Runnable() {
-			@Override
-			public void run() {
-				recLen++;
-				doPurseBootstrapButton.setText("请勿移动卡片"
-						+ String.valueOf(3 - recLen));
-				if (recLen == 3) {
-					recLen = 0;
-					doPurseBootstrapButton.setText("正在操作卡片");
-					mCallback.onDoPurse(amountString);
-				} else {
-					handler.postDelayed(this, 1000);
-				}
+		TextView padTextView_1 = (TextView) view.findViewById(R.id.pad_1);
+		padTextView_1.setOnClickListener(this);
 
-			}
-		};
+		TextView padTextView_2 = (TextView) view.findViewById(R.id.pad_2);
+		padTextView_2.setOnClickListener(this);
 
-		balancEditText.addTextChangedListener(new TextWatcher() {
+		TextView padTextView_3 = (TextView) view.findViewById(R.id.pad_3);
+		padTextView_3.setOnClickListener(this);
 
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before,
-					int count) {
-				// TODO Auto-generated method stub
+		TextView padTextView_4 = (TextView) view.findViewById(R.id.pad_4);
+		padTextView_4.setOnClickListener(this);
 
-			}
+		TextView padTextView_5 = (TextView) view.findViewById(R.id.pad_5);
+		padTextView_5.setOnClickListener(this);
 
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
-				// TODO Auto-generated method stub
+		TextView padTextView_6 = (TextView) view.findViewById(R.id.pad_6);
+		padTextView_6.setOnClickListener(this);
 
-			}
+		TextView padTextView_7 = (TextView) view.findViewById(R.id.pad_7);
+		padTextView_7.setOnClickListener(this);
 
-			@Override
-			public void afterTextChanged(Editable s) {
-				// TODO Auto-generated method stub
-				recLen = 0;
-				handler.removeCallbacks(purseRunnable);
+		TextView padTextView_8 = (TextView) view.findViewById(R.id.pad_8);
+		padTextView_8.setOnClickListener(this);
 
-				if (s.toString().isEmpty())
-					return;
+		TextView padTextView_9 = (TextView) view.findViewById(R.id.pad_9);
+		padTextView_9.setOnClickListener(this);
 
-				amountString = amountBootstrapEditText.getText().toString();
-				if (amountString.isEmpty()) {
-					doPurseBootstrapButton.setText("请输入金额");
-					return;
-				} else {
-					String checkResult = TransUtil.checkInputAmount(
-							amountString, 8, 2, true);
+		TextView padTextView_0 = (TextView) view.findViewById(R.id.pad_0);
+		padTextView_0.setOnClickListener(this);
 
-					String strAmount = checkResult.substring(4,
-							checkResult.length());
+		TextView padTextView_c = (TextView) view.findViewById(R.id.pad_c);
+		padTextView_c.setOnClickListener(this);
 
-					if (strAmount.isEmpty() || Integer.parseInt(strAmount) == 0) {
-						doPurseBootstrapButton.setText("交易金额不能为零");
-						return;
-					}
-
-					checkResult = TransUtil.checkInputAmount(s.toString(), 8,
-							2, true);
-
-					String strBalance = checkResult.substring(4,
-							checkResult.length());
-
-					if (strBalance.isEmpty())
-						return;
-
-					int bl = Integer.parseInt(strBalance)
-							- Integer.parseInt(strAmount);
-
-					if (bl < 0) {
-						doPurseBootstrapButton.setText("余额不足");
-						return;
-					} else {
-						handler.postDelayed(purseRunnable, 1000);
-					}
-				}
-			}
-		});
-
-		doPurseBootstrapButton = (BootstrapButton) view
-				.findViewById(R.id.purse_pos_button);
-
-		doPurseBootstrapButton.setBootstrapButtonEnabled(false);
+		ImageView padTextView_cancel = (ImageView) view
+				.findViewById(R.id.pad_del);
+		padTextView_cancel.setOnClickListener(this);
 
 	}
 
@@ -276,13 +221,111 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 	}
 
+	private float appendAmount(float n) {
+		if (amount > 100.00f) {
+			return amount;
+		}
+
+		// float m = (float) (amount * 10 + n);
+
+		BigDecimal v1 = new BigDecimal(String.valueOf(amount));
+		BigDecimal v2 = new BigDecimal("10.0");
+		BigDecimal v3 = new BigDecimal(n);
+		amount = v1.multiply(v2).add(v3).setScale(2, BigDecimal.ROUND_HALF_UP)
+				.floatValue();
+
+		// BigDecimal b = new BigDecimal(m);
+		// amount = b.setScale(2, BigDecimal.ROUND_HALF_UP).floatValue();
+		return amount;
+	}
+
+	private void setAmount(String w) {
+		int start = w.indexOf('.');
+
+		int end = w.length();
+
+		Spannable word = new SpannableString(w);
+
+		word.setSpan(new AbsoluteSizeSpan(80), start, end,
+
+		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+		word.setSpan(new AbsoluteSizeSpan(120), 0, start,
+
+		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+		amountTextView.setText(word);
+	}
+
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.purse_pos_button: {
+		case R.id.purse_active_button: {
 			Log.i(TAG, "do purse");
-			amountString = amountBootstrapEditText.getText().toString();
+			amountString = amountTextView.getText().toString();
 			mCallback.onDoPurse(amountString);
+			break;
+		}
+		case R.id.pad_1: {
+
+			setAmount(String.valueOf(appendAmount(0.01f)));
+			break;
+		}
+		case R.id.pad_2: {
+			setAmount(String.valueOf(appendAmount(0.02f)));
+			break;
+		}
+		case R.id.pad_3: {
+			setAmount(String.valueOf(appendAmount(0.03f)));
+			break;
+		}
+		case R.id.pad_4: {
+			setAmount(String.valueOf(appendAmount(0.04f)));
+			break;
+		}
+		case R.id.pad_5: {
+			setAmount(String.valueOf(appendAmount(0.05f)));
+			break;
+		}
+		case R.id.pad_6: {
+			setAmount(String.valueOf(appendAmount(0.06f)));
+			break;
+		}
+		case R.id.pad_7: {
+			setAmount(String.valueOf(appendAmount(0.07f)));
+			break;
+		}
+		case R.id.pad_8: {
+			setAmount(String.valueOf(appendAmount(0.08f)));
+			break;
+		}
+		case R.id.pad_9: {
+			setAmount(String.valueOf(appendAmount(0.09f)));
+			break;
+		}
+		case R.id.pad_0: {
+			setAmount(String.valueOf(appendAmount(0.0f)));
+			break;
+		}
+		case R.id.pad_c: {
+			amount = 0.00f;
+			setAmount("0.00");
+			break;
+		}
+		case R.id.pad_del: {
+
+			BigDecimal v1 = new BigDecimal(String.valueOf(amount));
+			BigDecimal v2 = new BigDecimal("10");
+			String mString = v1.divide(v2, 2, BigDecimal.ROUND_DOWN).toString();
+
+			float a = Float.valueOf(mString);
+			if (a < 0.01) {
+				amount = 0.00f;
+			} else {
+				amount = a;
+			}
+
+			setAmount(mString);
 			break;
 		}
 
@@ -306,27 +349,27 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		}
 
 		switch (v.getId()) {
-		case R.id.purse_pos_amount_edit: {
-
-			InputMethodManager imm = (InputMethodManager) getActivity()
-					.getSystemService(Context.INPUT_METHOD_SERVICE);
-			// 得到InputMethodManager的实例
-			if (imm.isActive()) {
-				// 如果开启
-				imm.hideSoftInputFromWindow(
-						amountBootstrapEditText.getWindowToken(),
-						InputMethodManager.HIDE_NOT_ALWAYS);
-			}
-
-			int inputback = amountBootstrapEditText.getInputType();
-			amountBootstrapEditText.setInputType(InputType.TYPE_NULL);
-			mKeyboardUtil = new keyboardUtil(getActivity(), getActivity(),
-					amountBootstrapEditText);
-			mKeyboardUtil.showKeyboard();
-			amountBootstrapEditText.setInputType(inputback);
-
-			break;
-		}
+		// case R.id.purse_pos_amount_edit: {
+		//
+		// InputMethodManager imm = (InputMethodManager) getActivity()
+		// .getSystemService(Context.INPUT_METHOD_SERVICE);
+		// // 得到InputMethodManager的实例
+		// if (imm.isActive()) {
+		// // 如果开启
+		// imm.hideSoftInputFromWindow(
+		// amountBootstrapEditText.getWindowToken(),
+		// InputMethodManager.HIDE_NOT_ALWAYS);
+		// }
+		//
+		// int inputback = amountBootstrapEditText.getInputType();
+		// amountBootstrapEditText.setInputType(InputType.TYPE_NULL);
+		// mKeyboardUtil = new keyboardUtil(getActivity(), getActivity(),
+		// amountBootstrapEditText);
+		// mKeyboardUtil.showKeyboard();
+		// amountBootstrapEditText.setInputType(inputback);
+		//
+		// break;
+		// }
 
 		default: {
 			break;

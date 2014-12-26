@@ -105,77 +105,7 @@ public class SettingFragment extends Fragment implements OnClickListener {
 			updateView(this.bundle);
 		}
 
-		ZCWebService.getInstance().queryPOS(new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-
-				case ZCWebServiceParams.HTTP_FAILED: {
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getActivity(), msg.obj.toString(),
-							Toast.LENGTH_SHORT).show();
-					bundle.putString(SettingFragment.POS_NUMBER,
-							msg.obj.toString());
-					updateView(bundle);
-					break;
-				}
-				case ZCWebServiceParams.HTTP_SUCCESS: {
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						requestUtil requestObj = mapper.readValue(
-								msg.obj.toString(), requestUtil.class);
-						
-						if (requestObj.getDetail() == null) {
-							//todo
-							return;
-						}
-						
-						String detailString = mapper
-								.writeValueAsString(requestObj.getDetail());
-
-						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
-
-						PosInfo posInfo = mapper.readValue(detailString,
-								PosInfo.class);
-						bundle.putString(SettingFragment.POS_NUMBER,
-								posInfo.getTerminalSeq());
-						
-						updateView(bundle);
-						
-						terID = posInfo.getTerminalId();
-
-					} catch (JsonParseException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (JsonMappingException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					break;
-				}
-
-				case ZCWebServiceParams.HTTP_UNAUTH: {
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getActivity(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					mCallback.onUnAuth();
-					break;
-				}
-
-				default: {
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-
-				}
-			}
-		});
+		
 	}
 
 	@Override

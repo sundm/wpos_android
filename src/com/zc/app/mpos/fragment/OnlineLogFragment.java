@@ -60,7 +60,7 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	private List<PurchaseLog> logs;
 
-	private List<PurchaseLogPage> listPages;
+	private List<PurchaseLogPage> listPages = new ArrayList<PurchaseLogPage>();
 
 	private EmptyLayout mEmptyLayout;
 

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
+    xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffffff"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/title_height"
+        android:background="#0088cf" >
+
+        <ImageView
+            android:id="@+id/purse_result_failed_back"
+            style="@style/title_right_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/resultTitle"
+            android:src="@drawable/button_details_gohome" />
+
+        <TextView
+            android:id="@+id/textview_details_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/resultTitle"
+            android:textColor="#ffffffff"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+    <!--
+         padding 内边距   layout_margin 外边距  
+        android:layout_alignParentTop 布局的位置是否处于顶部
+    -->
+
+    <RelativeLayout
+        android:id="@+id/purse_result_pos_div"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <!-- 刷卡失败 -->
+
+        <TextView
+            android:id="@+id/purse_result_pos_failed_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="bottom"
+            android:text="@string/purse_result_pos_failed_txt"
+            android:textColor="#cf0005"
+            android:textSize="25sp" />
+
+        <!-- 原因 -->
+
+        <TextView
+            android:id="@+id/purse_result_pos_resone_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="104dp"
+            android:gravity="center|bottom"
+            android:text="收款金额：100.00 元"
+            android:textColor="@color/textColor"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <!-- 再试一次button -->
+
+    <Button
+        android:id="@+id/purse_again_button"
+        android:layout_width="285dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="27dp"
+        android:background="@drawable/bbuton_success_rounded"
+        android:text="@string/purse_again_text"
+        android:textColor="#ffffff"
+        android:textSize="20sp" >
+    </Button>
+
+</LinearLayout>

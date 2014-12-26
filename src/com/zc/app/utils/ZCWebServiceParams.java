@@ -13,7 +13,8 @@ public class ZCWebServiceParams {
 
 	public static final String BASE_SSL_URL = "https://192.168.2.68/wpos-front";
 
-	public static final String BASE_URL = "http://192.168.2.117:8088/wpos-front";// "http://192.168.2.117:8088/wpos-front";
+	public static final String BASE_URL = "http://192.168.2.69:8080/wpos-front";// "http://183.129.165.194:8088/wpos-front";//
+																				// "http://192.168.2.117:8088/wpos-front";
 	public static final String RES_URL = "http://192.168.2.117:8080/resources-console/version";
 
 	// 根据用户名,密码登录
@@ -26,6 +27,14 @@ public class ZCWebServiceParams {
 	public static final String USERINFO_URL = BASE_URL + "/user/userinfo.json";
 	// 注册用户信息，新增用户，用户名不能重复
 	public static final String REGISTER_URL = BASE_URL + "/user/register.json";
+	// 验证用户名唯一性
+	public static final String REGISTER_USER_URL = BASE_URL
+			+ "/user/isExistUsername.json";
+
+	// 获取短信验证码
+	public static final String REGISTER_CODE = BASE_URL
+			+ "/user/registerCode.json";
+
 	// 修改用户信息
 	public static final String CHANGEUSER_URL = BASE_URL
 			+ "/user/modifyinfo.json";
@@ -51,7 +60,7 @@ public class ZCWebServiceParams {
 	// 上传交易结果
 	public static final String UPDATEMAC2_URL = BASE_URL
 			+ "/purchase/update.json";
-	
+
 	// 查询交易日志
 	public static final String QUERY_LOG_URL = BASE_URL
 			+ "/purchase/querypurchaselog.json";

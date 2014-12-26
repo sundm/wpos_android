@@ -21,7 +21,7 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 	public static final String AMOUNT = "amount";
 	public static final String BALANCE = "balance";
 	public static final String HINT = "hint";
-	
+
 	private OnPurseResultPosPageListener mCallback;
 
 	private Bundle bundle;
@@ -48,8 +48,8 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 			Bundle savedInstanceState) {
 		Log.e(TAG, "onCreateView");
 
-		View view = inflater.inflate(R.layout.activity_purse_result_page, container,
-				false);
+		View view = inflater.inflate(R.layout.activity_purse_card_page,
+				container, false);
 		findView(view);
 
 		mCallback.setTag(TAG);
@@ -130,18 +130,18 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 				R.id.iv_title_text);
 		titleView.setText(R.string.resultTitle);
 
-		amountTextView = (TextView) view
-				.findViewById(R.id.purse_result_pos_amount_edit);
+		// amountTextView = (TextView) view
+		// .findViewById(R.id.purse_result_pos_amount_edit);
+		//
+		// balancetTextView = (TextView) view
+		// .findViewById(R.id.purse_result_pos_balance_edit);
+		//
+		// resultHinTextView = (TextView) view
+		// .findViewById(R.id.purse_result_pos_hint_txt);
+		//
+		// purseResultBootstrapButton = (BootstrapButton) view
+		// .findViewById(R.id.purse_result_pos_button);
 
-		balancetTextView = (TextView) view
-				.findViewById(R.id.purse_result_pos_balance_edit);
-
-		resultHinTextView = (TextView) view
-				.findViewById(R.id.purse_result_pos_hint_txt);
-
-		purseResultBootstrapButton = (BootstrapButton) view
-				.findViewById(R.id.purse_result_pos_button);
-		
 		purseResultBootstrapButton.setOnClickListener(this);
 	}
 
@@ -149,37 +149,38 @@ public class PurseResultPosFragment extends Fragment implements OnClickListener 
 		String amountString = bundle.getString(AMOUNT, "0.00");
 		String balanceString = bundle.getString(BALANCE, "000");
 		String hintString = bundle.getString(HINT, "");
-		
+
 		amountTextView.setText(amountString + " 元");
-		
-		String endString = "." + balanceString.substring(balanceString.length() - 2);
+
+		String endString = "."
+				+ balanceString.substring(balanceString.length() - 2);
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(balanceString.substring(0, balanceString.length() - 2));
 		buffer.append(endString);
-		
+
 		balancetTextView.setText(buffer.toString() + " 元");
-		
+
 		resultHinTextView.setText(hintString);
-		
+
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.purse_result_pos_button: {
-			Log.i(TAG, "purse_result_pos_button");
-			mCallback.onFinish();
-			break;
-		}
-
-		default:
-			break;
+		// case R.id.purse_result_pos_button: {
+		// Log.i(TAG, "purse_result_pos_button");
+		// mCallback.onFinish();
+		// break;
+		// }
+		//
+		// default:
+		// break;
 		}
 	}
 
 	public interface OnPurseResultPosPageListener {
 		public void setTag(String tag);
-		
+
 		public void onFinish();
 	}
 }

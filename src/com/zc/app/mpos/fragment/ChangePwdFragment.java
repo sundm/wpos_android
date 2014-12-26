@@ -138,8 +138,8 @@ public class ChangePwdFragment extends Fragment implements OnClickListener {
 				R.id.iv_title_text);
 		titleView.setText(R.string.changePwdTitle);
 
-		userBootstrapEditText = (BootstrapEditText) view
-				.findViewById(R.id.changePwd_username_edit);
+//		userBootstrapEditText = (BootstrapEditText) view
+//				.findViewById(R.id.changePwd_username_edit);
 		userBootstrapEditText.setKeyListener(null);
 
 		oldPassWordBootstrapEditText = (BootstrapEditText) view

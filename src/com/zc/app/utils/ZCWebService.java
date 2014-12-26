@@ -375,7 +375,7 @@ public class ZCWebService {
 		String postURL = ZCWebServiceParams.CHANGEUSER_URL;
 
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
-		paramsMap.put("nickname", info.getNickname());
+		paramsMap.put("validateCode", info.getValidateCode());
 		paramsMap.put("phoneNumber", info.getPhonenumber());
 		// doPost(null, postURL);
 		doBasicPost(postURL, paramsMap, _handler);
@@ -392,8 +392,48 @@ public class ZCWebService {
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
 		paramsMap.put("username", info.getUsername());
 		paramsMap.put("password", info.getPassword());
-		paramsMap.put("nickname", info.getNickname());
+		paramsMap.put("validateCode", info.getValidateCode());
 		paramsMap.put("phoneNumber", info.getPhonenumber());
+		// doPost(null, postURL);
+		doBasicPost(postURL, paramsMap, _handler);
+		return true;
+
+	}
+
+	public boolean getRegisterCode(final String phone, final Handler _handler) {
+		if (phone == null || _handler == null) {
+			return false;
+		}
+
+		if (phone.isEmpty()) {
+			return false;
+		}
+
+		String postURL = ZCWebServiceParams.REGISTER_CODE;
+
+		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
+
+		paramsMap.put("phoneNumber", phone);
+		// doPost(null, postURL);
+		doBasicPost(postURL, paramsMap, _handler);
+		return true;
+
+	}
+
+	public boolean isExistUserName(final String username, final Handler _handler) {
+		if (username == null || _handler == null) {
+			return false;
+		}
+
+		if (username.isEmpty()) {
+			return false;
+		}
+
+		String postURL = ZCWebServiceParams.REGISTER_USER_URL;
+
+		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
+
+		paramsMap.put("username", username);
 		// doPost(null, postURL);
 		doBasicPost(postURL, paramsMap, _handler);
 		return true;

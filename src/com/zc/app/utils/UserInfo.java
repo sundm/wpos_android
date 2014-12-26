@@ -3,7 +3,7 @@ package com.zc.app.utils;
 public class UserInfo {
 	private String username;
 	private String password;
-	private String nickname;
+	private String validateCode;
 	private String phonenumber;
 	private String oldpassword;
 	private String newpassword;
@@ -24,12 +24,13 @@ public class UserInfo {
 		this.password = password;
 	}
 
-	public String getNickname() {
-		return nickname;
+
+	public String getValidateCode() {
+		return validateCode;
 	}
 
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
+	public void setValidateCode(String validateCode) {
+		this.validateCode = validateCode;
 	}
 
 	public String getPhonenumber() {
@@ -59,9 +60,11 @@ public class UserInfo {
 	@Override
 	public String toString() {
 		return "UserInfo [username=" + username + ", password=" + password
-				+ ", nickname=" + nickname + ", phonenumber=" + phonenumber
-				+ ", oldpassword=" + oldpassword + ", newpassword="
-				+ newpassword + "]";
+				+ ", validateCode=" + validateCode + ", phonenumber="
+				+ phonenumber + ", oldpassword=" + oldpassword
+				+ ", newpassword=" + newpassword + "]";
 	}
+
+	
 
 }

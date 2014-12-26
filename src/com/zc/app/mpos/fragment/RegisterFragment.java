@@ -486,7 +486,7 @@ public class RegisterFragment extends Fragment implements OnClickListener {
 			UserInfo info = new UserInfo();
 			info.setUsername(userNameString);
 			info.setPassword(passWordString);
-			info.setNickname(nickNameString);
+			//info.setNickname(nickNameString);
 			info.setPhonenumber(phoneString);
 
 			mCallback.onRegister(info);

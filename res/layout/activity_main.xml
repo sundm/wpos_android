@@ -16,25 +16,56 @@
             android:id="@+id/ll1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="vertical" >
 
-            <com.zc.app.bootstrap.BootstrapCircleThumbnail
-                android:id="@+id/iv_bottom"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                bootstrap:bct_image="@drawable/pos"
-                bootstrap:bct_size="medium" />
+                android:layout_marginBottom="30dp"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/iv_bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="60dp"
+                    android:src="@drawable/user" />
+
+                <TextView
+                    android:id="@+id/iv_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="73dp"
+                    android:text="@string/app_name"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/iv_text"
+                android:id="@+id/tv_ter_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="20dp"
-                android:text="@string/app_name"
+                android:layout_gravity="left"
                 android:textColor="@color/white"
-                android:textSize="25sp" />
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_shop_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
         </LinearLayout>
+
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1.0px"
+            android:layout_below="@id/ll1"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
 
         <TextView
             android:id="@+id/tv_bottom_text"
@@ -51,7 +82,7 @@
             android:layout_above="@id/tv_bottom_text"
             android:layout_below="@id/ll1"
             android:layout_marginBottom="30dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="30dp"
             android:cacheColorHint="@color/black"
             android:divider="@null"
             android:textColor="@color/white" />
@@ -60,7 +91,7 @@
     <com.zc.app.mpos.view.MyRelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/abc_ab_solid_light_holo" >
+        android:background="#ffffffff" >
 
         <RelativeLayout
             android:id="@+id/rl_title"
@@ -68,15 +99,14 @@
             android:layout_height="55dp"
             android:background="@color/color_title" >
 
-            <com.zc.app.bootstrap.BootstrapCircleThumbnail
+            <ImageView
                 android:id="@+id/iv_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="10dp"
-                android:scaleType="centerCrop"
-                bootstrap:bct_image="@drawable/pos"
-                bootstrap:bct_size="small" />
+                android:layout_marginLeft="3dp"
+                android:background="@drawable/index_user"
+                android:scaleType="centerCrop" />
 
             <TextView
                 android:id="@+id/iv_title_text"
@@ -86,6 +116,21 @@
                 android:text="@string/app_name"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
+
+            <RelativeLayout
+                android:id="@+id/iv_funcation"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp" >
+
+                <ImageView
+                    android:id="@+id/iv_funcation_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="7dp"
+                    android:background="@drawable/icon_more" />
+            </RelativeLayout>
         </RelativeLayout>
 
         <FrameLayout
@@ -94,6 +139,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/rl_title" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </RelativeLayout>
     </com.zc.app.mpos.view.MyRelativeLayout>
 
 </com.zc.app.mpos.view.DragLayout>

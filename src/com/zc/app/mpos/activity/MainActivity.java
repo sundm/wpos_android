@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.http.HttpEntity;
@@ -24,8 +23,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.net.Uri;
@@ -44,51 +41,29 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nineoldandroids.view.ViewHelper;
-import com.zc.app.bootstrap.BootstrapCircleThumbnail;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
-import com.zc.app.mpos.fragment.ActivePosFragment;
-import com.zc.app.mpos.fragment.ActivePosFragment.OnActivePosPageListener;
-import com.zc.app.mpos.fragment.ApplyChangePosFragment;
-import com.zc.app.mpos.fragment.ApplyChangePosFragment.OnApplyChangePosPageListener;
-import com.zc.app.mpos.fragment.ChangePosFragment;
-import com.zc.app.mpos.fragment.ChangePosFragment.OnChangePosPageListener;
-import com.zc.app.mpos.fragment.ChangePwdFragment;
-import com.zc.app.mpos.fragment.ChangePwdFragment.OnChangePwdPageListener;
-import com.zc.app.mpos.fragment.LoginFragment;
-import com.zc.app.mpos.fragment.LoginFragment.OnLoginPageListener;
-import com.zc.app.mpos.fragment.OfflineLogFragment;
-import com.zc.app.mpos.fragment.OfflineLogFragment.OnOfflineLogPageListener;
 import com.zc.app.mpos.fragment.OnlineLogFragment;
 import com.zc.app.mpos.fragment.OnlineLogFragment.OnOnlineLogPageListener;
 import com.zc.app.mpos.fragment.PursePosFragment;
 import com.zc.app.mpos.fragment.PursePosFragment.OnPursePosPageListener;
-import com.zc.app.mpos.fragment.PurseResultPosFragment;
-import com.zc.app.mpos.fragment.PurseResultPosFragment.OnPurseResultPosPageListener;
-import com.zc.app.mpos.fragment.RegisterFragment;
-import com.zc.app.mpos.fragment.RegisterFragment.OnRegisterPageListener;
-import com.zc.app.mpos.fragment.SettingFragment;
-import com.zc.app.mpos.fragment.SettingFragment.OnSettingPageListener;
 import com.zc.app.mpos.util.ApkUpdateUtil;
 import com.zc.app.mpos.util.CurrentVersion;
 import com.zc.app.mpos.util.imageUtil;
 import com.zc.app.mpos.util.userRole;
 import com.zc.app.mpos.view.DragLayout;
 import com.zc.app.mpos.view.DragLayout.DragListener;
-import com.zc.app.sebc.lx.LongxingcardPurchase;
-import com.zc.app.sebc.lx.LongxingcardRequest;
 import com.zc.app.sebc.lx.NfcEnv;
-import com.zc.app.sebc.pboc2.TransUtil;
 import com.zc.app.utils.MircoPOState;
-import com.zc.app.utils.PurchaseInitInfo;
-import com.zc.app.utils.PurchaseUpdateInfo;
-import com.zc.app.utils.UserInfo;
-import com.zc.app.utils.WPosInfo;
+import com.zc.app.utils.PosInfo;
 import com.zc.app.utils.ZCLog;
 import com.zc.app.utils.ZCWebService;
 import com.zc.app.utils.ZCWebServiceParams;
@@ -96,38 +71,35 @@ import com.zc.app.utils.requestLoginUtil;
 import com.zc.app.utils.requestUtil;
 
 public class MainActivity extends FragmentActivity implements
-		OnLoginPageListener, OnPursePosPageListener,
-		OnPurseResultPosPageListener, OnRegisterPageListener,
-		OnSettingPageListener, OnActivePosPageListener,
-		OnChangePosPageListener, OnChangePwdPageListener,
-		OnApplyChangePosPageListener, OnOfflineLogPageListener,
-		OnOnlineLogPageListener {
+		OnPursePosPageListener, OnOnlineLogPageListener {
 
 	private DragLayout dl;
 	private ListView lv;
-	private BootstrapCircleThumbnail iv_icon;
-
+	private ImageView iv_icon;
+	private RelativeLayout more_icon;
 	private LinearLayout ll;
+	private TextView userNameView;
+	private TextView termailView;
+	private TextView shopCodeView;
 
 	private android.support.v4.app.Fragment mContent;
 
-	private LoginFragment loginPageFragment = null;
+	// private LoginFragment loginPageFragment = null;
 	private PursePosFragment pursePosPageFragment = null;
-	private PurseResultPosFragment purseResultPosFragment = null;
+	// private PurseResultPosFragment purseResultPosFragment = null;
 	private OnlineLogFragment onlineLogFragment = null;
-	private OfflineLogFragment offlineLogFragment = null;
-	private RegisterFragment registerFragment = null;
-
-	private SettingFragment settingPageFragment = null;
-	private ActivePosFragment activePosPageFragment = null;
-	private ApplyChangePosFragment applyChangePosFragment = null;
-	private ChangePosFragment changePosFragment = null;
-	private ChangePwdFragment changePwdFragment = null;
+	// private OfflineLogFragment offlineLogFragment = null;
+	// private RegisterFragment registerFragment = null;
+	//
+	// private SettingFragment settingPageFragment = null;
+	// private ActivePosFragment activePosPageFragment = null;
+	// private ApplyChangePosFragment applyChangePosFragment = null;
+	// private ChangePosFragment changePosFragment = null;
+	// private ChangePwdFragment changePwdFragment = null;
 
 	private String fragmentTag = "";
 
 	private userRole role;
-
 	private boolean isAuth = false;
 	private boolean dragIsOpened = false;
 
@@ -136,11 +108,20 @@ public class MainActivity extends FragmentActivity implements
 
 	private requestLoginUtil requestLoginUtilObj = null;
 	private MircoPOState state;
+	private PosInfo posInfo;
 	private String keyIDString;
 	private String psamIDString;
 
+	private final static int CHANGEPOS = 11;
+	private final static int ACTIVEPOS = 12;
+	private final static int PURSECARD = 13;
+
 	private String userNameString;
-	private String nickNameString;
+	private String posStateString;
+	private String storeNumberString;
+	private String termailNumberString;
+	private String phoneString;
+	private boolean isPOSActive;
 
 	// apk 更新
 	// private PopDialog popDialog;
@@ -163,12 +144,9 @@ public class MainActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		getServerVersion();
-
-		initDragLayout();
-		initView();
-
-		onNewIntent(getIntent());
+		// getServerVersion();
+		isPOSActive = false;
+		getPOSInfo();
 	}
 
 	@Override
@@ -192,6 +170,78 @@ public class MainActivity extends FragmentActivity implements
 
 		NfcEnv.disableNfcForegroundDispatch(this);
 
+	}
+
+	private void getPOSInfo() {
+		ZCWebService.getInstance().queryPOS(new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_SHORT).show();
+					isPOSActive = false;
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						if (requestObj.getDetail() == null) {
+							// todo
+							return;
+						}
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+						posInfo = mapper.readValue(detailString, PosInfo.class);
+						ZCLog.i(TAG, posInfo.toString());
+						storeNumberString = posInfo.getMerchantId();
+						termailNumberString = posInfo.getTerminalSeq();
+						posStateString = posInfo.getWposDisplayStatus();
+						isPOSActive = true;
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					isAuth = false;
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_FINISH: {
+					initDragLayout();
+					initView();
+
+					onNewIntent(getIntent());
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
+			}
+		});
 	}
 
 	/**
@@ -380,24 +430,21 @@ public class MainActivity extends FragmentActivity implements
 
 	private void initView() {
 		requestLoginUtilObj = null;
+
+		userNameView = (TextView) findViewById(R.id.iv_text);
+		shopCodeView = (TextView) findViewById(R.id.tv_shop_text);
+		termailView = (TextView) findViewById(R.id.tv_ter_text);
+
+		iv_icon = (ImageView) findViewById(R.id.iv_icon);
+		more_icon = (RelativeLayout) findViewById(R.id.iv_funcation);
+		ll = (LinearLayout) findViewById(R.id.ll1);
+		lv = (ListView) findViewById(R.id.lv);
+
 		role = userRole.UNAUTH;
 		state = new MircoPOState(this);
 
-		loginPageFragment = new LoginFragment();
-
 		pursePosPageFragment = new PursePosFragment();
-		purseResultPosFragment = new PurseResultPosFragment();
-
-		offlineLogFragment = new OfflineLogFragment();
 		onlineLogFragment = new OnlineLogFragment();
-
-		registerFragment = new RegisterFragment();
-
-		settingPageFragment = new SettingFragment();
-		activePosPageFragment = new ActivePosFragment();
-		applyChangePosFragment = new ApplyChangePosFragment();
-		changePosFragment = new ChangePosFragment();
-		changePwdFragment = new ChangePwdFragment();
 
 		Intent intent = getIntent();
 
@@ -426,24 +473,31 @@ public class MainActivity extends FragmentActivity implements
 
 		if (requestLoginUtilObj != null) {
 			isAuth = true;
-			final Bundle args = new Bundle();
+			// final Bundle args = new Bundle();
 
 			if (requestLoginUtilObj.getRole().equals("Normal")) {
 				role = userRole.NORMAL;
-				Toast.makeText(this, "非绑定终端，功能受限", Toast.LENGTH_SHORT).show();
-				args.putBoolean(SettingFragment.POS_ACTIVED, false);
+				Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
+				// args.putBoolean(SettingFragment.POS_ACTIVED, false);
 			}
 
 			if (requestLoginUtilObj.getRole().equals("Active")) {
 				role = userRole.ACTIVE;
-				args.putBoolean(SettingFragment.POS_ACTIVED, true);
+				// args.putBoolean(SettingFragment.POS_ACTIVED, true);
 			}
 
 			userNameString = requestLoginUtilObj.getUsername();
-			nickNameString = requestLoginUtilObj.getNickname();
-			args.putString(SettingFragment.NICK_NAME, this.nickNameString);
-			settingPageFragment.setBundle(args);
+			phoneString = requestLoginUtilObj.getPhoneNumber();
 
+			userNameView.setText(userNameString);
+			if (storeNumberString == null || termailNumberString == null
+					|| storeNumberString.isEmpty()
+					|| termailNumberString.isEmpty()) {
+				shopCodeView.setText("获取终端信息失败");
+			} else {
+				shopCodeView.setText("商户号: " + storeNumberString);
+				termailView.setText("终端号: " + termailNumberString);
+			}
 		} else {
 			isAuth = false;
 			role = userRole.UNAUTH;
@@ -451,12 +505,7 @@ public class MainActivity extends FragmentActivity implements
 
 		ZCLog.i(TAG, "role:" + String.valueOf(role));
 
-		iv_icon = (BootstrapCircleThumbnail) findViewById(R.id.iv_icon);
-		ll = (LinearLayout) findViewById(R.id.ll1);
-
-		lv = (ListView) findViewById(R.id.lv);
-		lv.setAdapter(new MenuArrayAdapter(this, new String[] { "收款交易", "交易查询",
-				"龙行卡查询", "设置", "关于" }));
+		lv.setAdapter(new MenuArrayAdapter(this, new String[] { "修改密码" }));
 		lv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1,
@@ -464,55 +513,61 @@ public class MainActivity extends FragmentActivity implements
 				Log.i("click item", arg0.toString());
 				Log.i("click item", arg1.toString());
 				Log.i("click item", String.valueOf(arg3));
-
-				Object fragementFragment = null;
-				String fragmentTag = "";
+				//
+				// Object fragementFragment = null;
+				// String fragmentTag = "";
 
 				switch (position) {
 				case 0: {
-					if (role == userRole.ACTIVE) {
-						fragmentTag = PursePosFragment.TAG;
-						fragementFragment = pursePosPageFragment;
-					} else {
-						Toast.makeText(MainActivity.this, "请先开通终端",
-								Toast.LENGTH_SHORT).show();
-						fragmentTag = SettingFragment.TAG;
-						fragementFragment = settingPageFragment;
-					}
+					Intent it = new Intent(MainActivity.this,
+							ChangePwdActivity.class);
+					startActivity(it);
 					break;
 				}
-
-				case 1: {
-					fragmentTag = OnlineLogFragment.TAG;
-					fragementFragment = onlineLogFragment;
-					break;
-				}
-
-				case 2: {
-					fragmentTag = OfflineLogFragment.TAG;
-					fragementFragment = offlineLogFragment;
-					break;
-				}
-
-				case 3: {
-					fragmentTag = SettingFragment.TAG;
-					fragementFragment = settingPageFragment;
-					break;
-				}
-
-				case 4: {
-					break;
-				}
+				// case 0: {
+				// if (role == userRole.ACTIVE) {
+				// fragmentTag = PursePosFragment.TAG;
+				// fragementFragment = pursePosPageFragment;
+				// } else {
+				// Toast.makeText(MainActivity.this, "请先开通终端",
+				// Toast.LENGTH_SHORT).show();
+				// fragmentTag = SettingFragment.TAG;
+				// fragementFragment = settingPageFragment;
+				// }
+				// break;
+				// }
+				//
+				// case 1: {
+				// fragmentTag = OnlineLogFragment.TAG;
+				// fragementFragment = onlineLogFragment;
+				// break;
+				// }
+				//
+				// case 2: {
+				// fragmentTag = OfflineLogFragment.TAG;
+				// fragementFragment = offlineLogFragment;
+				// break;
+				// }
+				//
+				// case 3: {
+				// fragmentTag = SettingFragment.TAG;
+				// fragementFragment = settingPageFragment;
+				// break;
+				// }
+				//
+				// case 4: {
+				// break;
+				// }
 
 				default:
 					break;
 				}
 
-				clearBackStack();
-
-				switchContent(
-						(android.support.v4.app.Fragment) fragementFragment,
-						false, fragmentTag);
+				// clearBackStack();
+				//
+				// switchContent(
+				// (android.support.v4.app.Fragment) fragementFragment,
+				// false, fragmentTag);
 
 				dl.close();
 			}
@@ -521,68 +576,96 @@ public class MainActivity extends FragmentActivity implements
 		switch (role) {
 		case ACTIVE: {
 
-			state.getPOSInfoFromServer(new Handler() {
-				@Override
-				public void dispatchMessage(Message msg) {
-
-					switch (msg.what) {
-
-					case ZCWebServiceParams.HTTP_FAILED: {
-						isAuth = false;
-						clearBackStack();
-						switchContent(
-								(android.support.v4.app.Fragment) loginPageFragment,
-								false, LoginFragment.TAG);
-						break;
-					}
-					case ZCWebServiceParams.HTTP_SUCCESS: {
-						keyIDString = state.getKeyID();
-						psamIDString = state.getPsamID();
-						ZCLog.i(TAG, "keyID:" + keyIDString + " psamID:"
-								+ psamIDString);
-						switchContent(
-								(android.support.v4.app.Fragment) pursePosPageFragment,
-								false, PursePosFragment.TAG);
-						break;
-					}
-
-					case ZCWebServiceParams.HTTP_UNAUTH: {
-						isAuth = false;
-						clearBackStack();
-						switchContent(
-								(android.support.v4.app.Fragment) loginPageFragment,
-								false, LoginFragment.TAG);
-						break;
-					}
-
-					default: {
-						break;
-					}
-					}
-				}
-			});
+			// state.getPOSInfoFromServer(new Handler() {
+			// @Override
+			// public void dispatchMessage(Message msg) {
+			//
+			// switch (msg.what) {
+			//
+			// case ZCWebServiceParams.HTTP_FAILED: {
+			// isAuth = false;
+			// clearBackStack();
+			// switchContent(
+			// (android.support.v4.app.Fragment) loginPageFragment,
+			// false, LoginFragment.TAG);
+			// break;
+			// }
+			// case ZCWebServiceParams.HTTP_SUCCESS: {
+			// keyIDString = state.getKeyID();
+			// psamIDString = state.getPsamID();
+			// ZCLog.i(TAG, "keyID:" + keyIDString + " psamID:"
+			// + psamIDString);
+			// switchContent(
+			// (android.support.v4.app.Fragment) pursePosPageFragment,
+			// false, PursePosFragment.TAG);
+			// break;
+			// }
+			//
+			// case ZCWebServiceParams.HTTP_UNAUTH: {
+			// isAuth = false;
+			// clearBackStack();
+			// switchContent(
+			// (android.support.v4.app.Fragment) loginPageFragment,
+			// false, LoginFragment.TAG);
+			// break;
+			// }
+			//
+			// default: {
+			// break;
+			// }
+			// }
+			// }
+			// });
 
 			break;
 		}
 		case NORMAL: {
-			switchContent(
-					(android.support.v4.app.Fragment) settingPageFragment,
-					false, SettingFragment.TAG);
+
+			if (isPOSActive) {
+				Intent it = new Intent(MainActivity.this,
+						ChangePOSActivity.class);
+
+				it.putExtra("uniqueID", state.getUniqueIDString());
+				it.putExtra("phone", phoneString);
+
+				startActivityForResult(it, CHANGEPOS);
+			} else {
+				Intent it = new Intent(MainActivity.this,
+						ActivePOSActivity.class);
+
+				it.putExtra("uniqueID", state.getUniqueIDString());
+
+				startActivityForResult(it, ACTIVEPOS);
+			}
 
 			break;
 		}
 
 		default: {
-			switchContent((android.support.v4.app.Fragment) loginPageFragment,
-					false, LoginFragment.TAG);
+
 			break;
 		}
 		}
+
+		switchContent((android.support.v4.app.Fragment) pursePosPageFragment,
+				false, PursePosFragment.TAG);
 
 		iv_icon.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				dl.open();
+
+			}
+		});
+
+		more_icon.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Log.i("onLinster", "onQueryLogOnline");
+
+				switchContent(onlineLogFragment, true, OnlineLogFragment.TAG);
 			}
 		});
 
@@ -681,6 +764,48 @@ public class MainActivity extends FragmentActivity implements
 		return super.onKeyDown(keyCode, event);
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (resultCode) {
+		case RESULT_OK: {
+			ZCLog.i(TAG, "result_ok");
+			break;
+		}
+		case RESULT_CANCELED: {
+			ZCLog.i(TAG, "result_c");
+			break;
+		}
+		case CHANGEPOS: {
+			ZCLog.i(TAG, "result_change_pos");
+			role = userRole.ACTIVE;
+			break;
+		}
+		case ACTIVEPOS: {
+			ZCLog.i(TAG, "result_active_pos");
+			// active pos 返回数据
+			role = userRole.ACTIVE;
+			Bundle activePOSBuddle = data.getExtras();
+			storeNumberString = activePOSBuddle.getString("storeCode");
+			termailNumberString = activePOSBuddle.getString("posNumber");
+
+			if (storeNumberString == null || termailNumberString == null
+					|| storeNumberString.isEmpty()
+					|| termailNumberString.isEmpty()) {
+				shopCodeView.setText("获取终端信息失败");
+			} else {
+				shopCodeView.setText("商户号: " + storeNumberString);
+				termailView.setText("终端号: " + termailNumberString);
+			}
+
+			break;
+		}
+		default: {
+			ZCLog.i(TAG, "result:null");
+			break;
+		}
+		}
+	}
+
 	public void exit() {
 		try {
 			AlertDialog.Builder builder = new Builder(this);
@@ -692,7 +817,7 @@ public class MainActivity extends FragmentActivity implements
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.dismiss();
 							finish();
-							System.exit(0);
+							java.lang.System.exit(0);
 						}
 					});
 			builder.setNegativeButton("取消", null);
@@ -713,192 +838,192 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	// Login Page
-	@Override
-	public void onSignin(final String userNameString,
-			final String passWordString) {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onSignin");
+	// @Override
+	// public void onSignin(final String userNameString,
+	// final String passWordString) {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onSignin");
+	//
+	// UserInfo info = new UserInfo();
+	// info.setUsername(userNameString);
+	// info.setPassword(passWordString);
+	//
+	// String fingerprint = state.getUniqueIDString();
+	//
+	// ZCWebService.getInstance().userLogin(info, fingerprint, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// Toast.makeText(getApplicationContext(), "登录成功",
+	// Toast.LENGTH_SHORT).show();
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	//
+	// SharedPreferences sharedPreferences = getApplicationContext()
+	// .getSharedPreferences("configer",
+	// Context.MODE_PRIVATE);
+	// // 编辑配置
+	// Editor editor = sharedPreferences.edit();// 获取编辑器
+	// editor.putString("_user_", userNameString);
+	// editor.commit();// 提交修改
+	//
+	// ObjectMapper mapper = new ObjectMapper();
+	// try {
+	// requestUtil requestObj = mapper.readValue(
+	// msg.obj.toString(), requestUtil.class);
+	//
+	// String detailString = mapper
+	// .writeValueAsString(requestObj.getDetail());
+	//
+	// requestLoginUtilObj = mapper.readValue(detailString,
+	// requestLoginUtil.class);
+	//
+	// hiddenKeyboard();
+	// initView();
+	//
+	// } catch (JsonParseException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (JsonMappingException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (IOException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// }
+	//
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	// }
 
-		UserInfo info = new UserInfo();
-		info.setUsername(userNameString);
-		info.setPassword(passWordString);
-
-		String fingerprint = state.getUniqueIDString();
-
-		ZCWebService.getInstance().userLogin(info, fingerprint, new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					Toast.makeText(getApplicationContext(), "登录成功",
-							Toast.LENGTH_SHORT).show();
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-
-					SharedPreferences sharedPreferences = getApplicationContext()
-							.getSharedPreferences("configer",
-									Context.MODE_PRIVATE);
-					// 编辑配置
-					Editor editor = sharedPreferences.edit();// 获取编辑器
-					editor.putString("_user_", userNameString);
-					editor.commit();// 提交修改
-
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						requestUtil requestObj = mapper.readValue(
-								msg.obj.toString(), requestUtil.class);
-
-						String detailString = mapper
-								.writeValueAsString(requestObj.getDetail());
-
-						requestLoginUtilObj = mapper.readValue(detailString,
-								requestLoginUtil.class);
-
-						hiddenKeyboard();
-						initView();
-
-					} catch (JsonParseException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (JsonMappingException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-	}
-
-	@Override
-	public void onOpenRegisterPage() {
-		// TODO Auto-generated method stub
-
-		Log.i("onLinster", "onOpenRegisterPage");
-
-		Bundle args = new Bundle();
-		args.putString(RegisterFragment.USERNAME, "sundm");
-		registerFragment.setArguments(args);
-
-		switchContent(registerFragment, true, RegisterFragment.TAG);
-
-	}
+	// @Override
+	// public void onOpenRegisterPage() {
+	// // TODO Auto-generated method stub
+	//
+	// Log.i("onLinster", "onOpenRegisterPage");
+	//
+	// Bundle args = new Bundle();
+	// args.putString(RegisterFragment.USERNAME, "sundm");
+	// registerFragment.setArguments(args);
+	//
+	// switchContent(registerFragment, true, RegisterFragment.TAG);
+	//
+	// }
 
 	// register page
-	@Override
-	public void onRegister(final UserInfo info) {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onRegister, user:" + info.getUsername());
-
-		ZCWebService.getInstance().register(info, new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					Toast.makeText(getApplicationContext(), "注册成功",
-							Toast.LENGTH_LONG).show();
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-
-					SharedPreferences sharedPreferences = getApplicationContext()
-							.getSharedPreferences("configer",
-									Context.MODE_PRIVATE);
-					// 编辑配置
-					Editor editor = sharedPreferences.edit();// 获取编辑器
-					editor.putString("_user_", info.getUsername());
-					editor.commit();// 提交修改
-
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						requestUtil requestObj = mapper.readValue(
-								msg.obj.toString(), requestUtil.class);
-
-						ZCLog.i(TAG, requestObj.getDetail().toString());
-
-						hiddenKeyboard();
-						clearBackStack();
-						switchContent(loginPageFragment, false,
-								LoginFragment.TAG);
-
-					} catch (JsonParseException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (JsonMappingException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-
-	}
+	// @Override
+	// public void onRegister(final UserInfo info) {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onRegister, user:" + info.getUsername());
+	//
+	// ZCWebService.getInstance().register(info, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// Toast.makeText(getApplicationContext(), "注册成功",
+	// Toast.LENGTH_LONG).show();
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	//
+	// SharedPreferences sharedPreferences = getApplicationContext()
+	// .getSharedPreferences("configer",
+	// Context.MODE_PRIVATE);
+	// // 编辑配置
+	// Editor editor = sharedPreferences.edit();// 获取编辑器
+	// editor.putString("_user_", info.getUsername());
+	// editor.commit();// 提交修改
+	//
+	// ObjectMapper mapper = new ObjectMapper();
+	// try {
+	// requestUtil requestObj = mapper.readValue(
+	// msg.obj.toString(), requestUtil.class);
+	//
+	// ZCLog.i(TAG, requestObj.getDetail().toString());
+	//
+	// hiddenKeyboard();
+	// clearBackStack();
+	// switchContent(loginPageFragment, false,
+	// LoginFragment.TAG);
+	//
+	// } catch (JsonParseException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (JsonMappingException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (IOException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// }
+	//
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	//
+	// }
 
 	@Override
 	public void setTag(String tag) {
@@ -909,134 +1034,204 @@ public class MainActivity extends FragmentActivity implements
 		mContent = getCurrentFragment();
 	}
 
-	@Override
-	public void onChangePwd() {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onChangePwd");
-
-		Bundle args = new Bundle();
-		args.putString(ChangePwdFragment.USERNAME, userNameString);
-		changePwdFragment.setBundle(args);
-
-		switchContent(changePwdFragment, true, ChangePwdFragment.TAG);
-	}
-
-	@Override
-	public void onActivePOS() {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onActivePOS");
-
-		// Bundle args = new Bundle();
-		// args.putString(RegisterFragment.USERNAME, "sundm");
-		// activePosPageFragment.setArguments(args);
-
-		switchContent(activePosPageFragment, true, ActivePosFragment.TAG);
-	}
-
-	@Override
-	public void onChangePOS() {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onChangePOS");
-
-		Bundle args = new Bundle();
-		// args.putString(RegisterFragment.USERNAME, "sundm");
-		changePosFragment.setArguments(args);
-
-		switchContent(changePosFragment, true, ChangePosFragment.TAG);
-
-	}
-
-	@Override
-	public void onApplyChangePos(final String terID) {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onApplyChangePos");
-
-		Bundle args = new Bundle();
-		args.putString(ApplyChangePosFragment.POS_NUMBER, terID);
-		args.putString(ApplyChangePosFragment.POS_CODE, "");
-
-		applyChangePosFragment.setBundle(args);
-
-		switchContent(applyChangePosFragment, true, ApplyChangePosFragment.TAG);
-
-	}
-
-	@Override
-	public void onApplyChangeSubmit() {
-		// TODO Auto-generated method stub
-		ZCWebService.getInstance().changePOSCode(new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-					Toast.makeText(getApplicationContext(), "申请成功",
-							Toast.LENGTH_SHORT).show();
-
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						requestUtil requestObj = mapper.readValue(
-								msg.obj.toString(), requestUtil.class);
-
-						Bundle args = new Bundle();
-						args.putString(ApplyChangePosFragment.POS_CODE,
-								requestObj.getDetail().toString());
-						applyChangePosFragment.updateView(args);
-
-					} catch (JsonParseException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (JsonMappingException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-
-	}
+	// @Override
+	// public void onChangePwd() {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onChangePwd");
+	//
+	// Bundle args = new Bundle();
+	// args.putString(ChangePwdFragment.USERNAME, userNameString);
+	// changePwdFragment.setBundle(args);
+	//
+	// switchContent(changePwdFragment, true, ChangePwdFragment.TAG);
+	// }
+	//
+	// @Override
+	// public void onActivePOS() {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onActivePOS");
+	//
+	// // Bundle args = new Bundle();
+	// // args.putString(RegisterFragment.USERNAME, "sundm");
+	// // activePosPageFragment.setArguments(args);
+	//
+	// switchContent(activePosPageFragment, true, ActivePosFragment.TAG);
+	// }
+	//
+	// @Override
+	// public void onChangePOS() {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onChangePOS");
+	//
+	// Bundle args = new Bundle();
+	// // args.putString(RegisterFragment.USERNAME, "sundm");
+	// changePosFragment.setArguments(args);
+	//
+	// switchContent(changePosFragment, true, ChangePosFragment.TAG);
+	//
+	// }
+	//
+	// @Override
+	// public void onApplyChangePos(final String terID) {
+	// // TODO Auto-generated method stub
+	// Log.i("onLinster", "onApplyChangePos");
+	//
+	// Bundle args = new Bundle();
+	// args.putString(ApplyChangePosFragment.POS_NUMBER, terID);
+	// args.putString(ApplyChangePosFragment.POS_CODE, "");
+	//
+	// applyChangePosFragment.setBundle(args);
+	//
+	// switchContent(applyChangePosFragment, true, ApplyChangePosFragment.TAG);
+	//
+	// }
+	//
+	// @Override
+	// public void onApplyChangeSubmit() {
+	// // TODO Auto-generated method stub
+	// ZCWebService.getInstance().changePOSCode(new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), "申请成功",
+	// Toast.LENGTH_SHORT).show();
+	//
+	// ObjectMapper mapper = new ObjectMapper();
+	// try {
+	// requestUtil requestObj = mapper.readValue(
+	// msg.obj.toString(), requestUtil.class);
+	//
+	// Bundle args = new Bundle();
+	// args.putString(ApplyChangePosFragment.POS_CODE,
+	// requestObj.getDetail().toString());
+	// applyChangePosFragment.updateView(args);
+	//
+	// } catch (JsonParseException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (JsonMappingException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (IOException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// }
+	//
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_SHORT).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	//
+	// }
 
 	@Override
 	public void onDoPurse(final String amountString) {
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onDoPurse");
 
-		purchase(amountString);
+		switch (role) {
+		case ACTIVE: {
+			// purchase(amountString);
+			if (!(Float.valueOf(amountString) > 0.00f))
+				break;
+
+			state.getPOSInfoFromServer(new Handler() {
+				@Override
+				public void dispatchMessage(Message msg) {
+
+					switch (msg.what) {
+
+					case ZCWebServiceParams.HTTP_FAILED: {
+						Toast.makeText(getApplicationContext(),
+								msg.obj.toString(), Toast.LENGTH_SHORT).show();
+						break;
+					}
+					case ZCWebServiceParams.HTTP_SUCCESS: {
+						keyIDString = state.getKeyID();
+						psamIDString = state.getPsamID();
+						ZCLog.i(TAG, "keyID:" + keyIDString + " psamID:"
+								+ psamIDString);
+						Intent it = new Intent(MainActivity.this,
+								PurseCardActivity.class);
+						it.putExtra("keyID", keyIDString);
+						it.putExtra("psamID", psamIDString);
+						it.putExtra("username", userNameString);
+						it.putExtra("amount", amountString);
+						startActivityForResult(it, PURSECARD);
+						break;
+					}
+
+					case ZCWebServiceParams.HTTP_UNAUTH: {
+						isAuth = false;
+
+						break;
+					}
+
+					default: {
+						break;
+					}
+					}
+				}
+			});
+
+			break;
+		}
+		case NORMAL: {
+			if (isPOSActive) {
+				Toast.makeText(getApplicationContext(), "请重新绑定",
+						Toast.LENGTH_SHORT).show();
+				Intent it = new Intent(MainActivity.this,
+						ChangePOSActivity.class);
+				it.putExtra("uniqueID", state.getUniqueIDString());
+				startActivityForResult(it, CHANGEPOS);
+			} else {
+				Toast.makeText(getApplicationContext(), "请先开通",
+						Toast.LENGTH_SHORT).show();
+				Intent it = new Intent(MainActivity.this,
+						ActivePOSActivity.class);
+
+				it.putExtra("uniqueID", state.getUniqueIDString());
+
+				startActivityForResult(it, ACTIVEPOS);
+			}
+			break;
+		}
+		default: {
+			break;
+		}
+		}
 
 		// Bundle args = new Bundle();
 		// args.putString(ApplyChangePosFragment.POS_NUMBER, "1234ABCD");
@@ -1048,339 +1243,339 @@ public class MainActivity extends FragmentActivity implements
 		// PurseResultPosFragment.TAG);
 	}
 
-	@Override
-	public void activePos(String storeNumber, String posNumber) {
-		// TODO Auto-generated method stub
-		hiddenKeyboard();
-
-		WPosInfo info = new WPosInfo();
-		String uniqueID = state.getUniqueIDString();
-
-		info.setTerminalId(posNumber);
-		info.setMerchantId(storeNumber);
-		info.setFingerprint(uniqueID);
-
-		ZCWebService.getInstance().activePOS(info, new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-					Toast.makeText(getApplicationContext(), "开通成功",
-							Toast.LENGTH_SHORT).show();
-
-					hiddenKeyboard();
-					clearBackStack();
-
-					role = userRole.ACTIVE;
-					final Bundle args = new Bundle();
-					args.putBoolean(SettingFragment.POS_ACTIVED, true);
-					settingPageFragment.setBundle(args);
-
-					switchContent(settingPageFragment, false,
-							SettingFragment.TAG);
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-	}
-
-	@Override
-	public void onUnAuth() {
-		// TODO Auto-generated method stub
-		isAuth = false;
-		clearBackStack();
-		switchContent(loginPageFragment, false, LoginFragment.TAG);
-	}
-
-	private void purchase(final String amount) {
-		ZCLog.i("consume", "doPurchase, amount: " + amount);
-		ZCLog.i("consume", "keyId: " + keyIDString);
-		ZCLog.i("consume", "psamId: " + psamIDString);
-
-		LongxingcardRequest request = LongxingcardPurchase
-				.requestInitCreditForPurchase_Longxing(amount, keyIDString,
-						psamIDString);
-
-		ZCLog.i("consume", request.toString());
-
-		if (request.isOK()) {
-
-			String checkResult = TransUtil.checkInputAmount(amount, 8, 2, true);
-
-			String strAmount = checkResult.substring(4, checkResult.length());
-
-			int bl = Integer.parseInt(request.getBalanceString())
-					- Integer.parseInt(strAmount);
-
-			final String lastBalance = Integer.toString(bl);
-
-			ZCLog.i("consume", "lastbalace:" + lastBalance);
-
-			ZCLog.i("consume", "init purchase");
-
-			PurchaseInitInfo infoObj = new PurchaseInitInfo();
-			infoObj.setInitResponse(request.getResponseString());
-			infoObj.setAmount(request.getAmountString());
-			infoObj.setPan(request.getPanString());
-			infoObj.setIssuerId(request.getIssuerIdString());
-			infoObj.setLng("000.000");
-			infoObj.setLat("000.000");
-
-			ZCWebService.getInstance().initForPurchase(infoObj, new Handler() {
-				@Override
-				public void dispatchMessage(Message msg) {
-
-					switch (msg.what) {
-					case ZCWebServiceParams.HTTP_SUCCESS:
-
-						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-
-						ObjectMapper mapper = new ObjectMapper();
-						try {
-							requestUtil requestObj = mapper.readValue(
-									msg.obj.toString(), requestUtil.class);
-
-							ZCLog.i(TAG, requestObj.getDetail().toString());
-
-							@SuppressWarnings("unchecked")
-							Map<String, Object> _mapperMap = (Map<String, Object>) requestObj
-									.getDetail();
-
-							String dataString = _mapperMap.get("tradingOrder")
-									.toString();
-							String purchaseLogId = _mapperMap.get(
-									"purchaseLogId").toString();
-
-							ZCLog.i(TAG, "tradingOrder:" + dataString);
-							ZCLog.i(TAG, "purchaseLogId:" + purchaseLogId);
-
-							LongxingcardRequest _request = LongxingcardPurchase
-									.requestCreditForPurche_Longxing(dataString);
-
-							ZCLog.i("consume", _request.toString());
-
-							if (_request.isOK()) {
-
-								PurchaseUpdateInfo updateInfo = new PurchaseUpdateInfo();
-								updateInfo.setSw(_request.getSwString());
-								updateInfo.setLogId(purchaseLogId);
-								updateInfo.setMac2(_request.getMac2String());
-								updateInfo.setTac(_request.getTacString());
-
-								updateInfo.setBalance(lastBalance);
-
-								ZCLog.i(TAG, updateInfo.toString());
-
-								ZCWebService.getInstance().updateForPurchase(
-										updateInfo, new Handler() {
-											@Override
-											public void dispatchMessage(
-													Message msg) {
-
-												switch (msg.what) {
-												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
-													ZCLog.i(TAG, "消费结果上传成功");
-													Bundle args = new Bundle();
-													args.putString(
-															PurseResultPosFragment.AMOUNT,
-															amount);
-
-													args.putString(
-															PurseResultPosFragment.BALANCE,
-															lastBalance);
-
-													args.putString(
-															PurseResultPosFragment.HINT,
-															"完成交易");
-
-													purseResultPosFragment
-															.setBundle(args);
-
-													switchContent(
-															purseResultPosFragment,
-															true,
-															PurseResultPosFragment.TAG);
-													break;
-												}
-												default:
-													break;
-												}
-											}
-										});
-
-							} else {
-
-							}
-
-						} catch (JsonParseException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (JsonMappingException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-						break;
-					default:
-						break;
-					}
-				}
-			});
-		}
-
-	}
-
-	@Override
-	public void onFinish() {
-		// TODO Auto-generated method stub
-		clearBackStack();
-		switchContent(pursePosPageFragment, false, PursePosFragment.TAG);
-	}
-
-	@Override
-	public void onChangePos(String posNumber, String posCode) {
-		// TODO Auto-generated method stub
-		WPosInfo info = new WPosInfo();
-		String uniqueID = state.getUniqueIDString();
-
-		info.setTerminalId(posNumber);
-		info.setValidateCode(posCode);
-		info.setFingerprint(uniqueID);
-
-		ZCWebService.getInstance().changePOS(info, new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-					Toast.makeText(getApplicationContext(), "更换成功",
-							Toast.LENGTH_SHORT).show();
-
-					hiddenKeyboard();
-					clearBackStack();
-					switchContent(settingPageFragment, false,
-							SettingFragment.TAG);
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-	}
-
-	@Override
-	public void onChangePwd(UserInfo info) {
-		// TODO Auto-generated method stub
-		ZCWebService.getInstance().changePassword(info, new Handler() {
-			@Override
-			public void dispatchMessage(Message msg) {
-
-				switch (msg.what) {
-				case ZCWebServiceParams.HTTP_START:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FINISH:
-					ZCLog.i(TAG, msg.obj.toString());
-					break;
-
-				case ZCWebServiceParams.HTTP_FAILED:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_SUCCESS:
-					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-					Toast.makeText(getApplicationContext(), "修改密码成功",
-							Toast.LENGTH_SHORT).show();
-
-					hiddenKeyboard();
-					clearBackStack();
-					switchContent(settingPageFragment, false,
-							SettingFragment.TAG);
-					break;
-
-				case ZCWebServiceParams.HTTP_UNAUTH:
-					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(getApplicationContext(), msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
-					break;
-
-				case ZCWebServiceParams.HTTP_THROWABLE:
-					Throwable e = (Throwable) msg.obj;
-					ZCLog.e(TAG, "catch thowable:", e);
-					break;
-
-				default:
-					ZCLog.i(TAG, "http nothing to do");
-					break;
-				}
-			}
-		});
-	}
+	// @Override
+	// public void activePos(String storeNumber, String posNumber) {
+	// // TODO Auto-generated method stub
+	// hiddenKeyboard();
+	//
+	// WPosInfo info = new WPosInfo();
+	// String uniqueID = state.getUniqueIDString();
+	//
+	// info.setTerminalId(posNumber);
+	// info.setMerchantId(storeNumber);
+	// info.setFingerprint(uniqueID);
+	//
+	// ZCWebService.getInstance().activePOS(info, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), "开通成功",
+	// Toast.LENGTH_SHORT).show();
+	//
+	// hiddenKeyboard();
+	// clearBackStack();
+	//
+	// role = userRole.ACTIVE;
+	// final Bundle args = new Bundle();
+	// args.putBoolean(SettingFragment.POS_ACTIVED, true);
+	// settingPageFragment.setBundle(args);
+	//
+	// switchContent(settingPageFragment, false,
+	// SettingFragment.TAG);
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	// }
+	//
+	// @Override
+	// public void onUnAuth() {
+	// // TODO Auto-generated method stub
+	// isAuth = false;
+	// clearBackStack();
+	// switchContent(loginPageFragment, false, LoginFragment.TAG);
+	// }
+
+	// private void purchase(final String amount) {
+	// ZCLog.i("consume", "doPurchase, amount: " + amount);
+	// ZCLog.i("consume", "keyId: " + keyIDString);
+	// ZCLog.i("consume", "psamId: " + psamIDString);
+	//
+	// LongxingcardRequest request = LongxingcardPurchase
+	// .requestInitCreditForPurchase_Longxing(amount, keyIDString,
+	// psamIDString);
+	//
+	// ZCLog.i("consume", request.toString());
+	//
+	// if (request.isOK()) {
+	//
+	// String checkResult = TransUtil.checkInputAmount(amount, 8, 2, true);
+	//
+	// String strAmount = checkResult.substring(4, checkResult.length());
+	//
+	// int bl = Integer.parseInt(request.getBalanceString())
+	// - Integer.parseInt(strAmount);
+	//
+	// final String lastBalance = Integer.toString(bl);
+	//
+	// ZCLog.i("consume", "lastbalace:" + lastBalance);
+	//
+	// ZCLog.i("consume", "init purchase");
+	//
+	// PurchaseInitInfo infoObj = new PurchaseInitInfo();
+	// infoObj.setInitResponse(request.getResponseString());
+	// infoObj.setAmount(request.getAmountString());
+	// infoObj.setPan(request.getPanString());
+	// infoObj.setIssuerId(request.getIssuerIdString());
+	// infoObj.setLng("000.000");
+	// infoObj.setLat("000.000");
+	//
+	// ZCWebService.getInstance().initForPurchase(infoObj, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	//
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	//
+	// ObjectMapper mapper = new ObjectMapper();
+	// try {
+	// requestUtil requestObj = mapper.readValue(
+	// msg.obj.toString(), requestUtil.class);
+	//
+	// ZCLog.i(TAG, requestObj.getDetail().toString());
+	//
+	// @SuppressWarnings("unchecked")
+	// Map<String, Object> _mapperMap = (Map<String, Object>) requestObj
+	// .getDetail();
+	//
+	// String dataString = _mapperMap.get("tradingOrder")
+	// .toString();
+	// String purchaseLogId = _mapperMap.get(
+	// "purchaseLogId").toString();
+	//
+	// ZCLog.i(TAG, "tradingOrder:" + dataString);
+	// ZCLog.i(TAG, "purchaseLogId:" + purchaseLogId);
+	//
+	// LongxingcardRequest _request = LongxingcardPurchase
+	// .requestCreditForPurche_Longxing(dataString);
+	//
+	// ZCLog.i("consume", _request.toString());
+	//
+	// if (_request.isOK()) {
+	//
+	// PurchaseUpdateInfo updateInfo = new PurchaseUpdateInfo();
+	// updateInfo.setSw(_request.getSwString());
+	// updateInfo.setLogId(purchaseLogId);
+	// updateInfo.setMac2(_request.getMac2String());
+	// updateInfo.setTac(_request.getTacString());
+	//
+	// updateInfo.setBalance(lastBalance);
+	//
+	// ZCLog.i(TAG, updateInfo.toString());
+	//
+	// ZCWebService.getInstance().updateForPurchase(
+	// updateInfo, new Handler() {
+	// @Override
+	// public void dispatchMessage(
+	// Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
+	// ZCLog.i(TAG, "消费结果上传成功");
+	// Bundle args = new Bundle();
+	// args.putString(
+	// PurseResultPosFragment.AMOUNT,
+	// amount);
+	//
+	// args.putString(
+	// PurseResultPosFragment.BALANCE,
+	// lastBalance);
+	//
+	// args.putString(
+	// PurseResultPosFragment.HINT,
+	// "完成交易");
+	//
+	// purseResultPosFragment
+	// .setBundle(args);
+	//
+	// switchContent(
+	// purseResultPosFragment,
+	// true,
+	// PurseResultPosFragment.TAG);
+	// break;
+	// }
+	// default:
+	// break;
+	// }
+	// }
+	// });
+	//
+	// } else {
+	//
+	// }
+	//
+	// } catch (JsonParseException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (JsonMappingException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// } catch (IOException e1) {
+	// // TODO Auto-generated catch block
+	// e1.printStackTrace();
+	// }
+	//
+	// break;
+	// default:
+	// break;
+	// }
+	// }
+	// });
+	// }
+	//
+	// }
+	//
+	// @Override
+	// public void onFinish() {
+	// // TODO Auto-generated method stub
+	// clearBackStack();
+	// switchContent(pursePosPageFragment, false, PursePosFragment.TAG);
+	// }
+	//
+	// @Override
+	// public void onChangePos(String posNumber, String posCode) {
+	// // TODO Auto-generated method stub
+	// WPosInfo info = new WPosInfo();
+	// String uniqueID = state.getUniqueIDString();
+	//
+	// info.setTerminalId(posNumber);
+	// info.setValidateCode(posCode);
+	// info.setFingerprint(uniqueID);
+	//
+	// ZCWebService.getInstance().changePOS(info, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), "更换成功",
+	// Toast.LENGTH_SHORT).show();
+	//
+	// hiddenKeyboard();
+	// clearBackStack();
+	// switchContent(settingPageFragment, false,
+	// SettingFragment.TAG);
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	// }
+	//
+	// @Override
+	// public void onChangePwd(UserInfo info) {
+	// // TODO Auto-generated method stub
+	// ZCWebService.getInstance().changePassword(info, new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	//
+	// switch (msg.what) {
+	// case ZCWebServiceParams.HTTP_START:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FINISH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_FAILED:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_SUCCESS:
+	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), "修改密码成功",
+	// Toast.LENGTH_SHORT).show();
+	//
+	// hiddenKeyboard();
+	// clearBackStack();
+	// switchContent(settingPageFragment, false,
+	// SettingFragment.TAG);
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_UNAUTH:
+	// ZCLog.i(TAG, msg.obj.toString());
+	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
+	// Toast.LENGTH_LONG).show();
+	// break;
+	//
+	// case ZCWebServiceParams.HTTP_THROWABLE:
+	// Throwable e = (Throwable) msg.obj;
+	// ZCLog.e(TAG, "catch thowable:", e);
+	// break;
+	//
+	// default:
+	// ZCLog.i(TAG, "http nothing to do");
+	// break;
+	// }
+	// }
+	// });
+	// }
 
 	// apk update
 	class updateHandler extends Handler {
