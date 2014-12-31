@@ -104,6 +104,10 @@
             android:name=".activity.PurseResultFailedActivity"
             android:screenOrientation="portrait" >
         </activity>
+        <activity
+            android:name=".activity.QueryLogOnlineActivity"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
 
 </manifest>

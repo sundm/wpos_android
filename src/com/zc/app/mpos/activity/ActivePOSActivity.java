@@ -166,7 +166,7 @@ public class ActivePOSActivity extends Activity {
 						Toast.LENGTH_LONG).show();
 				break;
 
-			case ZCWebServiceParams.HTTP_SUCCESS:
+			case ZCWebServiceParams.HTTP_SUCCESS: {
 				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
 				Toast.makeText(getApplicationContext(), "开通成功",
 						Toast.LENGTH_SHORT).show();
@@ -175,18 +175,27 @@ public class ActivePOSActivity extends Activity {
 				Bundle bundle = new Bundle();
 				bundle.putString("storeCode", storeNumberString);
 				bundle.putString("posNumber", posNumberString);
+				bundle.putBoolean("unAuth", false);
 				intent.putExtras(bundle);
 
 				ActivePOSActivity.this.setResult(ACTIVEPOS, intent);
 				ActivePOSActivity.this.finish();
 				break;
-
-			case ZCWebServiceParams.HTTP_UNAUTH:
+			}
+			case ZCWebServiceParams.HTTP_UNAUTH: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_LONG).show();
-				break;
+				Intent intent = new Intent(ActivePOSActivity.this,
+						MainActivity.class);
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("unAuth", true);
+				intent.putExtras(bundle);
 
+				ActivePOSActivity.this.setResult(ACTIVEPOS, intent);
+				ActivePOSActivity.this.finish();
+				break;
+			}
 			case ZCWebServiceParams.HTTP_THROWABLE:
 				Throwable e = (Throwable) msg.obj;
 				ZCLog.e(TAG, "catch thowable:", e);

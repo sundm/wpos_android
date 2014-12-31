@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.util.keyboardUtil;
@@ -95,17 +96,8 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		super.onResume();
 		Log.d(TAG, "onResume");
 
-		// if (bundle != null) {
-		// updateView(this.bundle);
-		// } else {
-		// balancEditText.setText("");
-		// }
-		//
-		// if (mKeyboardUtil != null) {
-		// mKeyboardUtil.hideKeyboard();
-		// }
-		//
-		// getBalance();
+		amount = 0.00f;
+		setAmount("0.00");
 	}
 
 	@Override
@@ -262,6 +254,10 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.purse_active_button: {
 			Log.i(TAG, "do purse");
+			if (amount < 0.00001f && amount > -0.00001f) {
+				Toast.makeText(getActivity().getApplicationContext(), "请输入金额",
+						Toast.LENGTH_SHORT).show();
+			}
 			amountString = amountTextView.getText().toString();
 			mCallback.onDoPurse(amountString);
 			break;

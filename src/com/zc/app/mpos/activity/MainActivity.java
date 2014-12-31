@@ -51,7 +51,6 @@ import android.widget.Toast;
 import com.nineoldandroids.view.ViewHelper;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
-import com.zc.app.mpos.fragment.OnlineLogFragment;
 import com.zc.app.mpos.fragment.OnlineLogFragment.OnOnlineLogPageListener;
 import com.zc.app.mpos.fragment.PursePosFragment;
 import com.zc.app.mpos.fragment.PursePosFragment.OnPursePosPageListener;
@@ -75,7 +74,7 @@ public class MainActivity extends FragmentActivity implements
 
 	private DragLayout dl;
 	private ListView lv;
-	private ImageView iv_icon;
+	private ImageView user_icon;
 	private RelativeLayout more_icon;
 	private LinearLayout ll;
 	private TextView userNameView;
@@ -83,19 +82,7 @@ public class MainActivity extends FragmentActivity implements
 	private TextView shopCodeView;
 
 	private android.support.v4.app.Fragment mContent;
-
-	// private LoginFragment loginPageFragment = null;
 	private PursePosFragment pursePosPageFragment = null;
-	// private PurseResultPosFragment purseResultPosFragment = null;
-	private OnlineLogFragment onlineLogFragment = null;
-	// private OfflineLogFragment offlineLogFragment = null;
-	// private RegisterFragment registerFragment = null;
-	//
-	// private SettingFragment settingPageFragment = null;
-	// private ActivePosFragment activePosPageFragment = null;
-	// private ApplyChangePosFragment applyChangePosFragment = null;
-	// private ChangePosFragment changePosFragment = null;
-	// private ChangePwdFragment changePwdFragment = null;
 
 	private String fragmentTag = "";
 
@@ -146,6 +133,17 @@ public class MainActivity extends FragmentActivity implements
 
 		// getServerVersion();
 		isPOSActive = false;
+		if (!NfcEnv.isNfcSupported(getApplicationContext())) {
+			// Toast.makeText(getApplicationContext(), "该设备不支持NFC硬件",
+			// Toast.LENGTH_SHORT).show();
+			notSupport();
+			return;
+		}
+
+		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
+			notEnable();
+			return;
+		}
 		getPOSInfo();
 	}
 
@@ -158,8 +156,14 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void onResume() {
 		super.onResume();
+		ZCLog.i(TAG, "onResume!");
 
 		NfcEnv.enableNfcForegroundDispatch(this);
+
+		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
+			notEnable();
+			return;
+		}
 
 	}
 
@@ -223,6 +227,13 @@ public class MainActivity extends FragmentActivity implements
 				case ZCWebServiceParams.HTTP_UNAUTH: {
 					ZCLog.i(TAG, msg.obj.toString());
 					isAuth = false;
+
+					Intent intent = new Intent(MainActivity.this,
+							LoginPage.class);
+
+					startActivity(intent);
+					MainActivity.this.finish();
+
 					break;
 				}
 
@@ -421,7 +432,7 @@ public class MainActivity extends FragmentActivity implements
 		ViewHelper.setScaleX(vg_left, 0.5f + 0.5f * percent);
 		ViewHelper.setScaleY(vg_left, 0.5f + 0.5f * percent);
 		ViewHelper.setAlpha(vg_left, percent);
-		ViewHelper.setAlpha(iv_icon, 1 - percent);
+		ViewHelper.setAlpha(user_icon, 1 - percent);
 
 		int color = (Integer) imageUtil.evaluate(percent,
 				Color.parseColor("#ff000000"), Color.parseColor("#00000000"));
@@ -435,7 +446,7 @@ public class MainActivity extends FragmentActivity implements
 		shopCodeView = (TextView) findViewById(R.id.tv_shop_text);
 		termailView = (TextView) findViewById(R.id.tv_ter_text);
 
-		iv_icon = (ImageView) findViewById(R.id.iv_icon);
+		user_icon = (ImageView) findViewById(R.id.user_icon);
 		more_icon = (RelativeLayout) findViewById(R.id.iv_funcation);
 		ll = (LinearLayout) findViewById(R.id.ll1);
 		lv = (ListView) findViewById(R.id.lv);
@@ -444,7 +455,6 @@ public class MainActivity extends FragmentActivity implements
 		state = new MircoPOState(this);
 
 		pursePosPageFragment = new PursePosFragment();
-		onlineLogFragment = new OnlineLogFragment();
 
 		Intent intent = getIntent();
 
@@ -513,9 +523,6 @@ public class MainActivity extends FragmentActivity implements
 				Log.i("click item", arg0.toString());
 				Log.i("click item", arg1.toString());
 				Log.i("click item", String.valueOf(arg3));
-				//
-				// Object fragementFragment = null;
-				// String fragmentTag = "";
 
 				switch (position) {
 				case 0: {
@@ -524,50 +531,9 @@ public class MainActivity extends FragmentActivity implements
 					startActivity(it);
 					break;
 				}
-				// case 0: {
-				// if (role == userRole.ACTIVE) {
-				// fragmentTag = PursePosFragment.TAG;
-				// fragementFragment = pursePosPageFragment;
-				// } else {
-				// Toast.makeText(MainActivity.this, "请先开通终端",
-				// Toast.LENGTH_SHORT).show();
-				// fragmentTag = SettingFragment.TAG;
-				// fragementFragment = settingPageFragment;
-				// }
-				// break;
-				// }
-				//
-				// case 1: {
-				// fragmentTag = OnlineLogFragment.TAG;
-				// fragementFragment = onlineLogFragment;
-				// break;
-				// }
-				//
-				// case 2: {
-				// fragmentTag = OfflineLogFragment.TAG;
-				// fragementFragment = offlineLogFragment;
-				// break;
-				// }
-				//
-				// case 3: {
-				// fragmentTag = SettingFragment.TAG;
-				// fragementFragment = settingPageFragment;
-				// break;
-				// }
-				//
-				// case 4: {
-				// break;
-				// }
-
 				default:
 					break;
 				}
-
-				// clearBackStack();
-				//
-				// switchContent(
-				// (android.support.v4.app.Fragment) fragementFragment,
-				// false, fragmentTag);
 
 				dl.close();
 			}
@@ -575,48 +541,6 @@ public class MainActivity extends FragmentActivity implements
 
 		switch (role) {
 		case ACTIVE: {
-
-			// state.getPOSInfoFromServer(new Handler() {
-			// @Override
-			// public void dispatchMessage(Message msg) {
-			//
-			// switch (msg.what) {
-			//
-			// case ZCWebServiceParams.HTTP_FAILED: {
-			// isAuth = false;
-			// clearBackStack();
-			// switchContent(
-			// (android.support.v4.app.Fragment) loginPageFragment,
-			// false, LoginFragment.TAG);
-			// break;
-			// }
-			// case ZCWebServiceParams.HTTP_SUCCESS: {
-			// keyIDString = state.getKeyID();
-			// psamIDString = state.getPsamID();
-			// ZCLog.i(TAG, "keyID:" + keyIDString + " psamID:"
-			// + psamIDString);
-			// switchContent(
-			// (android.support.v4.app.Fragment) pursePosPageFragment,
-			// false, PursePosFragment.TAG);
-			// break;
-			// }
-			//
-			// case ZCWebServiceParams.HTTP_UNAUTH: {
-			// isAuth = false;
-			// clearBackStack();
-			// switchContent(
-			// (android.support.v4.app.Fragment) loginPageFragment,
-			// false, LoginFragment.TAG);
-			// break;
-			// }
-			//
-			// default: {
-			// break;
-			// }
-			// }
-			// }
-			// });
-
 			break;
 		}
 		case NORMAL: {
@@ -640,6 +564,13 @@ public class MainActivity extends FragmentActivity implements
 
 			break;
 		}
+		case UNAUTH: {
+			ZCLog.i(TAG, "user is unauth!");
+			Intent it = new Intent(MainActivity.this, LoginPage.class);
+			startActivity(it);
+			MainActivity.this.finish();
+			break;
+		}
 
 		default: {
 
@@ -650,11 +581,10 @@ public class MainActivity extends FragmentActivity implements
 		switchContent((android.support.v4.app.Fragment) pursePosPageFragment,
 				false, PursePosFragment.TAG);
 
-		iv_icon.setOnClickListener(new OnClickListener() {
+		user_icon.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				dl.open();
-
 			}
 		});
 
@@ -664,8 +594,12 @@ public class MainActivity extends FragmentActivity implements
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				Log.i("onLinster", "onQueryLogOnline");
+				Intent it = new Intent(MainActivity.this,
+						QueryLogOnlineActivity.class);
 
-				switchContent(onlineLogFragment, true, OnlineLogFragment.TAG);
+				startActivity(it);
+				// switchContent(onlineLogFragment, true,
+				// OnlineLogFragment.TAG);
 			}
 		});
 
@@ -777,16 +711,38 @@ public class MainActivity extends FragmentActivity implements
 		}
 		case CHANGEPOS: {
 			ZCLog.i(TAG, "result_change_pos");
-			role = userRole.ACTIVE;
+			Bundle activePOSBuddle = data.getExtras();
+			isAuth = activePOSBuddle.getBoolean("unAuth", true);
+			if (isAuth) {
+				ZCLog.i(TAG, "user is unauth!");
+				role = userRole.UNAUTH;
+				Intent it = new Intent(MainActivity.this, LoginPage.class);
+				startActivity(it);
+				MainActivity.this.finish();
+			} else {
+				role = userRole.ACTIVE;
+			}
+
 			break;
 		}
 		case ACTIVEPOS: {
 			ZCLog.i(TAG, "result_active_pos");
 			// active pos 返回数据
-			role = userRole.ACTIVE;
+
 			Bundle activePOSBuddle = data.getExtras();
 			storeNumberString = activePOSBuddle.getString("storeCode");
 			termailNumberString = activePOSBuddle.getString("posNumber");
+			isAuth = activePOSBuddle.getBoolean("unAuth", true);
+			if (isAuth) {
+				ZCLog.i(TAG, "user is unauth!");
+				role = userRole.UNAUTH;
+				Intent it = new Intent(MainActivity.this, LoginPage.class);
+				startActivity(it);
+				MainActivity.this.finish();
+				break;
+			}
+
+			role = userRole.ACTIVE;
 
 			if (storeNumberString == null || termailNumberString == null
 					|| storeNumberString.isEmpty()
@@ -821,6 +777,45 @@ public class MainActivity extends FragmentActivity implements
 						}
 					});
 			builder.setNegativeButton("取消", null);
+			builder.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void notSupport() {
+		try {
+			AlertDialog.Builder builder = new Builder(this);
+			builder.setMessage("该设备不支持NFC，请退出程序");
+			builder.setTitle("确认");
+			builder.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							finish();
+							java.lang.System.exit(0);
+						}
+					});
+			builder.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void notEnable() {
+		try {
+			AlertDialog.Builder builder = new Builder(this);
+			builder.setMessage("NFC未打开，进入设置界面");
+			builder.setTitle("确认");
+			builder.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							NfcEnv.showNfcSetting(getApplicationContext());
+							finish();
+							java.lang.System.exit(0);
+						}
+					});
 			builder.show();
 		} catch (Exception e) {
 			e.printStackTrace();

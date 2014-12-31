@@ -138,8 +138,7 @@ public class WhatsnewPagesA extends Activity {
 	// 开始按钮方法，开始按钮在XML文件中onClick属性设置；
 	// 我试图把按钮在本activity中实例化并设置点击监听，但总是报错，使用这个方法后没有报错，原因没找到
 	public void startbutton(View v) {
-		Intent intent = new Intent(WhatsnewPagesA.this,
-				MainActivity.class);//WhatsnewAnimationA.class);
+		Intent intent = new Intent(WhatsnewPagesA.this, LoginPage.class);// WhatsnewAnimationA.class);
 		startActivity(intent);
 		WhatsnewPagesA.this.finish();
 	}

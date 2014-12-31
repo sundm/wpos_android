@@ -9,24 +9,24 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/top_line"
-        android:layout_marginLeft="70dp"
-        android:src="@drawable/timeline_green" />
+        android:layout_marginLeft="80dp"
+        android:src="@drawable/history_littledot" />
 
     <View
         android:id="@+id/bottom_line"
         android:layout_width="2dp"
         android:layout_height="35dp"
         android:layout_below="@id/img_icon"
-        android:layout_marginLeft="80dp"
-        android:background="@color/gray" />
+        android:layout_marginLeft="82dp"
+        android:background="@color/line_color" />
 
     <LinearLayout
         android:id="@+id/content_layout"
-        android:layout_width="match_parent"
+        android:layout_width="220dp"
         android:layout_height="match_parent"
-        android:layout_below="@id/top_line"
+        android:layout_marginTop="3dp"
         android:layout_toRightOf="@+id/img_icon"
-        android:background="@drawable/timeline_content"
+        android:background="@drawable/history_bar"
         android:orientation="horizontal" >
 
         <TextView
@@ -34,18 +34,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="消费" />
+            android:text="钱包刷卡" />
 
         <TextView
             android:id="@+id/tv_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="140dp" />
+            android:layout_marginLeft="80dp" />
 
         <TextView
+            android:id="@+id/tv_yuan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/tv_content"
+            android:layout_gravity="right"
             android:text="元" />
     </LinearLayout>
 
@@ -55,7 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/bottom_line"
         android:layout_alignRight="@+id/bottom_line"
-        android:layout_marginRight="10dp" />
+        android:layout_marginRight="12dp" />
 
     <View
         android:id="@+id/top_line"
@@ -63,6 +64,6 @@
         android:layout_height="15dp"
         android:layout_alignLeft="@+id/bottom_line"
         android:layout_alignParentTop="true"
-        android:background="@color/gray" />
+        android:background="@color/line_color" />
 
 </RelativeLayout>

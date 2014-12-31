@@ -9,7 +9,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,7 +23,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zc.app.mpos.R;
-import com.zc.app.mpos.R.color;
 import com.zc.app.sebc.lx.LongxingcardPurchase;
 import com.zc.app.sebc.lx.LongxingcardRequest;
 import com.zc.app.sebc.lx.NfcEnv;
@@ -119,7 +117,7 @@ public class PurseCardActivity extends Activity {
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(120), start_amount, start,
+		word.setSpan(new AbsoluteSizeSpan(110), start_amount, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -137,7 +135,7 @@ public class PurseCardActivity extends Activity {
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(100), start_user, end,
+		word.setSpan(new AbsoluteSizeSpan(90), start_user, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -164,8 +162,15 @@ public class PurseCardActivity extends Activity {
 					- Integer.parseInt(strAmount);
 
 			final String lastBalance = Integer.toString(bl);
+			String temp = Integer.toString(bl, 16);
+			while (temp.length() < 8) {
+				temp = "0" + temp;
+			}
 
-			ZCLog.i("consume", "lastbalace:" + lastBalance);
+			final String walletBalanceString = temp;
+
+			ZCLog.i("consume", "lastBalance:" + lastBalance);
+			ZCLog.i("consume", "walletBalanceString:" + walletBalanceString);
 
 			ZCLog.i("consume", "init purchase");
 
@@ -230,7 +235,7 @@ public class PurseCardActivity extends Activity {
 								updateInfo.setMac2(_request.getMac2String());
 								updateInfo.setTac(_request.getTacString());
 
-								updateInfo.setBalance(lastBalance);
+								updateInfo.setBalance(walletBalanceString);
 
 								ZCLog.i(TAG, updateInfo.toString());
 
@@ -241,9 +246,28 @@ public class PurseCardActivity extends Activity {
 													Message msg) {
 
 												switch (msg.what) {
+												case ZCWebServiceParams.HTTP_THROWABLE: {
+													ZCLog.i(TAG, "消费结果上传失败");
+													Intent it = new Intent(
+															PurseCardActivity.this,
+															PurseResultFailedActivity.class);
+
+													it.putExtra("res",
+															"消费结果上传失败");
+
+													startActivity(it);
+													break;
+												}
 												case ZCWebServiceParams.HTTP_FAILED: {
 													ZCLog.i(TAG, "消费结果上传失败");
+													Intent it = new Intent(
+															PurseCardActivity.this,
+															PurseResultFailedActivity.class);
 
+													it.putExtra("res",
+															"消费结果上传失败");
+
+													startActivity(it);
 													break;
 												}
 												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
@@ -275,12 +299,71 @@ public class PurseCardActivity extends Activity {
 										});
 
 							} else {
-								Intent it = new Intent(PurseCardActivity.this,
-										PurseResultFailedActivity.class);
 
-								it.putExtra("res", "卡片操作失败");
+								PurchaseUpdateInfo updateInfo = new PurchaseUpdateInfo();
+								updateInfo.setSw(_request.getSwString());
+								updateInfo.setLogId(purchaseLogId);
+								updateInfo.setMac2("");
+								updateInfo.setTac("");
+								updateInfo.setBalance("");
 
-								startActivity(it);
+								ZCLog.i(TAG, updateInfo.toString());
+
+								ZCWebService.getInstance().updateForPurchase(
+										updateInfo, new Handler() {
+											@Override
+											public void dispatchMessage(
+													Message msg) {
+
+												switch (msg.what) {
+												case ZCWebServiceParams.HTTP_THROWABLE: {
+													ZCLog.i(TAG,
+															"HTTP_THROWABLE");
+													ZCLog.i(TAG, "消费结果上传失败");
+													Intent it = new Intent(
+															PurseCardActivity.this,
+															PurseResultFailedActivity.class);
+
+													it.putExtra("res",
+															"消费结果上传失败");
+
+													startActivity(it);
+													break;
+												}
+												case ZCWebServiceParams.HTTP_FAILED: {
+													ZCLog.i(TAG, "HTTP_FAILED");
+													ZCLog.i(TAG,
+															msg.obj.toString());
+													Intent it = new Intent(
+															PurseCardActivity.this,
+															PurseResultFailedActivity.class);
+
+													it.putExtra("res",
+															msg.obj.toString());
+
+													startActivity(it);
+													break;
+												}
+												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
+													ZCLog.i(TAG, "消费结果上传成功");
+
+													Intent it = new Intent(
+															PurseCardActivity.this,
+															PurseResultFailedActivity.class);
+
+													it.putExtra("res", "卡片操作失败");
+
+													startActivity(it);
+
+													break;
+												}
+												default: {
+													break;
+												}
+												}
+											}
+										});
+
 							}
 
 						} catch (JsonParseException e1) {

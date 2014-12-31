@@ -1,5 +1,7 @@
 package com.zc.app.mpos.adapter;
 
+import java.math.BigDecimal;
+
 public class LogItem {
 	private String tradeTime;
 	private String tradeAmount;
@@ -9,6 +11,7 @@ public class LogItem {
 	}
 
 	public String getTradeAmount() {
+
 		return tradeAmount;
 	}
 
@@ -17,6 +20,9 @@ public class LogItem {
 	}
 
 	public void setTradeAmount(String tradeAmount) {
+		BigDecimal v1 = new BigDecimal(tradeAmount);
+		BigDecimal v2 = new BigDecimal("100.00");
+		tradeAmount = v1.divide(v2, 2, BigDecimal.ROUND_DOWN).toString();
 		this.tradeAmount = tradeAmount;
 	}
 

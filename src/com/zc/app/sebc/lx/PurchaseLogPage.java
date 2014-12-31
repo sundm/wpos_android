@@ -5,6 +5,7 @@ import java.util.List;
 public class PurchaseLogPage {
 	private List<PurchaseLog> purchaseLogQueryList;
 	private String count;
+	private String date;
 
 	public List<PurchaseLog> getPurchaseLogQueryList() {
 		return purchaseLogQueryList;
@@ -22,10 +23,20 @@ public class PurchaseLogPage {
 		this.count = count;
 	}
 
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
 	@Override
 	public String toString() {
 		return "PurchaseLogPage [purchaseLogQueryList=" + purchaseLogQueryList
-				+ ", count=" + count + "]";
+				+ ", count=" + count + ", date=" + date + "]";
 	}
+
+
 
 }

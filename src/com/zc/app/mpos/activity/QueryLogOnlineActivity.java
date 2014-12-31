@@ -1,28 +1,41 @@
 package com.zc.app.mpos.activity;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.zc.app.mpos.R;
-import com.zc.app.utils.UserInfo;
+import com.zc.app.mpos.adapter.LogDateItem;
+import com.zc.app.mpos.adapter.LogItem;
+import com.zc.app.mpos.adapter.TimeAxisAdapter;
+import com.zc.app.mpos.view.EmptyLayout;
+import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase;
+import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.Mode;
+import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.OnRefreshListener2;
+import com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView;
+import com.zc.app.sebc.lx.PurchaseLog;
+import com.zc.app.sebc.lx.PurchaseLogPage;
 import com.zc.app.utils.ZCLog;
 import com.zc.app.utils.ZCWebService;
 import com.zc.app.utils.ZCWebServiceParams;
@@ -30,151 +43,33 @@ import com.zc.app.utils.requestUtil;
 
 public class QueryLogOnlineActivity extends Activity {
 
-	EditText userOldPasswordBootstrapEditText;
-	EditText userNewPasswordBootstrapEditText;
-	EditText userPasswordAgainBootstrapEditText;
+	List<HashMap<String, Object>> logList = new ArrayList<HashMap<String, Object>>();
 
-	ImageView passwordImageView;
+	/**
+	 * 上拉刷新的控件
+	 */
+	private PullToRefreshListView mPullRefreshListView;
 
-	ImageView backImageView;
-	// Button sendCheckCodeButton;
-	Button changePwdButton;
+	private TimeAxisAdapter mAdapter;
 
-	private final static String TAG = "change_pwd_page";
+	private List<PurchaseLog> logs;
 
-	//private int second = 0;
+	private List<PurchaseLogPage> listPages = new ArrayList<PurchaseLogPage>();
+
+	private EmptyLayout mEmptyLayout;
+
+	private String dateString;
+
+	private final static String TAG = "log_page";
+
+	private ImageView backImageView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_change_pwd_page);
+		setContentView(R.layout.activity_online_log_page);
 
-		// final Handler handler = new Handler();
-		// final Runnable sendCheckCodeRunnable = new Runnable() {
-		// @Override
-		// public void run() {
-		// second++;
-		//
-		// sendCheckCodeButton.setEnabled(false);
-		// sendCheckCodeButton.setText(String.valueOf(60 - second)
-		// + "秒后\n重新发送");
-		//
-		// if (second == 60) {
-		// second = 0;
-		// sendCheckCodeButton.setEnabled(true);
-		// sendCheckCodeButton.setText(R.string.getCheckCode);
-		// } else {
-		// handler.postDelayed(this, 1000);
-		// }
-		//
-		// }
-		// };
-
-		userOldPasswordBootstrapEditText = (EditText) findViewById(R.id.changePwd_old_password_edit);
-
-		userNewPasswordBootstrapEditText = (EditText) findViewById(R.id.changePwd_password_edit);
-
-		userPasswordAgainBootstrapEditText = (EditText) findViewById(R.id.changePwd_password_agine_edit);
-
-		passwordImageView = (ImageView) findViewById(R.id.changePwd_password_again_img);
-		passwordImageView.setImageDrawable(null);
-
-		userPasswordAgainBootstrapEditText
-				.addTextChangedListener(new TextWatcher() {
-
-					@Override
-					public void onTextChanged(CharSequence s, int start,
-							int before, int count) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public void beforeTextChanged(CharSequence s, int start,
-							int count, int after) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public void afterTextChanged(Editable s) {
-						// TODO Auto-generated method stub
-						if (userNewPasswordBootstrapEditText.getText()
-								.toString().isEmpty()) {
-							passwordImageView.setImageDrawable(null);
-						} else if (userNewPasswordBootstrapEditText
-								.getText()
-								.toString()
-								.equals(userPasswordAgainBootstrapEditText
-										.getText().toString())) {
-							if (5 < userNewPasswordBootstrapEditText.getText()
-									.toString().length()
-									&& userNewPasswordBootstrapEditText
-											.getText().toString().length() < 15) {
-								passwordImageView
-										.setImageResource(R.drawable.ok);
-							} else {
-								passwordImageView
-										.setImageResource(R.drawable.fail);
-							}
-						} else {
-							passwordImageView.setImageResource(R.drawable.fail);
-						}
-
-					}
-				});
-
-		// sendCheckCodeButton = (Button) findViewById(R.id.register_phone_btn);
-		// sendCheckCodeButton.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View v) {
-		// // TODO Auto-generated method stub
-		// handler.postDelayed(sendCheckCodeRunnable, 100);
-		// }
-		// });
-
-		changePwdButton = (Button) findViewById(R.id.changePwd_button);
-		changePwdButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				hiddenKeyboard();
-
-				String oldPassword = userOldPasswordBootstrapEditText.getText()
-						.toString();
-
-				String passwordString = userNewPasswordBootstrapEditText
-						.getText().toString();
-				String passwordAgainString = userPasswordAgainBootstrapEditText
-						.getText().toString();
-
-				if (oldPassword.isEmpty()) {
-					Toast.makeText(getApplicationContext(), "旧密码不能为空",
-							Toast.LENGTH_LONG).show();
-					return;
-				} else if (passwordString.isEmpty()
-						|| passwordAgainString.isEmpty()) {
-					Toast.makeText(getApplicationContext(), "新密码不能为空",
-							Toast.LENGTH_LONG).show();
-					return;
-				} else if (!passwordString.equals(passwordAgainString)) {
-					Toast.makeText(getApplicationContext(), "密码不一致",
-							Toast.LENGTH_LONG).show();
-					return;
-				} else {
-					UserInfo info = new UserInfo();
-					info.setOldpassword(oldPassword);
-					info.setPassword(passwordString);
-					ZCWebService.getInstance().changePassword(info,
-							new MyHandler());
-				}
-
-			}
-		});
-
-		backImageView = (ImageView) findViewById(R.id.change_password_back);
+		backImageView = (ImageView) findViewById(R.id.log_back);
 		backImageView.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -184,81 +79,323 @@ public class QueryLogOnlineActivity extends Activity {
 			}
 		});
 
+		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.online_log_list);
+
+		mEmptyLayout = new EmptyLayout(this, mPullRefreshListView);
+
+		// 设置你需要的模式可选值为：disabled,pullFromStart,PULL_FROM_END,both,manualOnly
+		mPullRefreshListView.setMode(Mode.BOTH);
+
+		// 设置适配器
+		mAdapter = new TimeAxisAdapter(this, logList);
+
+		mPullRefreshListView.setAdapter(mAdapter);
+		// 设置监听事件
+		mPullRefreshListView
+				.setOnRefreshListener(new OnRefreshListener2<ListView>() {
+
+					@Override
+					public void onPullDownToRefresh(
+							PullToRefreshBase<ListView> refreshView) {
+						// TODO Auto-generated method stub
+						String label = DateUtils.formatDateTime(
+								getApplicationContext(),
+								System.currentTimeMillis(),
+								DateUtils.FORMAT_SHOW_TIME
+										| DateUtils.FORMAT_SHOW_DATE
+										| DateUtils.FORMAT_ABBREV_ALL);
+						// 显示最后更新的时间
+						refreshView.getLoadingLayoutProxy()
+								.setLastUpdatedLabel(label);
+
+						// 加载任务
+						SimpleDateFormat sdf = new SimpleDateFormat(
+								"yyyy-MM-dd");
+						String date = sdf.format(new java.util.Date());
+						getInitLog(date);
+					}
+
+					@Override
+					public void onPullUpToRefresh(
+							PullToRefreshBase<ListView> refreshView) {
+						// TODO Auto-generated method stub
+						String label = DateUtils.formatDateTime(
+								getApplicationContext(),
+								System.currentTimeMillis(),
+								DateUtils.FORMAT_SHOW_TIME
+										| DateUtils.FORMAT_SHOW_DATE
+										| DateUtils.FORMAT_ABBREV_ALL);
+						// 显示最后更新的时间
+						refreshView.getLoadingLayoutProxy()
+								.setLastUpdatedLabel(label);
+
+						// 加载任务
+						String date = addDate(dateString);
+						getMoreLog(date);
+						// new GetDataTask().execute();
+					}
+
+				});
 	}
 
-	private void hiddenKeyboard() {
-		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		// 得到InputMethodManager的实例
-		if (imm.isActive()) {
-			// 如果开启
-			imm.hideSoftInputFromWindow(QueryLogOnlineActivity.this
-					.getCurrentFocus().getWindowToken(),
-					InputMethodManager.HIDE_NOT_ALWAYS);
-		}
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		// 加载任务
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		String date = sdf.format(new java.util.Date());
+		getInitLog(date);
 	}
 
-	class MyHandler extends Handler {
+	private void getInitLog(final String date) {
 
-		@Override
-		public void dispatchMessage(Message msg) {
+		ZCLog.i(TAG, date);
 
-			switch (msg.what) {
-			case ZCWebServiceParams.HTTP_START:
-				ZCLog.i(TAG, msg.obj.toString());
-				break;
+		ZCWebService.getInstance().queryPurchaseLog(date, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
 
-			case ZCWebServiceParams.HTTP_FINISH:
-				ZCLog.i(TAG, msg.obj.toString());
-				break;
-
-			case ZCWebServiceParams.HTTP_FAILED:
-				ZCLog.i(TAG, msg.obj.toString());
-				Toast.makeText(getApplicationContext(), msg.obj.toString(),
-						Toast.LENGTH_LONG).show();
-				break;
-
-			case ZCWebServiceParams.HTTP_SUCCESS:
-				Toast.makeText(getApplicationContext(), "密码修改成功",
-						Toast.LENGTH_LONG).show();
-				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					requestUtil requestObj = mapper.readValue(
-							msg.obj.toString(), requestUtil.class);
-
-					ZCLog.i(TAG, requestObj.getDetail().toString());
-
-					QueryLogOnlineActivity.this.finish();
-
-				} catch (JsonParseException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (JsonMappingException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
+					ZCLog.i(TAG, msg.obj.toString());
+					listPages.clear();
+					mEmptyLayout.showLoading();
+					break;
 				}
 
-				break;
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					// Toast.makeText(getActivity(), msg.obj.toString(),
+					// Toast.LENGTH_SHORT).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_FINISH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					mPullRefreshListView.onRefreshComplete();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
 
-			case ZCWebServiceParams.HTTP_UNAUTH:
-				ZCLog.i(TAG, msg.obj.toString());
-				Toast.makeText(getApplicationContext(), msg.obj.toString(),
-						Toast.LENGTH_LONG).show();
-				break;
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
 
-			case ZCWebServiceParams.HTTP_THROWABLE:
-				Throwable e = (Throwable) msg.obj;
-				ZCLog.e(TAG, "catch thowable:", e);
-				break;
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
 
-			default:
-				ZCLog.i(TAG, "http nothing to do");
-				break;
+						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
+
+						PurchaseLogPage logPage = mapper.readValue(
+								detailString, PurchaseLogPage.class);
+
+						listPages.add(logPage);
+
+						initDatas();
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
 			}
-		}
+		});
+
+		return;
 	}
+
+	private void getMoreLog(final String date) {
+
+		ZCLog.i(TAG, date);
+
+		ZCWebService.getInstance().queryPurchaseLog(date, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
+					ZCLog.i(TAG, msg.obj.toString());
+					listPages.clear();
+					mEmptyLayout.showLoading();
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					// Toast.makeText(getActivity(), msg.obj.toString(),
+					// Toast.LENGTH_SHORT).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_FINISH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					mPullRefreshListView.onRefreshComplete();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+
+						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
+
+						PurchaseLogPage logPage = mapper.readValue(
+								detailString, PurchaseLogPage.class);
+
+						listPages.add(logPage);
+
+						putMoreDatas();
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
+			}
+		});
+
+		return;
+	}
+
+	private void initDatas() {
+		// 初始化数据和数据源
+		logList.clear();
+		for (int i = 0; i < listPages.size(); i++) {
+
+			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();
+			LogDateItem dateItem = new LogDateItem();
+			HashMap<String, Object> date_map = new HashMap<String, Object>();
+			dateItem.setDate(listPages.get(i).getDate());
+			dateItem.setCounter(listPages.get(i).getCount());
+
+			date_map.put("date", dateItem);
+			dateString = dateItem.getDate();
+
+			logList.add(date_map);
+
+			for (int j = 0; j < list.size(); j++) {
+				LogItem logItem = new LogItem();
+				HashMap<String, Object> time_map = new HashMap<String, Object>();
+				logItem.setTradeTime(list.get(j).getTime());
+				logItem.setTradeAmount(list.get(j).getAmount());
+				ZCLog.i(TAG, logItem.toString());
+				time_map.put("content", logItem);
+				logList.add(time_map);
+			}
+
+			ZCLog.i(TAG, logList.toString());
+			mAdapter.notifyDataSetChanged();
+		}
+
+	}
+
+	private void putMoreDatas() {
+		// 添加数据和数据源
+		ZCLog.i(TAG, "old list is :" + logList.toString());
+
+		for (int i = 0; i < listPages.size(); i++) {
+
+			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();
+			LogDateItem dateItem = new LogDateItem();
+			HashMap<String, Object> date_map = new HashMap<String, Object>();
+			dateItem.setDate(listPages.get(i).getDate());
+			dateItem.setCounter(listPages.get(i).getCount());
+
+			date_map.put("date", dateItem);
+			dateString = dateItem.getDate();
+
+			logList.add(logList.size(), date_map);
+
+			for (int j = 0; j < list.size(); j++) {
+				LogItem logItem = new LogItem();
+				HashMap<String, Object> time_map = new HashMap<String, Object>();
+				logItem.setTradeTime(list.get(j).getTime());
+				logItem.setTradeAmount(list.get(j).getAmount());
+				ZCLog.i(TAG, logItem.toString());
+				time_map.put("content", logItem);
+				logList.add(logList.size(), time_map);
+			}
+
+			ZCLog.i(TAG, logList.toString());
+			mAdapter.notifyDataSetChanged();
+		}
+
+	}
+
+	private String addDate(final String dateString) {
+		Calendar calendar = new GregorianCalendar();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		Date queryDate;
+		try {
+			queryDate = formatter.parse(dateString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+
+		calendar.setTime(queryDate);
+		calendar.add(calendar.DATE, -1);// 把日期往后增加一天.整数往后推,负数往前移动
+		queryDate = calendar.getTime(); // 这个时间就是日期往后推一天的结果
+
+		return formatter.format(queryDate);
+	}
+
 }

@@ -39,7 +39,7 @@
     <RelativeLayout
         android:id="@+id/purse_result_pos_div"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="match_parent" >
 
         <!-- 收款人 -->
 

@@ -32,7 +32,7 @@ public class ChangePOSActivity extends Activity {
 	Button changePOSButton;
 
 	private final static String TAG = "change_pos_page";
-	private String phoneString;
+	// private String phoneString;
 	private int second = 0;
 	private String uniqueID;
 
@@ -68,7 +68,7 @@ public class ChangePOSActivity extends Activity {
 		activeCodeEditText = (EditText) findViewById(R.id.change_pos_code_edit);
 
 		uniqueID = getIntent().getStringExtra("uniqueID");
-		phoneString = getIntent().getStringExtra("phone");
+		// phoneString = getIntent().getStringExtra("phone");
 
 		sendCheckCodeButton = (Button) findViewById(R.id.change_pos_get_code_btn);
 		sendCheckCodeButton.setOnClickListener(new OnClickListener() {
@@ -77,59 +77,56 @@ public class ChangePOSActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 
-				if (phoneString.isEmpty()) {
-					Toast.makeText(getApplicationContext(), "该用户注册手机号为空",
-							Toast.LENGTH_LONG).show();
-					return;
-				} else {
-					handler.postDelayed(sendCheckCodeRunnable, 100);
-					ZCWebService.getInstance().getRegisterCode(phoneString,
-							new Handler() {
-								@Override
-								public void dispatchMessage(Message msg) {
+				handler.postDelayed(sendCheckCodeRunnable, 100);
+				ZCWebService.getInstance().getChangeCode(new Handler() {
+					@Override
+					public void dispatchMessage(Message msg) {
 
-									switch (msg.what) {
-									case ZCWebServiceParams.HTTP_START:
-										ZCLog.i(TAG, msg.obj.toString());
-										break;
+						switch (msg.what) {
+						case ZCWebServiceParams.HTTP_START:
+							ZCLog.i(TAG, msg.obj.toString());
+							break;
 
-									case ZCWebServiceParams.HTTP_FINISH:
-										ZCLog.i(TAG, msg.obj.toString());
-										break;
+						case ZCWebServiceParams.HTTP_FINISH:
+							ZCLog.i(TAG, msg.obj.toString());
+							break;
 
-									case ZCWebServiceParams.HTTP_FAILED:
-										ZCLog.i(TAG, msg.obj.toString());
-										break;
+						case ZCWebServiceParams.HTTP_FAILED:
+							ZCLog.i(TAG, msg.obj.toString());
+							Toast.makeText(getApplicationContext(),
+									msg.obj.toString(), Toast.LENGTH_SHORT)
+									.show();
+							break;
 
-									case ZCWebServiceParams.HTTP_SUCCESS:
-										ZCLog.i(TAG, ">>>>>>>>>>>>>>>>"
-												+ msg.obj.toString());
-										Toast.makeText(getApplicationContext(),
-												"短信已发送，请耐心等待",
-												Toast.LENGTH_SHORT).show();
+						case ZCWebServiceParams.HTTP_SUCCESS:
+							ZCLog.i(TAG,
+									">>>>>>>>>>>>>>>>" + msg.obj.toString());
+							Toast.makeText(getApplicationContext(),
+									"短信已发送，请耐心等待", Toast.LENGTH_SHORT).show();
 
-										break;
+							break;
 
-									case ZCWebServiceParams.HTTP_UNAUTH:
-										ZCLog.i(TAG, msg.obj.toString());
-										Toast.makeText(getApplicationContext(),
-												msg.obj.toString(),
-												Toast.LENGTH_LONG).show();
-										break;
+						case ZCWebServiceParams.HTTP_UNAUTH:
+							ZCLog.i(TAG, msg.obj.toString());
+							Toast.makeText(getApplicationContext(),
+									msg.obj.toString(), Toast.LENGTH_LONG)
+									.show();
 
-									case ZCWebServiceParams.HTTP_THROWABLE:
-										Throwable e = (Throwable) msg.obj;
-										ZCLog.e(TAG, "catch thowable:", e);
-										break;
+							break;
 
-									default:
-										ZCLog.i(TAG, "http nothing to do");
-										break;
-									}
-								}
-							});
-				}
+						case ZCWebServiceParams.HTTP_THROWABLE:
+							Throwable e = (Throwable) msg.obj;
+							ZCLog.e(TAG, "catch thowable:", e);
+							break;
+
+						default:
+							ZCLog.i(TAG, "http nothing to do");
+							break;
+						}
+					}
+				});
 			}
+
 		});
 
 		changePOSButton = (Button) findViewById(R.id.change_submit_button);
@@ -159,7 +156,7 @@ public class ChangePOSActivity extends Activity {
 				} else {
 					WPosInfo info = new WPosInfo();
 
-					info.setTerminalId(storeNumber);
+					info.setMerchantId(storeNumber);
 					info.setValidateCode(checkCode);
 					info.setFingerprint(uniqueID);
 
@@ -211,30 +208,40 @@ public class ChangePOSActivity extends Activity {
 						Toast.LENGTH_LONG).show();
 				break;
 
-			case ZCWebServiceParams.HTTP_SUCCESS:
+			case ZCWebServiceParams.HTTP_SUCCESS: {
 				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
 				Toast.makeText(getApplicationContext(), "更换成功",
 						Toast.LENGTH_SHORT).show();
 
 				Intent intent = new Intent(ChangePOSActivity.this,
 						MainActivity.class);
-				// Bundle bundle = new Bundle();
-				// bundle.putString("storeCode", storeNumberString);
-				// bundle.putString("posNumber", posNumberString);
-				// intent.putExtras(bundle);
+
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("unAuth", false);
+				intent.putExtras(bundle);
 
 				ChangePOSActivity.this.setResult(CHANGEPOS, intent);
 				ChangePOSActivity.this.finish();
 
-				ChangePOSActivity.this.finish();
 				break;
-
-			case ZCWebServiceParams.HTTP_UNAUTH:
+			}
+			case ZCWebServiceParams.HTTP_UNAUTH: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_LONG).show();
-				break;
 
+				Intent intent = new Intent(ChangePOSActivity.this,
+						MainActivity.class);
+
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("unAuth", true);
+				intent.putExtras(bundle);
+
+				ChangePOSActivity.this.setResult(CHANGEPOS, intent);
+				ChangePOSActivity.this.finish();
+
+				break;
+			}
 			case ZCWebServiceParams.HTTP_THROWABLE:
 				Throwable e = (Throwable) msg.obj;
 				ZCLog.e(TAG, "catch thowable:", e);

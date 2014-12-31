@@ -1,8 +1,12 @@
 package com.zc.app.mpos.fragment;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,7 +15,6 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Activity;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zc.app.mpos.R;
+import com.zc.app.mpos.adapter.LogDateItem;
 import com.zc.app.mpos.adapter.LogItem;
 import com.zc.app.mpos.adapter.TimeAxisAdapter;
 import com.zc.app.mpos.view.EmptyLayout;
@@ -64,18 +68,20 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 
 	private EmptyLayout mEmptyLayout;
 
-	final Handler handler = new Handler() {
-		public void handleMessage() {
-			HashMap<String, Object> map0 = new HashMap<String, Object>();
-			LogItem logItem = new LogItem();
-			logItem.setTradeTime("12:12:32");
-			logItem.setTradeAmount("120");
-			map0.put("content", logItem);
-			// logList.add(map0);
+	private String dateString;
 
-			mAdapter.add(map0);
-		}
-	};
+	// final Handler handler = new Handler() {
+	// public void handleMessage() {
+	// HashMap<String, Object> map0 = new HashMap<String, Object>();
+	// LogItem logItem = new LogItem();
+	// logItem.setTradeTime("12:12:32");
+	// logItem.setTradeAmount("120");
+	// map0.put("content", logItem);
+	// // logList.add(map0);
+	//
+	// mAdapter.add(map0);
+	// }
+	// };
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -131,13 +137,9 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		super.onResume();
 		Log.d(TAG, "onResume");
 
-		if (bundle != null) {
-			updateView(this.bundle);
-		}
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-		String date = sdf.format(new java.util.Date());
-		getTransactionDetails(date);
+		// SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		// String date = sdf.format(new java.util.Date());
+		// getTransactionDetails(date);
 	}
 
 	@Override
@@ -212,9 +214,11 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 						refreshView.getLoadingLayoutProxy()
 								.setLastUpdatedLabel(label);
 
-						// 模拟加载任务
-
-						new GetDataTask().execute();
+						// 加载任务
+						SimpleDateFormat sdf = new SimpleDateFormat(
+								"yyyy-MM-dd");
+						String date = sdf.format(new java.util.Date());
+						getInitLog(date);
 					}
 
 					@Override
@@ -231,20 +235,17 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 						refreshView.getLoadingLayoutProxy()
 								.setLastUpdatedLabel(label);
 
-						// 模拟加载任务
-
-						new GetDataTask().execute();
+						// 加载任务
+						String date = addDate(dateString);
+						getMoreLog(date);
+						// new GetDataTask().execute();
 					}
 
 				});
 
 	}
 
-	public void getTransactionDetails(final String date) {
-
-		// PurchaseLogQuery logQuery = new PurchaseLogQuery();
-		// logQuery.setStart("20141001");
-		// logQuery.setEnd("20141030");
+	private void getInitLog(final String date) {
 
 		ZCLog.i(TAG, date);
 
@@ -268,6 +269,11 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 					mEmptyLayout.showError();
 					break;
 				}
+				case ZCWebServiceParams.HTTP_FINISH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					mPullRefreshListView.onRefreshComplete();
+					break;
+				}
 				case ZCWebServiceParams.HTTP_SUCCESS: {
 					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
 
@@ -285,12 +291,6 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 								detailString, PurchaseLogPage.class);
 
 						listPages.add(logPage);
-
-						if (Integer.valueOf(logPage.getCount()) < 10) {
-
-						}
-
-						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + logs.toString());
 
 						initDatas();
 
@@ -326,59 +326,205 @@ public class OnlineLogFragment extends Fragment implements OnClickListener {
 		return;
 	}
 
+	private void getMoreLog(final String date) {
+
+		ZCLog.i(TAG, date);
+
+		ZCWebService.getInstance().queryPurchaseLog(date, new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
+					ZCLog.i(TAG, msg.obj.toString());
+					listPages.clear();
+					mEmptyLayout.showLoading();
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					// Toast.makeText(getActivity(), msg.obj.toString(),
+					// Toast.LENGTH_SHORT).show();
+					mEmptyLayout.setErrorMessage(msg.obj.toString());
+					mEmptyLayout.showError();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_FINISH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					mPullRefreshListView.onRefreshComplete();
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+
+						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
+
+						PurchaseLogPage logPage = mapper.readValue(
+								detailString, PurchaseLogPage.class);
+
+						listPages.add(logPage);
+
+						putMoreDatas();
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getActivity(), msg.obj.toString(),
+							Toast.LENGTH_LONG).show();
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
+			}
+		});
+
+		return;
+	}
+
 	private void initDatas() {
 		// 初始化数据和数据源
+		logList.clear();
 		for (int i = 0; i < listPages.size(); i++) {
 
 			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();
+			LogDateItem dateItem = new LogDateItem();
+			HashMap<String, Object> date_map = new HashMap<String, Object>();
+			dateItem.setDate(listPages.get(i).getDate());
+			dateItem.setCounter(listPages.get(i).getCount());
+
+			date_map.put("date", dateItem);
+			dateString = dateItem.getDate();
+
+			logList.add(date_map);
+
 			for (int j = 0; j < list.size(); j++) {
-				HashMap<String, Object> map = new HashMap<String, Object>();
 				LogItem logItem = new LogItem();
-				logItem.setTradeTime(list.get(i).getTime());
-				logItem.setTradeAmount(list.get(i).getAmount());
-				map.put("content", logItem);
+				HashMap<String, Object> time_map = new HashMap<String, Object>();
+				logItem.setTradeTime(list.get(j).getTime());
+				logItem.setTradeAmount(list.get(j).getAmount());
+				ZCLog.i(TAG, logItem.toString());
+				time_map.put("content", logItem);
+				logList.add(time_map);
 			}
 
-		}
-
-	}
-
-	private class GetDataTask extends
-			AsyncTask<Void, Void, HashMap<String, Object>> {
-
-		@Override
-		protected HashMap<String, Object> doInBackground(Void... params) {
-			HashMap<String, Object> itemDetailFormat = new HashMap<String, Object>();
-
-			try {
-				Thread.sleep(1000);
-
-				LogItem logItem = new LogItem();
-				logItem.setTradeTime("12:12:32");
-				logItem.setTradeAmount("120");
-				itemDetailFormat.put("content", logItem);
-
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			return itemDetailFormat;
-		}
-
-		@Override
-		protected void onPostExecute(HashMap<String, Object> result) {
-			ZCLog.i(TAG, result.toString());
-
-			logList.add(0, result);
+			ZCLog.i(TAG, logList.toString());
 			mAdapter.notifyDataSetChanged();
-			// Call onRefreshComplete when the list has been refreshed.
-			mPullRefreshListView.onRefreshComplete();
-
-			super.onPostExecute(result);
 		}
+
 	}
 
-	private void updateView(Bundle bundle) {
+	private void putMoreDatas() {
+		// 添加数据和数据源
+		ZCLog.i(TAG, "old list is :" + logList.toString());
+
+		for (int i = 0; i < listPages.size(); i++) {
+
+			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();
+			LogDateItem dateItem = new LogDateItem();
+			HashMap<String, Object> date_map = new HashMap<String, Object>();
+			dateItem.setDate(listPages.get(i).getDate());
+			dateItem.setCounter(listPages.get(i).getCount());
+
+			date_map.put("date", dateItem);
+			dateString = dateItem.getDate();
+
+			logList.add(logList.size(), date_map);
+
+			for (int j = 0; j < list.size(); j++) {
+				LogItem logItem = new LogItem();
+				HashMap<String, Object> time_map = new HashMap<String, Object>();
+				logItem.setTradeTime(list.get(j).getTime());
+				logItem.setTradeAmount(list.get(j).getAmount());
+				ZCLog.i(TAG, logItem.toString());
+				time_map.put("content", logItem);
+				logList.add(logList.size(), time_map);
+			}
+
+			ZCLog.i(TAG, logList.toString());
+			mAdapter.notifyDataSetChanged();
+		}
+
+	}
+
+	// private class GetDataTask extends
+	// AsyncTask<Void, Void, HashMap<String, Object>> {
+	//
+	// @Override
+	// protected HashMap<String, Object> doInBackground(Void... params) {
+	// HashMap<String, Object> itemDetailFormat = new HashMap<String, Object>();
+	//
+	// try {
+	// Thread.sleep(1000);
+	//
+	// LogItem logItem = new LogItem();
+	// logItem.setTradeTime("12:12:32");
+	// logItem.setTradeAmount("120");
+	// itemDetailFormat.put("content", logItem);
+	//
+	// } catch (InterruptedException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// return itemDetailFormat;
+	// }
+	//
+	// @Override
+	// protected void onPostExecute(HashMap<String, Object> result) {
+	// ZCLog.i(TAG, result.toString());
+	//
+	// int index = logList.size();
+	// logList.add(index, result);
+	// mAdapter.notifyDataSetChanged();
+	// // Call onRefreshComplete when the list has been refreshed.
+	// mPullRefreshListView.onRefreshComplete();
+	//
+	// super.onPostExecute(result);
+	// }
+	// }
+
+	private String addDate(final String dateString) {
+		Calendar calendar = new GregorianCalendar();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		Date queryDate;
+		try {
+			queryDate = formatter.parse(dateString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+
+		calendar.setTime(queryDate);
+		calendar.add(calendar.DATE, -1);// 把日期往后增加一天.整数往后推,负数往前移动
+		queryDate = calendar.getTime(); // 这个时间就是日期往后推一天的结果
+
+		return formatter.format(queryDate);
 	}
 
 	@Override

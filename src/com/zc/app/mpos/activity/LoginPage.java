@@ -139,46 +139,7 @@ public class LoginPage extends Activity {
 
 					String fingerprint = state.getUniqueIDString();
 
-					InputStream ins;
-					try {
-						ins = getApplicationContext().getAssets().open(
-								"wpos.key");
-						CertificateFactory cerFactory = CertificateFactory
-								.getInstance("X.509");
-						Certificate cer = cerFactory.generateCertificate(ins);
-						KeyStore keyStore = KeyStore
-								.getInstance("PKCS12", "BC");
-						keyStore.load(null, null);
-						keyStore.setCertificateEntry("trust", cer);
-						SSLSocketFactory socketFactory = new SSLSocketFactory(
-								keyStore);
-						socketFactory
-								.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-						ZCWebService.getInstance().setSSLSocketFactory(
-								socketFactory);
-
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (CertificateException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (KeyStoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (NoSuchProviderException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (NoSuchAlgorithmException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (KeyManagementException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (UnrecoverableKeyException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					
 
 					ZCWebService.getInstance().userLogin(info, fingerprint,
 							new MyHandler());

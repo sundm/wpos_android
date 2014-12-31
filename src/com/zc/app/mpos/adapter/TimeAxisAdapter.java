@@ -16,6 +16,7 @@ import com.zc.app.utils.ZCLog;
 
 public class TimeAxisAdapter extends BaseAdapter {
 
+	private final static String TAG = "axisAdapter";
 	private List<HashMap<String, Object>> list;
 
 	private Context context;
@@ -63,20 +64,21 @@ public class TimeAxisAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		Log.d("getView", "This is position:" + position);
-
-		// if (convertView == null) {
+		ZCLog.i(TAG, "This is position:" + position);
 
 		HashMap<String, Object> map = list.get(position);
 
-		if (map.get("day") != null) {
-			ZCLog.i("listviewadapter", "set date");
+		ZCLog.i(TAG, "list is :" + list.toString());
+		ZCLog.i(TAG, "map is :" + map.toString());
+
+		if (map.get("date") != null) {
+			ZCLog.i(TAG, "set date");
 			convertView = LayoutInflater.from(context).inflate(
 					R.layout.day_item, null);
 
 			DateViewHolder viewHolder = new DateViewHolder();
 
-			LogDateItem item = (LogDateItem) list.get(position).get("day");
+			LogDateItem item = (LogDateItem) list.get(position).get("date");
 
 			viewHolder.tvCounterTextView = (TextView) convertView
 					.findViewById(R.id.tv_counter);
@@ -92,13 +94,16 @@ public class TimeAxisAdapter extends BaseAdapter {
 		}
 
 		if (map.get("content") != null) {
-			ZCLog.i("listviewadapter", "set time");
+			ZCLog.i(TAG, "set time");
 			convertView = LayoutInflater.from(context).inflate(
 					R.layout.time_item, null);
 
 			TimeViewHolder viewHolder = new TimeViewHolder();
 
 			LogItem item = (LogItem) list.get(position).get("content");
+
+			ZCLog.i(TAG, String.valueOf(position));
+			ZCLog.i(TAG, item.toString());
 
 			viewHolder.tvAmountTextView = (TextView) convertView
 					.findViewById(R.id.tv_content);

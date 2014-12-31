@@ -6,8 +6,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/background_login"
+    android:background="#FFFFFFFF"
     android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/title_height"
+        android:background="#0088cf" >
+
+        <ImageView
+            android:id="@+id/log_back"
+            style="@style/title_right_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/queryLogOlTitle"
+            android:src="@drawable/button_details_gohome" />
+
+        <TextView
+            android:id="@+id/textview_details_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/queryLogOlTitle"
+            android:textColor="#ffffffff"
+            android:textSize="20sp" />
+    </FrameLayout>
 
     <!--
          padding 内边距   layout_margin 外边距  
@@ -32,7 +55,7 @@
             android:fastScrollEnabled="false"
             android:footerDividersEnabled="false"
             android:headerDividersEnabled="false"
-            android:scrollbars="none">
+            android:scrollbars="none" >
         </com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView>
     </RelativeLayout>
 

@@ -420,6 +420,18 @@ public class ZCWebService {
 
 	}
 
+	public boolean getChangeCode(final Handler _handler) {
+		if (_handler == null) {
+			return false;
+		}
+
+		String postURL = ZCWebServiceParams.CHANGEBYPOS_URL;
+
+		doBasicPost(postURL, null, _handler);
+		return true;
+
+	}
+
 	public boolean isExistUserName(final String username, final Handler _handler) {
 		if (username == null || _handler == null) {
 			return false;
@@ -524,7 +536,7 @@ public class ZCWebService {
 		String postURL = ZCWebServiceParams.VALIDATEPOS_URL;
 
 		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
-		paramsMap.put("terminalId", info.getTerminalId());
+		paramsMap.put("merchantId", info.getMerchantId());
 		paramsMap.put("validateCode", info.getValidateCode());
 		paramsMap.put("fingerprint", info.getFingerprint());
 
