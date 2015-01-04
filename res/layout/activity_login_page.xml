@@ -73,6 +73,7 @@
             android:background="@drawable/edittext_radius"
             android:hint="@string/login_username_hint"
             android:inputType="text"
+            android:maxLength="16"
             android:textColor="#ffffffff"
             android:textColorHint="#80ffffff"
             android:textSize="12sp" />
@@ -118,6 +119,7 @@
             android:background="@drawable/edittext_radius"
             android:hint="@string/login_password_hint"
             android:inputType="textPassword"
+            android:maxLength="14"
             android:textColor="#ffffffff"
             android:textColorHint="#80ffffff"
             android:textSize="12sp" />

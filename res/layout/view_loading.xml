@@ -16,11 +16,11 @@
         android:id="@+id/textViewMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:text="@string/loading_message"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:gravity="center_horizontal"
-        android:layout_gravity="center_horizontal" />
+        android:text="asdf"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Button
         android:id="@+id/buttonLoading"

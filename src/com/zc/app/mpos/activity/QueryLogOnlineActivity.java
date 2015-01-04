@@ -15,6 +15,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -52,8 +53,6 @@ public class QueryLogOnlineActivity extends Activity {
 
 	private TimeAxisAdapter mAdapter;
 
-	private List<PurchaseLog> logs;
-
 	private List<PurchaseLogPage> listPages = new ArrayList<PurchaseLogPage>();
 
 	private EmptyLayout mEmptyLayout;
@@ -63,6 +62,8 @@ public class QueryLogOnlineActivity extends Activity {
 	private final static String TAG = "log_page";
 
 	private ImageView backImageView;
+
+	private final static int QUERYLOG = 14;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -214,8 +215,14 @@ public class QueryLogOnlineActivity extends Activity {
 					ZCLog.i(TAG, msg.obj.toString());
 					Toast.makeText(getApplicationContext(), msg.obj.toString(),
 							Toast.LENGTH_LONG).show();
-					mEmptyLayout.setErrorMessage(msg.obj.toString());
-					mEmptyLayout.showError();
+					Intent intent = new Intent(QueryLogOnlineActivity.this,
+							MainActivity.class);
+					Bundle bundle = new Bundle();
+					bundle.putBoolean("unAuth", true);
+					intent.putExtras(bundle);
+
+					QueryLogOnlineActivity.this.setResult(QUERYLOG, intent);
+					QueryLogOnlineActivity.this.finish();
 					break;
 				}
 
@@ -297,8 +304,14 @@ public class QueryLogOnlineActivity extends Activity {
 					ZCLog.i(TAG, msg.obj.toString());
 					Toast.makeText(getApplicationContext(), msg.obj.toString(),
 							Toast.LENGTH_LONG).show();
-					mEmptyLayout.setErrorMessage(msg.obj.toString());
-					mEmptyLayout.showError();
+					Intent intent = new Intent(QueryLogOnlineActivity.this,
+							MainActivity.class);
+					Bundle bundle = new Bundle();
+					bundle.putBoolean("unAuth", true);
+					intent.putExtras(bundle);
+
+					QueryLogOnlineActivity.this.setResult(QUERYLOG, intent);
+					QueryLogOnlineActivity.this.finish();
 					break;
 				}
 
@@ -317,6 +330,12 @@ public class QueryLogOnlineActivity extends Activity {
 	private void initDatas() {
 		// 初始化数据和数据源
 		logList.clear();
+
+		if (listPages.isEmpty()) {
+			mEmptyLayout.showEmpty();
+			return;
+		}
+
 		for (int i = 0; i < listPages.size(); i++) {
 
 			List<PurchaseLog> list = listPages.get(i).getPurchaseLogQueryList();

@@ -54,9 +54,9 @@ public class EmptyLayout {
 	// default values
 	// ---------------------------
 	private int mEmptyType = TYPE_LOADING;
-	private String mErrorMessage = "Oops! Something wrong happened";
-	private String mEmptyMessage = "No items yet";
-	private String mLoadingMessage = "Please wait";
+	private String mErrorMessage = "糟糕，查询失败";
+	private String mEmptyMessage = "最近三月没有交易日志";
+	private String mLoadingMessage = "正在查询,请稍后";
 	private int mLoadingViewButtonId = R.id.buttonLoading;
 	private int mErrorViewButtonId = R.id.buttonError;
 	private int mEmptyViewButtonId = R.id.buttonEmpty;

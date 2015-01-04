@@ -1,18 +1,7 @@
 package com.zc.app.mpos.activity;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -63,6 +52,11 @@ public class LoginPage extends Activity {
 	private String username;
 
 	private final static String TAG = "loginPage";
+
+	public static final String action = "login.broadcast.action";
+
+	private String userNameRegex = "[a-zA-Z0-9_]{4,16}";
+	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
 
 	private MircoPOState state;
 
@@ -131,6 +125,14 @@ public class LoginPage extends Activity {
 					Toast.makeText(getApplicationContext(), "用户名或密码为空",
 							Toast.LENGTH_LONG).show();
 					return;
+				} else if (!checkUserName(username)) {
+					Toast.makeText(getApplicationContext(), "用户名格式错误",
+							Toast.LENGTH_LONG).show();
+					return;
+				} else if (!checkPassword(password)) {
+					Toast.makeText(getApplicationContext(), "密码格式错误",
+							Toast.LENGTH_LONG).show();
+					return;
 				} else {
 					ZCLog.i(TAG, "longin and get info");
 					UserInfo info = new UserInfo();
@@ -138,8 +140,6 @@ public class LoginPage extends Activity {
 					info.setPassword(password);
 
 					String fingerprint = state.getUniqueIDString();
-
-					
 
 					ZCWebService.getInstance().userLogin(info, fingerprint,
 							new MyHandler());
@@ -229,18 +229,28 @@ public class LoginPage extends Activity {
 		public void dispatchMessage(Message msg) {
 
 			switch (msg.what) {
-			case ZCWebServiceParams.HTTP_START:
+			case ZCWebServiceParams.HTTP_START: {
 				ZCLog.i(TAG, msg.obj.toString());
-				break;
+				Intent loadingIntent = new Intent();
 
-			case ZCWebServiceParams.HTTP_FINISH:
+				loadingIntent.setClass(LoginPage.this, LoadingActivity.class);
+				startActivity(loadingIntent);
+				break;
+			}
+			case ZCWebServiceParams.HTTP_FINISH: {
 				ZCLog.i(TAG, msg.obj.toString());
+				Intent intent = new Intent(action);
+				intent.putExtra("data", 1);
+				sendBroadcast(intent);
 				break;
-
+			}
 			case ZCWebServiceParams.HTTP_FAILED:
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_LONG).show();
+				Intent intent = new Intent(action);
+				intent.putExtra("data", 1);
+				sendBroadcast(intent);
 				break;
 
 			case ZCWebServiceParams.HTTP_SUCCESS:
@@ -260,16 +270,16 @@ public class LoginPage extends Activity {
 					requestUtil requestObj = mapper.readValue(
 							msg.obj.toString(), requestUtil.class);
 
-					Intent intent = new Intent(LoginPage.this,
+					Intent mainIntent = new Intent(LoginPage.this,
 							MainActivity.class);
 
 					Bundle bundle = new Bundle();
 					bundle.putString(MainActivity.USER_INFO_STATE,
 							mapper.writeValueAsString(requestObj.getDetail()));
 
-					intent.putExtras(bundle);
+					mainIntent.putExtras(bundle);
 
-					startActivity(intent);
+					startActivity(mainIntent);
 					LoginPage.this.finish();
 
 				} catch (JsonParseException e1) {
@@ -301,6 +311,14 @@ public class LoginPage extends Activity {
 				break;
 			}
 		}
+	}
+
+	private boolean checkUserName(String s) {
+		return s.matches(userNameRegex);
+	}
+
+	private boolean checkPassword(String s) {
+		return s.matches(passwordRegex);
 	}
 
 	// @Override

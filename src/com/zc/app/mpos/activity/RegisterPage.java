@@ -12,7 +12,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -39,6 +41,7 @@ public class RegisterPage extends Activity {
 
 	ImageView usernameImageView;
 	ImageView passwordImageView;
+	ImageView passwordAgainImageView;
 
 	ImageView backImageView;
 	Button sendCheckCodeButton;
@@ -49,6 +52,11 @@ public class RegisterPage extends Activity {
 	private final static String TAG = "registerPage";
 
 	private int second = 0;
+
+	private String userNameRegex = "[a-zA-Z0-9_]+$";
+	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
+	private String phoneRegex = "^((13[0-9])|(15[^4,\\D])|(18[0,5-9]))\\d{8}$";
+	private String checkCodeRegex = "[a-zA-Z0-9]{6}";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +73,7 @@ public class RegisterPage extends Activity {
 				sendCheckCodeButton.setText(String.valueOf(60 - second)
 						+ "秒后\n重新发送");
 
-				if (second == 60) {
+				if (second >= 60) {
 					second = 0;
 					sendCheckCodeButton.setEnabled(true);
 					sendCheckCodeButton.setText(R.string.getCheckCode);
@@ -90,11 +98,22 @@ public class RegisterPage extends Activity {
 						} else {
 							String usernameString = userNameBootstrapEditText
 									.getText().toString();
-							if (usernameString.isEmpty()
-									|| usernameString.length() < 4
+							if (usernameString.isEmpty()) {
+								usernameImageView
+										.setImageResource(R.drawable.fail);
+								Toast.makeText(getApplicationContext(),
+										"用户名不能为空", Toast.LENGTH_SHORT).show();
+							} else if (!checkUserName(usernameString)) {
+								usernameImageView
+										.setImageResource(R.drawable.fail);
+								Toast.makeText(getApplicationContext(),
+										"用户名格式不符", Toast.LENGTH_SHORT).show();
+							} else if (usernameString.length() < 4
 									|| usernameString.length() > 16) {
 								usernameImageView
 										.setImageResource(R.drawable.fail);
+								Toast.makeText(getApplicationContext(),
+										"用户名长度不符", Toast.LENGTH_SHORT).show();
 							} else {
 
 								ZCWebService.getInstance().isExistUserName(
@@ -142,7 +161,7 @@ public class RegisterPage extends Activity {
 													Toast.makeText(
 															getApplicationContext(),
 															msg.obj.toString(),
-															Toast.LENGTH_LONG)
+															Toast.LENGTH_SHORT)
 															.show();
 													break;
 
@@ -168,13 +187,9 @@ public class RegisterPage extends Activity {
 				});
 
 		userPasswordBootstrapEditText = (EditText) findViewById(R.id.regsiter_password_edit);
-
-		userPasswordAgainBootstrapEditText = (EditText) findViewById(R.id.regsiter_password_agine_edit);
-
-		passwordImageView = (ImageView) findViewById(R.id.register_password_again_img);
+		passwordImageView = (ImageView) findViewById(R.id.register_password_img);
 		passwordImageView.setImageDrawable(null);
-
-		userPasswordAgainBootstrapEditText
+		userPasswordBootstrapEditText
 				.setOnFocusChangeListener(new OnFocusChangeListener() {
 
 					@Override
@@ -183,24 +198,61 @@ public class RegisterPage extends Activity {
 						if (hasFocus) {
 							passwordImageView.setImageDrawable(null);
 						} else {
-							String oldPasswordString = userPasswordBootstrapEditText
+							String passwordString = userPasswordBootstrapEditText
 									.getText().toString();
-							String newPasswordString = userPasswordAgainBootstrapEditText
-									.getText().toString();
-
-							if (!oldPasswordString.isEmpty()
-									&& oldPasswordString.length() > 5
-									&& oldPasswordString.length() < 15
-									&& oldPasswordString
-											.equals(newPasswordString)) {
+							if (checkPassword(passwordString)) {
 								passwordImageView
 										.setImageResource(R.drawable.ok);
 							} else {
 								passwordImageView
 										.setImageResource(R.drawable.fail);
+								Toast.makeText(getApplicationContext(),
+										"密码格式错误", Toast.LENGTH_SHORT).show();
 							}
-
 						}
+					}
+				});
+
+		userPasswordAgainBootstrapEditText = (EditText) findViewById(R.id.regsiter_password_agine_edit);
+
+		passwordAgainImageView = (ImageView) findViewById(R.id.register_password_again_img);
+		passwordAgainImageView.setImageDrawable(null);
+
+		userPasswordAgainBootstrapEditText
+				.addTextChangedListener(new TextWatcher() {
+
+					@Override
+					public void onTextChanged(CharSequence s, int start,
+							int before, int count) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void beforeTextChanged(CharSequence s, int start,
+							int count, int after) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void afterTextChanged(Editable s) {
+						// TODO Auto-generated method stub
+						if (userPasswordBootstrapEditText.getText().toString()
+								.isEmpty()) {
+							passwordAgainImageView.setImageDrawable(null);
+						} else if (userPasswordBootstrapEditText
+								.getText()
+								.toString()
+								.equals(userPasswordAgainBootstrapEditText
+										.getText().toString())) {
+							passwordAgainImageView
+									.setImageResource(R.drawable.ok);
+						} else {
+							passwordAgainImageView
+									.setImageResource(R.drawable.fail);
+						}
+
 					}
 				});
 
@@ -216,12 +268,13 @@ public class RegisterPage extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				hiddenKeyboard();
 
 				String phoneString = userPhoneBootstrapEditText.getText()
 						.toString();
-				if (phoneString.isEmpty()) {
-					Toast.makeText(getApplicationContext(), "手机号不能为空",
-							Toast.LENGTH_LONG).show();
+				if (!checkPhone(phoneString)) {
+					Toast.makeText(getApplicationContext(), "手机号格式错误",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else {
 					handler.postDelayed(sendCheckCodeRunnable, 100);
@@ -233,6 +286,7 @@ public class RegisterPage extends Activity {
 									switch (msg.what) {
 									case ZCWebServiceParams.HTTP_START:
 										ZCLog.i(TAG, msg.obj.toString());
+
 										break;
 
 									case ZCWebServiceParams.HTTP_FINISH:
@@ -244,6 +298,7 @@ public class RegisterPage extends Activity {
 										Toast.makeText(getApplicationContext(),
 												msg.obj.toString(),
 												Toast.LENGTH_SHORT).show();
+										second = 60;
 										break;
 
 									case ZCWebServiceParams.HTTP_SUCCESS:
@@ -295,35 +350,51 @@ public class RegisterPage extends Activity {
 
 				if (username.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "用户名不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
+					return;
+				} else if (!checkUserName(username)) {
+					Toast.makeText(getApplicationContext(), "用户名格式错误",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (username.length() < 4 || username.length() > 16) {
 					Toast.makeText(getApplicationContext(), "用户名4-16位之间",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (passwordString.isEmpty()
 						|| passwordAgainString.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "密码不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
+					return;
+				} else if (!checkPassword(passwordString)) {
+					Toast.makeText(getApplicationContext(), "密码格式错误",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (passwordString.length() < 6
 						|| passwordString.length() > 14
 						|| passwordAgainString.length() < 6
 						|| passwordAgainString.length() > 14) {
 					Toast.makeText(getApplicationContext(), "密码6-14位之间",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (!passwordString.equals(passwordAgainString)) {
 					Toast.makeText(getApplicationContext(), "密码不一致",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (validateCode.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "验证码不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
+					return;
+				} else if (!checkCode(validateCode)) {
+					Toast.makeText(getApplicationContext(), "验证码格式错误",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (phoneString.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "手机号不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
+					return;
+				} else if (!checkPhone(phoneString)) {
+					Toast.makeText(getApplicationContext(), "手机号格式错误",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else {
 					UserInfo info = new UserInfo();
@@ -436,5 +507,21 @@ public class RegisterPage extends Activity {
 				break;
 			}
 		}
+	}
+
+	private boolean checkUserName(String s) {
+		return s.matches(userNameRegex);
+	}
+
+	private boolean checkPassword(String s) {
+		return s.matches(passwordRegex);
+	}
+
+	private boolean checkPhone(String s) {
+		return s.matches(phoneRegex);
+	}
+
+	private boolean checkCode(String s) {
+		return s.matches(checkCodeRegex);
 	}
 }

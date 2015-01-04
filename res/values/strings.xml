@@ -45,7 +45,7 @@
     <string name="purse_result_pos_user_txt">收款人:</string>
     <string name="purse_result_pos_failed_txt">刷卡失败!</string>
     <string name="purse_again_text">再试一次</string>
-    <string name="changePwd_password_hint">请输入新密码</string>
+    <string name="changePwd_password_hint">请输入6&#8211;14位新密码</string>
     <string name="changePwd_password_agine_hint">请再输一次新密码</string>
     <string name="apply_change_pos_number_txt">终端号</string>
     <string name="apply_change_pos_code_txt">激活码</string>

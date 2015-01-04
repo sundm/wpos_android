@@ -45,6 +45,9 @@ public class PurseCardActivity extends Activity {
 	private String psamIDString;
 	private String username;
 	private String amount;
+	private double lngDouble;
+	private double latDouble;
+
 	private final static String TAG = "purse_card_page";
 
 	// private int second = 0;
@@ -59,6 +62,9 @@ public class PurseCardActivity extends Activity {
 
 		username = getIntent().getStringExtra("username");
 		amount = getIntent().getStringExtra("amount");
+
+		lngDouble = getIntent().getDoubleExtra("lng", 000.000);
+		latDouble = getIntent().getDoubleExtra("lat", 000.000);
 
 		usernameTextView = (TextView) findViewById(R.id.purse_card_pos_user_txt);
 		setUser("收款人: " + username);
@@ -179,8 +185,8 @@ public class PurseCardActivity extends Activity {
 			infoObj.setAmount(request.getAmountString());
 			infoObj.setPan(request.getPanString());
 			infoObj.setIssuerId(request.getIssuerIdString());
-			infoObj.setLng("000.000");
-			infoObj.setLat("000.000");
+			infoObj.setLng(String.valueOf(lngDouble));
+			infoObj.setLat(String.valueOf(latDouble));
 
 			ZCWebService.getInstance().initForPurchase(infoObj, new Handler() {
 				@Override

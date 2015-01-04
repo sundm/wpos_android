@@ -17,6 +17,9 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
 
     <uses-feature
         android:name="android.hardware.nfc"
@@ -107,6 +110,11 @@
         <activity
             android:name=".activity.QueryLogOnlineActivity"
             android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".activity.LoadingActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/LoadingStyle" >
         </activity>
     </application>
 

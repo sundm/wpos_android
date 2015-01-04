@@ -17,6 +17,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,7 +38,8 @@ public class ChangePwdActivity extends Activity {
 	EditText userNewPasswordBootstrapEditText;
 	EditText userPasswordAgainBootstrapEditText;
 
-	ImageView passwordImageView;
+	ImageView passwordNewImageView;
+	ImageView passwordAgainImageView;
 
 	ImageView backImageView;
 	// Button sendCheckCodeButton;
@@ -45,42 +47,62 @@ public class ChangePwdActivity extends Activity {
 
 	private final static String TAG = "change_pwd_page";
 
-	// private int second = 0;
+	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_change_pwd_page);
 
-		// final Handler handler = new Handler();
-		// final Runnable sendCheckCodeRunnable = new Runnable() {
-		// @Override
-		// public void run() {
-		// second++;
-		//
-		// sendCheckCodeButton.setEnabled(false);
-		// sendCheckCodeButton.setText(String.valueOf(60 - second)
-		// + "秒后\n重新发送");
-		//
-		// if (second == 60) {
-		// second = 0;
-		// sendCheckCodeButton.setEnabled(true);
-		// sendCheckCodeButton.setText(R.string.getCheckCode);
-		// } else {
-		// handler.postDelayed(this, 1000);
-		// }
-		//
-		// }
-		// };
-
 		userOldPasswordBootstrapEditText = (EditText) findViewById(R.id.changePwd_old_password_edit);
+		userOldPasswordBootstrapEditText
+				.setOnFocusChangeListener(new OnFocusChangeListener() {
 
+					@Override
+					public void onFocusChange(View v, boolean hasFocus) {
+						// TODO Auto-generated method stub
+						if (!hasFocus) {
+
+							String passwordString = userOldPasswordBootstrapEditText
+									.getText().toString();
+							if (!checkPassword(passwordString)) {
+
+								Toast.makeText(getApplicationContext(),
+										"密码格式错误", Toast.LENGTH_SHORT).show();
+							}
+						}
+					}
+				});
 		userNewPasswordBootstrapEditText = (EditText) findViewById(R.id.changePwd_password_edit);
+		passwordNewImageView = (ImageView) findViewById(R.id.changePwd_password_img);
+		passwordNewImageView.setImageDrawable(null);
+		userNewPasswordBootstrapEditText
+				.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+					@Override
+					public void onFocusChange(View v, boolean hasFocus) {
+						// TODO Auto-generated method stub
+						if (hasFocus) {
+							passwordNewImageView.setImageDrawable(null);
+						} else {
+							String passwordString = userNewPasswordBootstrapEditText
+									.getText().toString();
+							if (checkPassword(passwordString)) {
+								passwordNewImageView
+										.setImageResource(R.drawable.ok);
+							} else {
+								passwordNewImageView
+										.setImageResource(R.drawable.fail);
+								Toast.makeText(getApplicationContext(),
+										"密码格式错误", Toast.LENGTH_SHORT).show();
+							}
+						}
+					}
+				});
 
 		userPasswordAgainBootstrapEditText = (EditText) findViewById(R.id.changePwd_password_agine_edit);
-
-		passwordImageView = (ImageView) findViewById(R.id.changePwd_password_again_img);
-		passwordImageView.setImageDrawable(null);
+		passwordAgainImageView = (ImageView) findViewById(R.id.changePwd_password_again_img);
+		passwordAgainImageView.setImageDrawable(null);
 
 		userPasswordAgainBootstrapEditText
 				.addTextChangedListener(new TextWatcher() {
@@ -104,24 +126,17 @@ public class ChangePwdActivity extends Activity {
 						// TODO Auto-generated method stub
 						if (userNewPasswordBootstrapEditText.getText()
 								.toString().isEmpty()) {
-							passwordImageView.setImageDrawable(null);
+							passwordAgainImageView.setImageDrawable(null);
 						} else if (userNewPasswordBootstrapEditText
 								.getText()
 								.toString()
 								.equals(userPasswordAgainBootstrapEditText
 										.getText().toString())) {
-							if (5 < userNewPasswordBootstrapEditText.getText()
-									.toString().length()
-									&& userNewPasswordBootstrapEditText
-											.getText().toString().length() < 15) {
-								passwordImageView
-										.setImageResource(R.drawable.ok);
-							} else {
-								passwordImageView
-										.setImageResource(R.drawable.fail);
-							}
+							passwordAgainImageView
+									.setImageResource(R.drawable.ok);
 						} else {
-							passwordImageView.setImageResource(R.drawable.fail);
+							passwordAgainImageView
+									.setImageResource(R.drawable.fail);
 						}
 
 					}
@@ -296,5 +311,9 @@ public class ChangePwdActivity extends Activity {
 
 		NfcEnv.disableNfcForegroundDispatch(this);
 
+	}
+
+	private boolean checkPassword(String s) {
+		return s.matches(passwordRegex);
 	}
 }

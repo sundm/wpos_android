@@ -159,6 +159,7 @@
                     android:background="@drawable/edittext_radius"
                     android:hint="@string/changePwd_old_password_hint"
                     android:inputType="textPassword"
+                    android:maxLength="14"
                     android:textColor="@color/textColor"
                     android:textColorHint="@color/hintColor"
                     android:textSize="14sp" />
@@ -215,9 +216,28 @@
                     android:background="@drawable/edittext_radius"
                     android:hint="@string/changePwd_password_hint"
                     android:inputType="textPassword"
+                    android:maxLength="14"
                     android:textColor="@color/textColor"
                     android:textColorHint="@color/hintColor"
                     android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/changePwd_password_img_layout"
+                android:layout_width="70dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/changePwd_password_txt_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/register_password_edit_layout" >
+
+                <ImageView
+                    android:id="@+id/changePwd_password_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="30dp"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/ok" />
             </RelativeLayout>
         </RelativeLayout>
         <!-- 分割线 -->
@@ -271,6 +291,7 @@
                     android:background="@drawable/edittext_radius"
                     android:hint="@string/changePwd_password_agine_hint"
                     android:inputType="textPassword"
+                    android:maxLength="14"
                     android:textColor="@color/textColor"
                     android:textColorHint="@color/hintColor"
                     android:textSize="14sp" />
