@@ -75,6 +75,9 @@ public class PurseResultOKActivity extends Activity {
 
 		NfcEnv.enableNfcForegroundDispatch(this);
 
+		Intent intent_finish = new Intent(LoadingActivity.action);
+		intent_finish.putExtra("data", 1);
+		sendBroadcast(intent_finish);
 	}
 
 	@Override

@@ -8,16 +8,18 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 
 import com.zc.app.mpos.R;
+import com.zc.app.utils.ZCLog;
 
 public class LoadingActivity extends Activity {
+
+	public static final String action = "loading.broadcast.action";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.loading);
+		// String loadingString = getIntent().getStringExtra("loading_text");
 
-		IntentFilter filter = new IntentFilter(LoginPage.action);
-		registerReceiver(broadcastReceiver, filter);
 	}
 
 	BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -25,6 +27,7 @@ public class LoadingActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO Auto-generated method stub
+			ZCLog.i("loading", intent.toString());
 			int result = intent.getExtras().getInt("data", 0);
 			if (1 == result) {
 				LoadingActivity.this.finish();
@@ -33,8 +36,18 @@ public class LoadingActivity extends Activity {
 		}
 	};
 
+	protected void onResume() {
+		ZCLog.i("loading", "onResume");
+
+		IntentFilter filter = new IntentFilter(action);
+		registerReceiver(broadcastReceiver, filter);
+		super.onResume();
+	}
+
 	protected void onDestroy() {
+		ZCLog.i("loading", "onDestory");
 		unregisterReceiver(broadcastReceiver);
 		super.onDestroy();
 	};
+
 }

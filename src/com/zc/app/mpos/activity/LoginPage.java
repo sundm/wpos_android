@@ -17,11 +17,13 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zc.app.mpos.R;
+import com.zc.app.sebc.lx.NfcEnv;
 import com.zc.app.utils.MircoPOState;
 import com.zc.app.utils.UserInfo;
 import com.zc.app.utils.ZCLog;
@@ -52,8 +55,6 @@ public class LoginPage extends Activity {
 	private String username;
 
 	private final static String TAG = "loginPage";
-
-	public static final String action = "login.broadcast.action";
 
 	private String userNameRegex = "[a-zA-Z0-9_]{4,16}";
 	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
@@ -141,6 +142,11 @@ public class LoginPage extends Activity {
 
 					String fingerprint = state.getUniqueIDString();
 
+					Intent loadingIntent = new Intent();
+					loadingIntent.setClass(LoginPage.this,
+							LoadingActivity.class);
+					startActivity(loadingIntent);
+
 					ZCWebService.getInstance().userLogin(info, fingerprint,
 							new MyHandler());
 				}
@@ -163,6 +169,18 @@ public class LoginPage extends Activity {
 				startActivityForResult(intent, RESULT_OK);
 			}
 		});
+
+		setupUI(findViewById(R.id.root_layout));
+
+		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
+			notEnable();
+		}
+
+		if (!NfcEnv.isNfcSupported(getApplicationContext())) {
+			// Toast.makeText(getApplicationContext(), "该设备不支持NFC硬件",
+			// Toast.LENGTH_SHORT).show();
+			notSupport();
+		}
 	}
 
 	@Override
@@ -231,29 +249,24 @@ public class LoginPage extends Activity {
 			switch (msg.what) {
 			case ZCWebServiceParams.HTTP_START: {
 				ZCLog.i(TAG, msg.obj.toString());
-				Intent loadingIntent = new Intent();
 
-				loadingIntent.setClass(LoginPage.this, LoadingActivity.class);
-				startActivity(loadingIntent);
 				break;
 			}
 			case ZCWebServiceParams.HTTP_FINISH: {
 				ZCLog.i(TAG, msg.obj.toString());
-				Intent intent = new Intent(action);
-				intent.putExtra("data", 1);
-				sendBroadcast(intent);
+				Intent intent_finish = new Intent(LoadingActivity.action);
+				intent_finish.putExtra("data", 1);
+				sendBroadcast(intent_finish);
 				break;
 			}
-			case ZCWebServiceParams.HTTP_FAILED:
+			case ZCWebServiceParams.HTTP_FAILED: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_LONG).show();
-				Intent intent = new Intent(action);
-				intent.putExtra("data", 1);
-				sendBroadcast(intent);
-				break;
 
-			case ZCWebServiceParams.HTTP_SUCCESS:
+				break;
+			}
+			case ZCWebServiceParams.HTTP_SUCCESS: {
 				Toast.makeText(getApplicationContext(), "登录成功",
 						Toast.LENGTH_SHORT).show();
 				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
@@ -294,21 +307,23 @@ public class LoginPage extends Activity {
 				}
 
 				break;
-
-			case ZCWebServiceParams.HTTP_UNAUTH:
+			}
+			case ZCWebServiceParams.HTTP_UNAUTH: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_LONG).show();
 				break;
-
-			case ZCWebServiceParams.HTTP_THROWABLE:
+			}
+			case ZCWebServiceParams.HTTP_THROWABLE: {
 				Throwable e = (Throwable) msg.obj;
 				ZCLog.e(TAG, "catch thowable:", e);
-				break;
 
-			default:
+				break;
+			}
+			default: {
 				ZCLog.i(TAG, "http nothing to do");
 				break;
+			}
 			}
 		}
 	}
@@ -321,36 +336,79 @@ public class LoginPage extends Activity {
 		return s.matches(passwordRegex);
 	}
 
-	// @Override
-	// public boolean onTouch(View v, MotionEvent event) {
-	// // TODO Auto-generated method stub
-	// // 这样是在触摸到控件时，软键盘才会显示出来
-	// switch (v.getId()) {
-	// case R.id.login_password_edit: {
-	//
-	// InputMethodManager imm = (InputMethodManager)
-	// getSystemService(Context.INPUT_METHOD_SERVICE);
-	// // 得到InputMethodManager的实例
-	// if (imm.isActive()) {
-	// // 如果开启
-	// imm.hideSoftInputFromWindow(userPasswordBootstrapEditText.getWindowToken(),
-	// InputMethodManager.HIDE_NOT_ALWAYS);
-	// }
-	//
-	// int inputback = userPasswordBootstrapEditText.getInputType();
-	// userPasswordBootstrapEditText.setInputType(InputType.TYPE_NULL);
-	// new keyboardUtil(this, this, userPasswordBootstrapEditText)
-	// .showKeyboard();
-	// userPasswordBootstrapEditText.setInputType(inputback);
-	//
-	// break;
-	// }
-	//
-	// default:
-	// break;
-	// }
-	//
-	// return false;
-	//
-	// }
+	private void setupUI(View view) {
+		// Set up touch listener for non-text box views to hide keyboard.
+		if (!(view instanceof EditText)) {
+			view.setOnTouchListener(new OnTouchListener() {
+				public boolean onTouch(View v, MotionEvent event) {
+					hiddenKeyboard();
+					return false;
+				}
+			});
+		}
+
+		// If a layout container, iterate over children and seed recursion.
+		if (view instanceof ViewGroup) {
+			for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+				View innerView = ((ViewGroup) view).getChildAt(i);
+				setupUI(innerView);
+			}
+		}
+	}
+
+	public void notSupport() {
+		try {
+			AlertDialog.Builder builder = new Builder(this);
+			builder.setMessage("该设备不支持NFC，请退出程序");
+			builder.setTitle("确认");
+			builder.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							finish();
+							java.lang.System.exit(0);
+						}
+					});
+			builder.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void notEnable() {
+		try {
+			AlertDialog.Builder builder = new Builder(this);
+			builder.setMessage("NFC未打开，进入设置界面");
+			builder.setTitle("确认");
+			builder.setPositiveButton("确定",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							NfcEnv.showNfcSetting(getApplicationContext());
+						}
+					});
+			builder.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		setIntent(intent);
+		NfcEnv.initNfcEnvironment(intent);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		NfcEnv.enableNfcForegroundDispatch(this);
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		Log.d(TAG, "onPause");
+		NfcEnv.disableNfcForegroundDispatch(this);
+	}
 }

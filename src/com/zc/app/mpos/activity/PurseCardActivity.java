@@ -160,6 +160,12 @@ public class PurseCardActivity extends Activity {
 		ZCLog.i("consume", request.toString());
 
 		if (request.isOK()) {
+
+			Intent loadingIntent = new Intent();
+			loadingIntent.setClass(PurseCardActivity.this,
+					LoadingActivity.class);
+			startActivity(loadingIntent);
+
 			String checkResult = TransUtil.checkInputAmount(amount, 8, 2, true);
 
 			String strAmount = checkResult.substring(4, checkResult.length());
@@ -409,7 +415,7 @@ public class PurseCardActivity extends Activity {
 				}
 			});
 		} else {
-			String reString = "卡片初始化失败";
+			String reString = "卡片异常";
 			if (request.getSwString().equals("9401")) {
 				reString = "卡内余额不足";
 			}

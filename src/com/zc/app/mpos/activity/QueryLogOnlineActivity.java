@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -35,6 +36,7 @@ import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.Mode;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshBase.OnRefreshListener2;
 import com.zc.app.mpos.view.PullToRefresh.PullToRefreshListView;
+import com.zc.app.sebc.lx.NfcEnv;
 import com.zc.app.sebc.lx.PurchaseLog;
 import com.zc.app.sebc.lx.PurchaseLogPage;
 import com.zc.app.utils.ZCLog;
@@ -54,6 +56,7 @@ public class QueryLogOnlineActivity extends Activity {
 	private TimeAxisAdapter mAdapter;
 
 	private List<PurchaseLogPage> listPages = new ArrayList<PurchaseLogPage>();
+	private PurchaseLogPage logPage;
 
 	private EmptyLayout mEmptyLayout;
 
@@ -142,11 +145,24 @@ public class QueryLogOnlineActivity extends Activity {
 	@Override
 	public void onResume() {
 		super.onResume();
-
+		NfcEnv.enableNfcForegroundDispatch(this);
 		// 加载任务
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		String date = sdf.format(new java.util.Date());
 		getInitLog(date);
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		setIntent(intent);
+		NfcEnv.initNfcEnvironment(intent);
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		Log.d(TAG, "onPause");
+		NfcEnv.disableNfcForegroundDispatch(this);
 	}
 
 	private void getInitLog(final String date) {
@@ -191,12 +207,8 @@ public class QueryLogOnlineActivity extends Activity {
 
 						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
 
-						PurchaseLogPage logPage = mapper.readValue(
-								detailString, PurchaseLogPage.class);
-
-						listPages.add(logPage);
-
-						initDatas();
+						logPage = mapper.readValue(detailString,
+								PurchaseLogPage.class);
 
 					} catch (JsonParseException e1) {
 						// TODO Auto-generated catch block
@@ -208,6 +220,13 @@ public class QueryLogOnlineActivity extends Activity {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+
+					if (logPage != null) {
+						listPages.add(logPage);
+					}
+
+					initDatas();
+
 					break;
 				}
 

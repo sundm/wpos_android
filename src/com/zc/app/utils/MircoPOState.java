@@ -17,7 +17,6 @@ import android.widget.Toast;
 public class MircoPOState {
 	private String imeiString;
 	private String uniqueIDString;
-	private String phoneNumberString;
 
 	private String keyID;
 	private String psamID;
@@ -31,7 +30,6 @@ public class MircoPOState {
 		TelephonyManager tm = (TelephonyManager) mContext
 				.getSystemService(Context.TELEPHONY_SERVICE);
 
-		phoneNumberString = tm.getLine1Number();
 		imeiString = tm.getDeviceId();
 		String simSerialNumber = tm.getSimSerialNumber();
 		String androidId = android.provider.Settings.Secure.getString(
@@ -41,7 +39,6 @@ public class MircoPOState {
 		ZCLog.i(TAG, "IMEI: " + imeiString);
 		ZCLog.i(TAG, "SN: " + simSerialNumber);
 		ZCLog.i(TAG, "Android ID: " + androidId);
-		ZCLog.i(TAG, "phone number: " + phoneNumberString);
 
 		if (simSerialNumber == null && androidId != null)
 			simSerialNumber = androidId;
@@ -150,10 +147,6 @@ public class MircoPOState {
 
 	public String getUniqueIDString() {
 		return uniqueIDString;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumberString;
 	}
 
 	public String getKeyID() {

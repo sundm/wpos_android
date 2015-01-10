@@ -1,17 +1,17 @@
 package com.zc.app.mpos.activity;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +34,7 @@ public class ActivePOSActivity extends Activity {
 	private Button activePOSButton;
 
 	private final static String TAG = "active_pos";
+
 	private final static int ACTIVEPOS = 12;
 
 	private String storeNumberString;
@@ -84,11 +85,18 @@ public class ActivePOSActivity extends Activity {
 							Toast.LENGTH_SHORT).show();
 					return;
 				} else {
+
 					WPosInfo info = new WPosInfo();
 
 					info.setTerminalId(posNumberString);
 					info.setMerchantId(storeNumberString);
 					info.setFingerprint(uniqueID);
+
+					Intent loadingIntent = new Intent();
+					loadingIntent.setClass(ActivePOSActivity.this,
+							LoadingActivity.class);
+					startActivity(loadingIntent);
+
 					ZCWebService.getInstance().activePOS(info, new MyHandler());
 				}
 
@@ -105,34 +113,7 @@ public class ActivePOSActivity extends Activity {
 			}
 		});
 
-	}
-
-	private void exit() {
-		try {
-			AlertDialog.Builder builder = new Builder(this);
-			builder.setMessage("是否退出程序");
-			builder.setTitle("确认");
-
-			builder.setPositiveButton("确定",
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-
-							Intent intent = new Intent(ActivePOSActivity.this,
-									MainActivity.class);
-
-							ActivePOSActivity.this.setResult(RESULT_CANCELED,
-									intent);
-							ActivePOSActivity.this.finish();
-							android.os.Process.killProcess(android.os.Process
-									.myPid());
-						}
-					});
-			builder.setNegativeButton("取消", null);
-			builder.show();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		setupUI(findViewById(R.id.root_layout));
 	}
 
 	private void hiddenKeyboard() {
@@ -157,7 +138,9 @@ public class ActivePOSActivity extends Activity {
 
 			case ZCWebServiceParams.HTTP_FINISH:
 				ZCLog.i(TAG, msg.obj.toString());
-
+				Intent intent_finish = new Intent(LoadingActivity.action);
+				intent_finish.putExtra("data", 1);
+				sendBroadcast(intent_finish);
 				break;
 
 			case ZCWebServiceParams.HTTP_FAILED:
@@ -217,17 +200,33 @@ public class ActivePOSActivity extends Activity {
 	@Override
 	public void onResume() {
 		super.onResume();
-
 		NfcEnv.enableNfcForegroundDispatch(this);
-
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 		Log.d(TAG, "onPause");
-
 		NfcEnv.disableNfcForegroundDispatch(this);
+	}
 
+	private void setupUI(View view) {
+		// Set up touch listener for non-text box views to hide keyboard.
+		if (!(view instanceof EditText)) {
+			view.setOnTouchListener(new OnTouchListener() {
+				public boolean onTouch(View v, MotionEvent event) {
+					hiddenKeyboard();
+					return false;
+				}
+			});
+		}
+
+		// If a layout container, iterate over children and seed recursion.
+		if (view instanceof ViewGroup) {
+			for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+				View innerView = ((ViewGroup) view).getChildAt(i);
+				setupUI(innerView);
+			}
+		}
 	}
 }

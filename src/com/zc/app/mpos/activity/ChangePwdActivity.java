@@ -15,9 +15,12 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -46,6 +49,8 @@ public class ChangePwdActivity extends Activity {
 	Button changePwdButton;
 
 	private final static String TAG = "change_pwd_page";
+
+	private final static int CHANGEPWD = 10;
 
 	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
 
@@ -189,6 +194,11 @@ public class ChangePwdActivity extends Activity {
 							Toast.LENGTH_LONG).show();
 					return;
 				} else {
+					Intent loadingIntent = new Intent();
+					loadingIntent.setClass(ChangePwdActivity.this,
+							LoadingActivity.class);
+					startActivity(loadingIntent);
+
 					UserInfo info = new UserInfo();
 					info.setOldpassword(oldPassword);
 					info.setNewpassword(passwordString);
@@ -209,6 +219,7 @@ public class ChangePwdActivity extends Activity {
 			}
 		});
 
+		setupUI(findViewById(R.id.root_layout));
 	}
 
 	private void hiddenKeyboard() {
@@ -234,6 +245,9 @@ public class ChangePwdActivity extends Activity {
 
 			case ZCWebServiceParams.HTTP_FINISH:
 				ZCLog.i(TAG, msg.obj.toString());
+				Intent intent_finish = new Intent(LoadingActivity.action);
+				intent_finish.putExtra("data", 1);
+				sendBroadcast(intent_finish);
 				break;
 
 			case ZCWebServiceParams.HTTP_FAILED:
@@ -256,7 +270,7 @@ public class ChangePwdActivity extends Activity {
 					Intent intent = new Intent(ChangePwdActivity.this,
 							LoginPage.class);
 
-					startActivity(intent);
+					ChangePwdActivity.this.setResult(CHANGEPWD, intent);
 					ChangePwdActivity.this.finish();
 
 				} catch (JsonParseException e1) {
@@ -275,7 +289,12 @@ public class ChangePwdActivity extends Activity {
 			case ZCWebServiceParams.HTTP_UNAUTH:
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
-						Toast.LENGTH_LONG).show();
+						Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(ChangePwdActivity.this,
+						LoginPage.class);
+
+				ChangePwdActivity.this.setResult(CHANGEPWD, intent);
+				ChangePwdActivity.this.finish();
 				break;
 
 			case ZCWebServiceParams.HTTP_THROWABLE:
@@ -315,5 +334,25 @@ public class ChangePwdActivity extends Activity {
 
 	private boolean checkPassword(String s) {
 		return s.matches(passwordRegex);
+	}
+
+	private void setupUI(View view) {
+		// Set up touch listener for non-text box views to hide keyboard.
+		if (!(view instanceof EditText)) {
+			view.setOnTouchListener(new OnTouchListener() {
+				public boolean onTouch(View v, MotionEvent event) {
+					hiddenKeyboard();
+					return false;
+				}
+			});
+		}
+
+		// If a layout container, iterate over children and seed recursion.
+		if (view instanceof ViewGroup) {
+			for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+				View innerView = ((ViewGroup) view).getChildAt(i);
+				setupUI(innerView);
+			}
+		}
 	}
 }

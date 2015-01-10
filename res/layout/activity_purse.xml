@@ -188,6 +188,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="64dp"
                 android:layout_weight="1"
+                android:paddingBottom="0.5dp"
                 android:paddingRight="0.5dp"
                 android:paddingTop="0.5dp" >
 
@@ -208,6 +209,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="64dp"
                 android:layout_weight="1"
+                android:paddingBottom="0.5dp"
                 android:paddingRight="0.5dp"
                 android:paddingTop="0.5dp" >
 
@@ -251,8 +253,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="64dp"
                 android:layout_weight="1"
-                android:paddingRight="0.5dp"
-                android:paddingTop="0.5dp" >
+                android:paddingRight="0.5dp" >
 
                 <TextView
                     android:id="@+id/pad_c"
@@ -271,8 +272,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="64dp"
                 android:layout_weight="1"
-                android:paddingRight="0.5dp"
-                android:paddingTop="0.5dp" >
+                android:paddingRight="0.5dp" >
 
                 <TextView
                     android:id="@+id/pad_0"
@@ -290,16 +290,16 @@
                 android:id="@+id/purse_pad_del_layout"
                 android:layout_width="fill_parent"
                 android:layout_height="64dp"
-                android:layout_weight="1"
-                android:background="@drawable/textview_style"
-                android:clickable="true"
-                android:paddingTop="0.5dp" >
+                android:layout_weight="1" >
 
                 <ImageView
                     android:id="@+id/pad_del"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
                     android:layout_centerInParent="true"
+                    android:background="@drawable/textview_style"
+                    android:clickable="true"
+                    android:scaleType="centerInside"
                     android:src="@drawable/del" />
             </RelativeLayout>
         </TableRow>

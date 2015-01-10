@@ -1,6 +1,7 @@
 package com.zc.app.utils;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -18,6 +19,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.http.Header;
 import org.apache.http.client.HttpResponseException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -816,11 +818,16 @@ public class ZCWebService {
 				ZCLog.e(tagString, response, e);
 
 				Message msg = handler.obtainMessage();
-
 				msg.what = ZCWebServiceParams.HTTP_FAILED;
-				msg.obj = "服务器连接失败";
-				handler.sendMessage(msg);
+				if (e.getClass() == ConnectException.class) {
+					msg.obj = "网络不给力";
+				} else if (e.getClass() == HttpHostConnectException.class) {
+					msg.obj = "请检查网络";
+				} else {
+					msg.obj = "服务器连接失败";
+				}
 
+				handler.sendMessage(msg);
 			}
 
 			@Override

@@ -7,8 +7,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,6 +35,7 @@ public class ChangePOSActivity extends Activity {
 	Button changePOSButton;
 
 	private final static String TAG = "change_pos_page";
+
 	// private String phoneString;
 	private int second = 0;
 	private String uniqueID;
@@ -53,7 +57,7 @@ public class ChangePOSActivity extends Activity {
 				sendCheckCodeButton.setText(String.valueOf(60 - second)
 						+ "秒后\n重新发送");
 
-				if (second == 60) {
+				if (second >= 60) {
 					second = 0;
 					sendCheckCodeButton.setEnabled(true);
 					sendCheckCodeButton.setText(R.string.getCheckCode);
@@ -96,6 +100,7 @@ public class ChangePOSActivity extends Activity {
 							Toast.makeText(getApplicationContext(),
 									msg.obj.toString(), Toast.LENGTH_SHORT)
 									.show();
+							second = 60;
 							break;
 
 						case ZCWebServiceParams.HTTP_SUCCESS:
@@ -160,6 +165,11 @@ public class ChangePOSActivity extends Activity {
 					info.setValidateCode(checkCode);
 					info.setFingerprint(uniqueID);
 
+					Intent loadingIntent = new Intent();
+					loadingIntent.setClass(ChangePOSActivity.this,
+							LoadingActivity.class);
+					startActivity(loadingIntent);
+
 					ZCWebService.getInstance().changePOS(info, new MyHandler());
 				}
 
@@ -176,6 +186,7 @@ public class ChangePOSActivity extends Activity {
 			}
 		});
 
+		setupUI(findViewById(R.id.root_layout));
 	}
 
 	private void hiddenKeyboard() {
@@ -200,6 +211,9 @@ public class ChangePOSActivity extends Activity {
 
 			case ZCWebServiceParams.HTTP_FINISH:
 				ZCLog.i(TAG, msg.obj.toString());
+				Intent intent_finish = new Intent(LoadingActivity.action);
+				intent_finish.putExtra("data", 1);
+				sendBroadcast(intent_finish);
 				break;
 
 			case ZCWebServiceParams.HTTP_FAILED:
@@ -275,5 +289,25 @@ public class ChangePOSActivity extends Activity {
 
 		NfcEnv.disableNfcForegroundDispatch(this);
 
+	}
+
+	private void setupUI(View view) {
+		// Set up touch listener for non-text box views to hide keyboard.
+		if (!(view instanceof EditText)) {
+			view.setOnTouchListener(new OnTouchListener() {
+				public boolean onTouch(View v, MotionEvent event) {
+					hiddenKeyboard();
+					return false;
+				}
+			});
+		}
+
+		// If a layout container, iterate over children and seed recursion.
+		if (view instanceof ViewGroup) {
+			for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+				View innerView = ((ViewGroup) view).getChildAt(i);
+				setupUI(innerView);
+			}
+		}
 	}
 }

@@ -25,9 +25,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,6 +33,7 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -51,6 +49,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.location.LocationClientOption.LocationMode;
 import com.nineoldandroids.view.ViewHelper;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
@@ -102,6 +105,7 @@ public class MainActivity extends FragmentActivity implements
 	private String keyIDString;
 	private String psamIDString;
 
+	private final static int CHANGEPWD = 10;
 	private final static int CHANGEPOS = 11;
 	private final static int ACTIVEPOS = 12;
 	private final static int PURSECARD = 13;
@@ -115,12 +119,16 @@ public class MainActivity extends FragmentActivity implements
 	private boolean isPOSActive;
 
 	// location
-	private LocationManager locationManager;
-	private LocationListener locationListener;
-	private Location lastKnownLocation;
-	private String mProviderName = LocationManager.NETWORK_PROVIDER;
+	private LocationClient mLocationClient;
+	private LocationMode tempMode = LocationMode.Hight_Accuracy;
+	private MyLocationListener mMyLocationListener;
+	private String tempcoor = "gcj02";
+
 	private double lng = 000.000;
 	private double lat = 000.000;
+
+	private int span = 10000;
+	private boolean isNeedAddress = true;
 
 	// apk 更新
 	// private PopDialog popDialog;
@@ -145,65 +153,21 @@ public class MainActivity extends FragmentActivity implements
 
 		// getServerVersion();
 		isPOSActive = false;
-		if (!NfcEnv.isNfcSupported(getApplicationContext())) {
-			// Toast.makeText(getApplicationContext(), "该设备不支持NFC硬件",
-			// Toast.LENGTH_SHORT).show();
-			notSupport();
-			return;
-		}
-
-		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
-			notEnable();
-			return;
-		}
 
 		// 获取系统LocationManager服务
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationListener = new LocationListener() {
+		mLocationClient = new LocationClient(this.getApplicationContext());
 
-			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
-				// TODO Auto-generated method stub
-				ZCLog.i(TAG, "onStatusChanged");
-				ZCLog.i(TAG, "provider:" + provider);
-				ZCLog.i(TAG, "status:" + String.valueOf(status));
+		mMyLocationListener = new MyLocationListener();
+		mLocationClient.registerLocationListener(mMyLocationListener);
+		InitLocation();
 
-			}
-
-			@Override
-			public void onProviderEnabled(String provider) {
-				// TODO Auto-generated method stub
-				ZCLog.i(TAG, "onProviderEnabled");
-				ZCLog.i(TAG, "provider:" + provider);
-			}
-
-			@Override
-			public void onProviderDisabled(String provider) {
-				// TODO Auto-generated method stub
-				ZCLog.i(TAG, "onProviderDisabled");
-				ZCLog.i(TAG, "provider:" + provider);
-				Toast.makeText(getApplication(), "定位服务未开启", Toast.LENGTH_SHORT)
-						.show();
-
-			}
-
-			@Override
-			public void onLocationChanged(Location location) {
-				// TODO Auto-generated method stub
-				ZCLog.i(TAG, "onLocationChanged");
-				lng = location.getLongitude();
-				lat = location.getLatitude();
-				ZCLog.i(TAG, "lng: " + lng);
-				ZCLog.i(TAG, "lat: " + lat);
-
-				Toast.makeText(getApplication(), lng + "," + lat,
-						Toast.LENGTH_SHORT).show();
-
-			}
-		};
+		Intent loadingIntent = new Intent();
+		loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+		startActivity(loadingIntent);
 
 		getPOSInfo();
+
+		onNewIntent(getIntent());
 	}
 
 	@Override
@@ -231,23 +195,26 @@ public class MainActivity extends FragmentActivity implements
 			return;
 		}
 
-		locationManager.requestLocationUpdates(mProviderName, 1000, 0,
-				locationListener);
-
+		mLocationClient.start();
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 		Log.d(TAG, "onPause");
-
 		NfcEnv.disableNfcForegroundDispatch(this);
 
-		// 取消注册监听
-		if (locationManager != null) {
-			locationManager.removeUpdates(locationListener);
-		}
+		mLocationClient.stop();
+	}
 
+	private void InitLocation() {
+		LocationClientOption option = new LocationClientOption();
+		option.setLocationMode(tempMode);
+		option.setCoorType(tempcoor);
+
+		option.setScanSpan(span);
+		option.setIsNeedAddress(isNeedAddress);
+		mLocationClient.setLocOption(option);
 	}
 
 	private void getPOSInfo() {
@@ -256,7 +223,10 @@ public class MainActivity extends FragmentActivity implements
 			public void dispatchMessage(Message msg) {
 
 				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
 
+					break;
+				}
 				case ZCWebServiceParams.HTTP_FAILED: {
 					ZCLog.i(TAG, msg.obj.toString());
 					Toast.makeText(getApplicationContext(), msg.obj.toString(),
@@ -312,10 +282,12 @@ public class MainActivity extends FragmentActivity implements
 				}
 
 				case ZCWebServiceParams.HTTP_FINISH: {
+					Intent intent_finish = new Intent(LoadingActivity.action);
+					intent_finish.putExtra("data", 1);
+					sendBroadcast(intent_finish);
+
 					initDragLayout();
 					initView();
-
-					onNewIntent(getIntent());
 					break;
 				}
 
@@ -518,6 +490,35 @@ public class MainActivity extends FragmentActivity implements
 
 		userNameView = (TextView) findViewById(R.id.iv_text);
 		shopCodeView = (TextView) findViewById(R.id.tv_shop_text);
+		shopCodeView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				String linkString = shopCodeView.getText().toString();
+				ZCLog.i(TAG, "shopcode is clicked: " + linkString);
+				if (linkString.contains("点击绑定")) {
+					ZCLog.i(TAG, "open active pos");
+					dl.close();
+					Intent it = new Intent(MainActivity.this,
+							ActivePOSActivity.class);
+
+					it.putExtra("uniqueID", state.getUniqueIDString());
+
+					startActivityForResult(it, ACTIVEPOS);
+				} else {
+					ZCLog.i(TAG, "read shopCode & termail");
+					Intent loadingIntent = new Intent();
+					loadingIntent.setClass(MainActivity.this,
+							LoadingActivity.class);
+					startActivity(loadingIntent);
+
+					ZCWebService.getInstance().queryPOS(
+							new readUserStatusHandler());
+				}
+			}
+		});
+
 		termailView = (TextView) findViewById(R.id.tv_ter_text);
 
 		user_icon = (ImageView) findViewById(R.id.user_icon);
@@ -557,31 +558,47 @@ public class MainActivity extends FragmentActivity implements
 
 		if (requestLoginUtilObj != null) {
 			isAuth = true;
-			// final Bundle args = new Bundle();
-
-			if (requestLoginUtilObj.getRole().equals("Normal")) {
-				role = userRole.NORMAL;
-				Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
-				// args.putBoolean(SettingFragment.POS_ACTIVED, false);
-			}
-
-			if (requestLoginUtilObj.getRole().equals("Active")) {
-				role = userRole.ACTIVE;
-				// args.putBoolean(SettingFragment.POS_ACTIVED, true);
-			}
 
 			userNameString = requestLoginUtilObj.getUsername();
 			phoneString = requestLoginUtilObj.getPhoneNumber();
-
 			userNameView.setText(userNameString);
-			if (storeNumberString == null || termailNumberString == null
-					|| storeNumberString.isEmpty()
-					|| termailNumberString.isEmpty()) {
-				shopCodeView.setText("获取终端信息失败");
-			} else {
-				shopCodeView.setText("商户号: " + storeNumberString);
-				termailView.setText("终端号: " + termailNumberString);
+
+			if (requestLoginUtilObj.getRole().equals("Normal") && !isPOSActive) {
+				role = userRole.NORMAL;
+				Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
+				shopCodeView.setText(Html
+						.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
+			} else if (requestLoginUtilObj.getRole().equals("Normal")
+					&& isPOSActive) {
+				role = userRole.NORMAL;
+
+				if (storeNumberString == null || termailNumberString == null
+						|| storeNumberString.isEmpty()
+						|| termailNumberString.isEmpty()) {
+					shopCodeView
+							.setText(Html
+									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+				} else {
+					shopCodeView.setText("商户号: " + storeNumberString);
+					termailView.setText("终端号: " + termailNumberString);
+				}
+			} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
+				role = userRole.ACTIVE;
+
+				if (storeNumberString == null || termailNumberString == null
+						|| storeNumberString.isEmpty()
+						|| termailNumberString.isEmpty()) {
+					shopCodeView
+							.setText(Html
+									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+				} else {
+					shopCodeView.setText("商户号: " + storeNumberString);
+					termailView.setText("终端号: " + termailNumberString);
+				}
 			}
+
 		} else {
 			isAuth = false;
 			role = userRole.UNAUTH;
@@ -602,7 +619,7 @@ public class MainActivity extends FragmentActivity implements
 				case 0: {
 					Intent it = new Intent(MainActivity.this,
 							ChangePwdActivity.class);
-					startActivity(it);
+					startActivityForResult(it, CHANGEPWD);
 					break;
 				}
 				default:
@@ -685,6 +702,105 @@ public class MainActivity extends FragmentActivity implements
 				dl.close();
 			}
 		});
+	}
+
+	class readUserStatusHandler extends Handler {
+
+		@Override
+		public void dispatchMessage(Message msg) {
+
+			switch (msg.what) {
+			case ZCWebServiceParams.HTTP_START: {
+				ZCLog.i(TAG, msg.obj.toString());
+
+				break;
+			}
+			case ZCWebServiceParams.HTTP_FINISH: {
+				ZCLog.i(TAG, msg.obj.toString());
+				Intent intent_finish = new Intent(LoadingActivity.action);
+				intent_finish.putExtra("data", 1);
+				sendBroadcast(intent_finish);
+				break;
+			}
+			case ZCWebServiceParams.HTTP_FAILED: {
+				ZCLog.i(TAG, msg.obj.toString());
+				Toast.makeText(getApplicationContext(), msg.obj.toString(),
+						Toast.LENGTH_SHORT).show();
+				isPOSActive = false;
+				break;
+			}
+			case ZCWebServiceParams.HTTP_SUCCESS: {
+				ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					requestUtil requestObj = mapper.readValue(
+							msg.obj.toString(), requestUtil.class);
+
+					if (requestObj.getDetail() == null) {
+						// todo
+						return;
+					}
+
+					String detailString = mapper.writeValueAsString(requestObj
+							.getDetail());
+					posInfo = mapper.readValue(detailString, PosInfo.class);
+					ZCLog.i(TAG, posInfo.toString());
+					storeNumberString = posInfo.getMerchantId();
+					termailNumberString = posInfo.getTerminalSeq();
+					posStateString = posInfo.getWposDisplayStatus();
+					isPOSActive = true;
+
+					if (storeNumberString == null
+							|| termailNumberString == null
+							|| storeNumberString.isEmpty()
+							|| termailNumberString.isEmpty()) {
+						shopCodeView
+								.setText(Html
+										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+					} else {
+						shopCodeView.setText("商户号: " + storeNumberString);
+						termailView.setText("终端号: " + termailNumberString);
+					}
+
+				} catch (JsonParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JsonMappingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				break;
+			}
+			case ZCWebServiceParams.HTTP_UNAUTH: {
+				ZCLog.i(TAG, msg.obj.toString());
+				Toast.makeText(getApplicationContext(), msg.obj.toString(),
+						Toast.LENGTH_SHORT).show();
+				isAuth = false;
+
+				Intent intent = new Intent(MainActivity.this, LoginPage.class);
+
+				startActivity(intent);
+				MainActivity.this.finish();
+				break;
+			}
+			case ZCWebServiceParams.HTTP_THROWABLE: {
+				Throwable e = (Throwable) msg.obj;
+				ZCLog.e(TAG, "catch thowable:", e);
+
+				break;
+			}
+			default: {
+				ZCLog.i(TAG, "http nothing to do");
+				break;
+			}
+			}
+		}
 	}
 
 	public void switchContent(android.support.v4.app.Fragment to,
@@ -784,6 +900,14 @@ public class MainActivity extends FragmentActivity implements
 
 			break;
 		}
+		case CHANGEPWD: {
+			ZCLog.i(TAG, "result_change_pwd");
+			role = userRole.UNAUTH;
+			Intent it = new Intent(MainActivity.this, LoginPage.class);
+			startActivity(it);
+			MainActivity.this.finish();
+			break;
+		}
 		case CHANGEPOS: {
 			ZCLog.i(TAG, "result_change_pos");
 			Bundle activePOSBuddle = data.getExtras();
@@ -805,8 +929,7 @@ public class MainActivity extends FragmentActivity implements
 			// active pos 返回数据
 
 			Bundle activePOSBuddle = data.getExtras();
-			storeNumberString = activePOSBuddle.getString("storeCode");
-			termailNumberString = activePOSBuddle.getString("posNumber");
+
 			isAuth = activePOSBuddle.getBoolean("unAuth", true);
 			if (isAuth) {
 				ZCLog.i(TAG, "user is unauth!");
@@ -819,14 +942,20 @@ public class MainActivity extends FragmentActivity implements
 
 			role = userRole.ACTIVE;
 
-			if (storeNumberString == null || termailNumberString == null
-					|| storeNumberString.isEmpty()
-					|| termailNumberString.isEmpty()) {
-				shopCodeView.setText("获取终端信息失败");
-			} else {
-				shopCodeView.setText("商户号: " + storeNumberString);
-				termailView.setText("终端号: " + termailNumberString);
-			}
+			ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
+
+			// role = userRole.ACTIVE;
+			//
+			// if (storeNumberString == null || termailNumberString == null
+			// || storeNumberString.isEmpty()
+			// || termailNumberString.isEmpty()) {
+			// shopCodeView.setText(Html
+			// .fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+			//
+			// } else {
+			// shopCodeView.setText("商户号: " + storeNumberString);
+			// termailView.setText("终端号: " + termailNumberString);
+			// }
 
 			break;
 		}
@@ -903,8 +1032,6 @@ public class MainActivity extends FragmentActivity implements
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.dismiss();
 							NfcEnv.showNfcSetting(getApplicationContext());
-							finish();
-							java.lang.System.exit(0);
 						}
 					});
 			builder.show();
@@ -937,11 +1064,24 @@ public class MainActivity extends FragmentActivity implements
 		// TODO Auto-generated method stub
 		Log.i("onLinster", "onDoPurse");
 
+		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
+			notEnable();
+			return;
+		}
+
 		switch (role) {
 		case ACTIVE: {
 			// purchase(amountString);
-			if (!(Float.valueOf(amountString) > 0.00f))
+			if (Float.valueOf(amountString) < 0.00001f
+					&& Float.valueOf(amountString) > -0.00001f) {
+				Toast.makeText(getApplicationContext(), "请输入金额",
+						Toast.LENGTH_SHORT).show();
 				break;
+			}
+
+			Intent loadingIntent = new Intent();
+			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+			startActivity(loadingIntent);
 
 			state.getPOSInfoFromServer(new Handler() {
 				@Override
@@ -970,6 +1110,14 @@ public class MainActivity extends FragmentActivity implements
 						it.putExtra("lng", lng);
 						it.putExtra("lat", lat);
 						startActivityForResult(it, PURSECARD);
+						break;
+					}
+
+					case ZCWebServiceParams.HTTP_FINISH: {
+						ZCLog.i(TAG, msg.obj.toString());
+						Intent intent_finish = new Intent(LoadingActivity.action);
+						intent_finish.putExtra("data", 1);
+						sendBroadcast(intent_finish);
 						break;
 					}
 
@@ -1013,349 +1161,51 @@ public class MainActivity extends FragmentActivity implements
 		}
 		}
 
-		// Bundle args = new Bundle();
-		// args.putString(ApplyChangePosFragment.POS_NUMBER, "1234ABCD");
-		// args.putString(ApplyChangePosFragment.POS_CODE, "");
-		//
-		// applyChangePosFragment.setArguments(args);
-
-		// switchContent(purseResultPosFragment, true,
-		// PurseResultPosFragment.TAG);
 	}
 
-	// @Override
-	// public void activePos(String storeNumber, String posNumber) {
-	// // TODO Auto-generated method stub
-	// hiddenKeyboard();
-	//
-	// WPosInfo info = new WPosInfo();
-	// String uniqueID = state.getUniqueIDString();
-	//
-	// info.setTerminalId(posNumber);
-	// info.setMerchantId(storeNumber);
-	// info.setFingerprint(uniqueID);
-	//
-	// ZCWebService.getInstance().activePOS(info, new Handler() {
-	// @Override
-	// public void dispatchMessage(Message msg) {
-	//
-	// switch (msg.what) {
-	// case ZCWebServiceParams.HTTP_START:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FINISH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FAILED:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_SUCCESS:
-	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), "开通成功",
-	// Toast.LENGTH_SHORT).show();
-	//
-	// hiddenKeyboard();
-	// clearBackStack();
-	//
-	// role = userRole.ACTIVE;
-	// final Bundle args = new Bundle();
-	// args.putBoolean(SettingFragment.POS_ACTIVED, true);
-	// settingPageFragment.setBundle(args);
-	//
-	// switchContent(settingPageFragment, false,
-	// SettingFragment.TAG);
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_UNAUTH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_THROWABLE:
-	// Throwable e = (Throwable) msg.obj;
-	// ZCLog.e(TAG, "catch thowable:", e);
-	// break;
-	//
-	// default:
-	// ZCLog.i(TAG, "http nothing to do");
-	// break;
-	// }
-	// }
-	// });
-	// }
-	//
-	// @Override
-	// public void onUnAuth() {
-	// // TODO Auto-generated method stub
-	// isAuth = false;
-	// clearBackStack();
-	// switchContent(loginPageFragment, false, LoginFragment.TAG);
-	// }
+	public class MyLocationListener implements BDLocationListener {
 
-	// private void purchase(final String amount) {
-	// ZCLog.i("consume", "doPurchase, amount: " + amount);
-	// ZCLog.i("consume", "keyId: " + keyIDString);
-	// ZCLog.i("consume", "psamId: " + psamIDString);
-	//
-	// LongxingcardRequest request = LongxingcardPurchase
-	// .requestInitCreditForPurchase_Longxing(amount, keyIDString,
-	// psamIDString);
-	//
-	// ZCLog.i("consume", request.toString());
-	//
-	// if (request.isOK()) {
-	//
-	// String checkResult = TransUtil.checkInputAmount(amount, 8, 2, true);
-	//
-	// String strAmount = checkResult.substring(4, checkResult.length());
-	//
-	// int bl = Integer.parseInt(request.getBalanceString())
-	// - Integer.parseInt(strAmount);
-	//
-	// final String lastBalance = Integer.toString(bl);
-	//
-	// ZCLog.i("consume", "lastbalace:" + lastBalance);
-	//
-	// ZCLog.i("consume", "init purchase");
-	//
-	// PurchaseInitInfo infoObj = new PurchaseInitInfo();
-	// infoObj.setInitResponse(request.getResponseString());
-	// infoObj.setAmount(request.getAmountString());
-	// infoObj.setPan(request.getPanString());
-	// infoObj.setIssuerId(request.getIssuerIdString());
-	// infoObj.setLng("000.000");
-	// infoObj.setLat("000.000");
-	//
-	// ZCWebService.getInstance().initForPurchase(infoObj, new Handler() {
-	// @Override
-	// public void dispatchMessage(Message msg) {
-	//
-	// switch (msg.what) {
-	// case ZCWebServiceParams.HTTP_SUCCESS:
-	//
-	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-	//
-	// ObjectMapper mapper = new ObjectMapper();
-	// try {
-	// requestUtil requestObj = mapper.readValue(
-	// msg.obj.toString(), requestUtil.class);
-	//
-	// ZCLog.i(TAG, requestObj.getDetail().toString());
-	//
-	// @SuppressWarnings("unchecked")
-	// Map<String, Object> _mapperMap = (Map<String, Object>) requestObj
-	// .getDetail();
-	//
-	// String dataString = _mapperMap.get("tradingOrder")
-	// .toString();
-	// String purchaseLogId = _mapperMap.get(
-	// "purchaseLogId").toString();
-	//
-	// ZCLog.i(TAG, "tradingOrder:" + dataString);
-	// ZCLog.i(TAG, "purchaseLogId:" + purchaseLogId);
-	//
-	// LongxingcardRequest _request = LongxingcardPurchase
-	// .requestCreditForPurche_Longxing(dataString);
-	//
-	// ZCLog.i("consume", _request.toString());
-	//
-	// if (_request.isOK()) {
-	//
-	// PurchaseUpdateInfo updateInfo = new PurchaseUpdateInfo();
-	// updateInfo.setSw(_request.getSwString());
-	// updateInfo.setLogId(purchaseLogId);
-	// updateInfo.setMac2(_request.getMac2String());
-	// updateInfo.setTac(_request.getTacString());
-	//
-	// updateInfo.setBalance(lastBalance);
-	//
-	// ZCLog.i(TAG, updateInfo.toString());
-	//
-	// ZCWebService.getInstance().updateForPurchase(
-	// updateInfo, new Handler() {
-	// @Override
-	// public void dispatchMessage(
-	// Message msg) {
-	//
-	// switch (msg.what) {
-	// case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
-	// ZCLog.i(TAG, "消费结果上传成功");
-	// Bundle args = new Bundle();
-	// args.putString(
-	// PurseResultPosFragment.AMOUNT,
-	// amount);
-	//
-	// args.putString(
-	// PurseResultPosFragment.BALANCE,
-	// lastBalance);
-	//
-	// args.putString(
-	// PurseResultPosFragment.HINT,
-	// "完成交易");
-	//
-	// purseResultPosFragment
-	// .setBundle(args);
-	//
-	// switchContent(
-	// purseResultPosFragment,
-	// true,
-	// PurseResultPosFragment.TAG);
-	// break;
-	// }
-	// default:
-	// break;
-	// }
-	// }
-	// });
-	//
-	// } else {
-	//
-	// }
-	//
-	// } catch (JsonParseException e1) {
-	// // TODO Auto-generated catch block
-	// e1.printStackTrace();
-	// } catch (JsonMappingException e1) {
-	// // TODO Auto-generated catch block
-	// e1.printStackTrace();
-	// } catch (IOException e1) {
-	// // TODO Auto-generated catch block
-	// e1.printStackTrace();
-	// }
-	//
-	// break;
-	// default:
-	// break;
-	// }
-	// }
-	// });
-	// }
-	//
-	// }
-	//
-	// @Override
-	// public void onFinish() {
-	// // TODO Auto-generated method stub
-	// clearBackStack();
-	// switchContent(pursePosPageFragment, false, PursePosFragment.TAG);
-	// }
-	//
-	// @Override
-	// public void onChangePos(String posNumber, String posCode) {
-	// // TODO Auto-generated method stub
-	// WPosInfo info = new WPosInfo();
-	// String uniqueID = state.getUniqueIDString();
-	//
-	// info.setTerminalId(posNumber);
-	// info.setValidateCode(posCode);
-	// info.setFingerprint(uniqueID);
-	//
-	// ZCWebService.getInstance().changePOS(info, new Handler() {
-	// @Override
-	// public void dispatchMessage(Message msg) {
-	//
-	// switch (msg.what) {
-	// case ZCWebServiceParams.HTTP_START:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FINISH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FAILED:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_SUCCESS:
-	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), "更换成功",
-	// Toast.LENGTH_SHORT).show();
-	//
-	// hiddenKeyboard();
-	// clearBackStack();
-	// switchContent(settingPageFragment, false,
-	// SettingFragment.TAG);
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_UNAUTH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_THROWABLE:
-	// Throwable e = (Throwable) msg.obj;
-	// ZCLog.e(TAG, "catch thowable:", e);
-	// break;
-	//
-	// default:
-	// ZCLog.i(TAG, "http nothing to do");
-	// break;
-	// }
-	// }
-	// });
-	// }
-	//
-	// @Override
-	// public void onChangePwd(UserInfo info) {
-	// // TODO Auto-generated method stub
-	// ZCWebService.getInstance().changePassword(info, new Handler() {
-	// @Override
-	// public void dispatchMessage(Message msg) {
-	//
-	// switch (msg.what) {
-	// case ZCWebServiceParams.HTTP_START:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FINISH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_FAILED:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_SUCCESS:
-	// ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), "修改密码成功",
-	// Toast.LENGTH_SHORT).show();
-	//
-	// hiddenKeyboard();
-	// clearBackStack();
-	// switchContent(settingPageFragment, false,
-	// SettingFragment.TAG);
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_UNAUTH:
-	// ZCLog.i(TAG, msg.obj.toString());
-	// Toast.makeText(getApplicationContext(), msg.obj.toString(),
-	// Toast.LENGTH_LONG).show();
-	// break;
-	//
-	// case ZCWebServiceParams.HTTP_THROWABLE:
-	// Throwable e = (Throwable) msg.obj;
-	// ZCLog.e(TAG, "catch thowable:", e);
-	// break;
-	//
-	// default:
-	// ZCLog.i(TAG, "http nothing to do");
-	// break;
-	// }
-	// }
-	// });
-	// }
+		@Override
+		public void onReceiveLocation(BDLocation location) {
+			// Receive Location
+
+			StringBuffer sb = new StringBuffer(256);
+			sb.append("time : ");
+			sb.append(location.getTime());
+			sb.append("\nerror code : ");
+			sb.append(location.getLocType());
+			sb.append("\nlatitude : ");
+			sb.append(location.getLatitude());
+			sb.append("\nlontitude : ");
+			sb.append(location.getLongitude());
+			sb.append("\nradius : ");
+			sb.append(location.getRadius());
+			if (location.getLocType() == BDLocation.TypeGpsLocation) {
+				sb.append("\nspeed : ");
+				sb.append(location.getSpeed());
+				sb.append("\nsatellite : ");
+				sb.append(location.getSatelliteNumber());
+				sb.append("\ndirection : ");
+				sb.append("\naddr : ");
+				sb.append(location.getAddrStr());
+				sb.append(location.getDirection());
+				lat = location.getLatitude();
+				lng = location.getLongitude();
+			} else if (location.getLocType() == BDLocation.TypeNetWorkLocation) {
+				sb.append("\naddr : ");
+				sb.append(location.getAddrStr());
+				sb.append("\noperationers : ");
+				sb.append(location.getOperators());
+				lat = location.getLatitude();
+				lng = location.getLongitude();
+			} else {
+				lat = 000.000;
+				lng = 000.000;
+			}
+
+			ZCLog.i("BaiduLocationApiDem", sb.toString());
+		}
+	}
 
 	// apk update
 	class updateHandler extends Handler {

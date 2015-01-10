@@ -238,11 +238,11 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(80), start, end,
+		word.setSpan(new AbsoluteSizeSpan(70), start, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(120), 0, start,
+		word.setSpan(new AbsoluteSizeSpan(100), 0, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -254,10 +254,7 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.purse_active_button: {
 			Log.i(TAG, "do purse");
-			if (amount < 0.00001f && amount > -0.00001f) {
-				Toast.makeText(getActivity().getApplicationContext(), "请输入金额",
-						Toast.LENGTH_SHORT).show();
-			}
+			
 			amountString = amountTextView.getText().toString();
 			mCallback.onDoPurse(amountString);
 			break;

@@ -3,6 +3,7 @@
     xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
     xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
     xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#ffffffff"
@@ -141,6 +142,7 @@
                     android:background="@drawable/edittext_radius"
                     android:hint="@string/change_pos_code_hint"
                     android:maxLength="6"
+                    android:singleLine="true"
                     android:textColor="@color/textColor"
                     android:textColorHint="@color/hintColor"
                     android:textSize="14sp" />
