@@ -16,13 +16,17 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.net.Uri;
@@ -30,6 +34,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -55,6 +60,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.location.LocationClientOption.LocationMode;
 import com.nineoldandroids.view.ViewHelper;
+import com.zc.app.boardcast.updateBoardCast;
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.adapter.MenuArrayAdapter;
 import com.zc.app.mpos.fragment.OnlineLogFragment.OnOnlineLogPageListener;
@@ -69,6 +75,7 @@ import com.zc.app.mpos.view.DragLayout.DragListener;
 import com.zc.app.sebc.lx.NfcEnv;
 import com.zc.app.utils.MircoPOState;
 import com.zc.app.utils.PosInfo;
+import com.zc.app.utils.ZCDataBase;
 import com.zc.app.utils.ZCLog;
 import com.zc.app.utils.ZCWebService;
 import com.zc.app.utils.ZCWebServiceParams;
@@ -130,6 +137,9 @@ public class MainActivity extends FragmentActivity implements
 	private int span = 10000;
 	private boolean isNeedAddress = true;
 
+	//
+	private AlarmManager am;
+
 	// apk 更新
 	// private PopDialog popDialog;
 
@@ -159,7 +169,11 @@ public class MainActivity extends FragmentActivity implements
 
 		mMyLocationListener = new MyLocationListener();
 		mLocationClient.registerLocationListener(mMyLocationListener);
-		InitLocation();
+		initLocation();
+
+		ZCDataBase.getInstance().init(MainActivity.this);
+
+		initUpdateAlarm();
 
 		Intent loadingIntent = new Intent();
 		loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
@@ -169,6 +183,21 @@ public class MainActivity extends FragmentActivity implements
 
 		onNewIntent(getIntent());
 	}
+
+	BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			ZCLog.i(TAG, intent.toString());
+			int result = intent.getExtras().getInt("data", 0);
+			if (1 == result) {
+				SystemClock.sleep(1000);
+				dl.close();
+			}
+
+		}
+	};
 
 	@Override
 	public void onNewIntent(Intent intent) {
@@ -190,6 +219,9 @@ public class MainActivity extends FragmentActivity implements
 
 		NfcEnv.enableNfcForegroundDispatch(this);
 
+		IntentFilter filter = new IntentFilter("closeDL.broadcast.action");
+		registerReceiver(broadcastReceiver, filter);
+
 		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
 			notEnable();
 			return;
@@ -207,7 +239,14 @@ public class MainActivity extends FragmentActivity implements
 		mLocationClient.stop();
 	}
 
-	private void InitLocation() {
+	@Override
+	protected void onDestroy() {
+		ZCLog.i(TAG, "onDestory");
+		unregisterReceiver(broadcastReceiver);
+		super.onDestroy();
+	};
+
+	private void initLocation() {
 		LocationClientOption option = new LocationClientOption();
 		option.setLocationMode(tempMode);
 		option.setCoorType(tempcoor);
@@ -215,6 +254,19 @@ public class MainActivity extends FragmentActivity implements
 		option.setScanSpan(span);
 		option.setIsNeedAddress(isNeedAddress);
 		mLocationClient.setLocOption(option);
+	}
+
+	private void initUpdateAlarm() {
+		ZCLog.i(TAG, "initUpdateAlarm");
+		am = (AlarmManager) getSystemService(ALARM_SERVICE);
+		Intent intent = new Intent("wpos.update.alarm");
+		intent.setClass(this, updateBoardCast.class);
+
+		PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent,
+				Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		long now = System.currentTimeMillis();
+		am.setInexactRepeating(AlarmManager.RTC, now, 30000, pi);
 	}
 
 	private void getPOSInfo() {
@@ -622,11 +674,12 @@ public class MainActivity extends FragmentActivity implements
 					startActivityForResult(it, CHANGEPWD);
 					break;
 				}
-				default:
+				default: {
+					dl.close();
 					break;
 				}
+				}
 
-				dl.close();
 			}
 		});
 
@@ -669,9 +722,6 @@ public class MainActivity extends FragmentActivity implements
 		}
 		}
 
-		switchContent((android.support.v4.app.Fragment) pursePosPageFragment,
-				false, PursePosFragment.TAG);
-
 		user_icon.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
@@ -702,6 +752,9 @@ public class MainActivity extends FragmentActivity implements
 				dl.close();
 			}
 		});
+
+		switchContent((android.support.v4.app.Fragment) pursePosPageFragment,
+				false, PursePosFragment.TAG);
 	}
 
 	class readUserStatusHandler extends Handler {
@@ -726,6 +779,10 @@ public class MainActivity extends FragmentActivity implements
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
+
+				shopCodeView.setText(Html
+						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
 				isPOSActive = false;
 				break;
 			}
@@ -826,7 +883,7 @@ public class MainActivity extends FragmentActivity implements
 
 			this.fragmentTag = fragmentTag;
 
-			fragmentTransaction.commit();
+			fragmentTransaction.commitAllowingStateLoss();
 		}
 	}
 
@@ -941,6 +998,10 @@ public class MainActivity extends FragmentActivity implements
 			}
 
 			role = userRole.ACTIVE;
+
+			Intent loadingIntent = new Intent();
+			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+			startActivity(loadingIntent);
 
 			ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
 
@@ -1092,6 +1153,10 @@ public class MainActivity extends FragmentActivity implements
 					case ZCWebServiceParams.HTTP_FAILED: {
 						Toast.makeText(getApplicationContext(),
 								msg.obj.toString(), Toast.LENGTH_SHORT).show();
+						Intent intent_finish = new Intent(
+								LoadingActivity.action);
+						intent_finish.putExtra("data", 1);
+						sendBroadcast(intent_finish);
 						break;
 					}
 					case ZCWebServiceParams.HTTP_SUCCESS: {
@@ -1115,7 +1180,8 @@ public class MainActivity extends FragmentActivity implements
 
 					case ZCWebServiceParams.HTTP_FINISH: {
 						ZCLog.i(TAG, msg.obj.toString());
-						Intent intent_finish = new Intent(LoadingActivity.action);
+						Intent intent_finish = new Intent(
+								LoadingActivity.action);
 						intent_finish.putExtra("data", 1);
 						sendBroadcast(intent_finish);
 						break;

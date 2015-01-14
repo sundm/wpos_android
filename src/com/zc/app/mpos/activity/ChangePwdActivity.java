@@ -321,6 +321,11 @@ public class ChangePwdActivity extends Activity {
 
 		NfcEnv.enableNfcForegroundDispatch(this);
 
+		
+		// Intent intent_finish = new Intent("closeDL.broadcast.action");
+		// intent_finish.putExtra("data", 1);
+		// sendBroadcast(intent_finish);
+
 	}
 
 	@Override

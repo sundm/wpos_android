@@ -99,6 +99,13 @@
                 android:name="android.nfc.action.TECH_DISCOVERED"
                 android:resource="@xml/nfc_tech_filter" />
         </activity>
+
+        <receiver android:name="com.zc.app.boardcast.updateBoardCast" >
+            <intent-filter>
+                <action android:name="wpos.update.alarm" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".activity.WhatsnewPagesA"
             android:screenOrientation="portrait" />

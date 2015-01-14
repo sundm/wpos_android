@@ -2,6 +2,8 @@ package com.zc.app.utils;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -819,10 +821,11 @@ public class ZCWebService {
 
 				Message msg = handler.obtainMessage();
 				msg.what = ZCWebServiceParams.HTTP_FAILED;
-				if (e.getClass() == ConnectException.class) {
+				if (e.getClass() == ConnectException.class
+						|| e.getClass() == HttpHostConnectException.class
+						|| e.getClass() == SocketTimeoutException.class
+						|| e.getClass() == SocketException.class) {
 					msg.obj = "网络不给力";
-				} else if (e.getClass() == HttpHostConnectException.class) {
-					msg.obj = "请检查网络";
 				} else {
 					msg.obj = "服务器连接失败";
 				}

@@ -10,17 +10,19 @@ public class ZCWebServiceParams {
 	public static final int HTTP_FAILED = 0x90000003;
 	public static final int HTTP_UNAUTH = 0x90000004;
 	public static final int HTTP_THROWABLE = 0x90000009;
+	public static final int HTTP_CONNECT = 0x90000010;
 
-	public static final String BASE_SSL_URL = "https://192.168.2.68/wpos-front";
+	public static final String BASE_SSL_URL = "https://222.84.136.83:8081/wpos";
 
-	public static final String BASE_URL = "http://114.215.85.135:8081/wpos";
+	public static final String BASE_URL = "http://192.168.2.69:8080/wpos";
 	// https://222.84.136.83:8081/wpos-front/
 	// "http://183.129.165.194:8088/wpos-front";
 	// "http://192.168.2.69:8080/wpos-front";
 	// "http://192.168.2.117:8088/wpos-front";
 	// "http://121.42.14.104/wpos-front";
 	// "http://114.215.85.135:8081/wpos";
-	// "http://121.42.14.104/wpos";
+	// "http://121.42.14.104/wpos";sit
+	// "https://222.84.136.83:8081/wpos";
 	public static final String RES_URL = "http://192.168.2.117:8080/resources-console/version";
 
 	// 根据用户名,密码登录

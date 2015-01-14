@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.zc.app.mpos.R;
+import com.zc.app.sebc.lx.NfcEnv;
 import com.zc.app.utils.ZCLog;
 
 public class LoadingActivity extends Activity {
@@ -36,18 +38,34 @@ public class LoadingActivity extends Activity {
 		}
 	};
 
+	@Override
 	protected void onResume() {
 		ZCLog.i("loading", "onResume");
+		NfcEnv.enableNfcForegroundDispatch(this);
 
 		IntentFilter filter = new IntentFilter(action);
 		registerReceiver(broadcastReceiver, filter);
 		super.onResume();
 	}
 
+	@Override
 	protected void onDestroy() {
 		ZCLog.i("loading", "onDestory");
 		unregisterReceiver(broadcastReceiver);
 		super.onDestroy();
 	};
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		setIntent(intent);
+		NfcEnv.initNfcEnvironment(intent);
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		Log.d("loading", "onPause");
+		NfcEnv.disableNfcForegroundDispatch(this);
+	}
 
 }
