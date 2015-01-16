@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import com.zc.app.mpos.R;
 import com.zc.app.sebc.lx.NfcEnv;
@@ -15,13 +17,30 @@ import com.zc.app.utils.ZCLog;
 public class LoadingActivity extends Activity {
 
 	public static final String action = "loading.broadcast.action";
+	private int second = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.loading);
 		// String loadingString = getIntent().getStringExtra("loading_text");
+		final Handler handler = new Handler();
+		final Runnable longestTime = new Runnable() {
+			@Override
+			public void run() {
+				second++;
 
+				if (second >= 50) {
+					second = 0;
+					LoadingActivity.this.finish();
+				} else {
+					handler.postDelayed(this, 100);
+				}
+
+			}
+		};
+
+		handler.postDelayed(longestTime, 100);
 	}
 
 	BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -66,6 +85,15 @@ public class LoadingActivity extends Activity {
 		super.onPause();
 		Log.d("loading", "onPause");
 		NfcEnv.disableNfcForegroundDispatch(this);
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 }

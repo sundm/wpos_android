@@ -28,6 +28,7 @@ import com.zc.app.sebc.lx.LongxingcardPurchase;
 import com.zc.app.sebc.lx.LongxingcardRequest;
 import com.zc.app.sebc.lx.NfcEnv;
 import com.zc.app.sebc.pboc2.TransUtil;
+import com.zc.app.utils.MD5Util;
 import com.zc.app.utils.PurchaseInitInfo;
 import com.zc.app.utils.PurchaseUpdateInfo;
 import com.zc.app.utils.ZCDataBase;
@@ -236,9 +237,11 @@ public class PurseCardActivity extends Activity {
 									.toString();
 							String purchaseLogId = _mapperMap.get(
 									"purchaseLogId").toString();
+							String mac2 = _mapperMap.get("mac2").toString();
 
 							ZCLog.i(TAG, "tradingOrder:" + dataString);
 							ZCLog.i(TAG, "purchaseLogId:" + purchaseLogId);
+							ZCLog.i(TAG, "mac2:" + mac2);
 
 							LongxingcardRequest _request = LongxingcardPurchase
 									.requestCreditForPurche_Longxing(dataString);
@@ -269,14 +272,6 @@ public class PurseCardActivity extends Activity {
 
 													addUpdateInfo(updateInfo);
 
-													// Intent it = new Intent(
-													// PurseCardActivity.this,
-													// PurseResultFailedActivity.class);
-													//
-													// it.putExtra("res",
-													// "消费结果上传失败");
-													//
-													// startActivity(it);
 													break;
 												}
 												case ZCWebServiceParams.HTTP_FAILED: {
@@ -287,14 +282,6 @@ public class PurseCardActivity extends Activity {
 														addUpdateInfo(updateInfo);
 													}
 
-													// Intent it = new Intent(
-													// PurseCardActivity.this,
-													// PurseResultFailedActivity.class);
-													//
-													// it.putExtra("res",
-													// "消费结果上传失败");
-													//
-													// startActivity(it);
 													break;
 												}
 												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
@@ -305,21 +292,7 @@ public class PurseCardActivity extends Activity {
 													break;
 												}
 												case ZCWebServiceParams.HTTP_FINISH: {
-													Intent it = new Intent(
-															PurseCardActivity.this,
-															PurseResultOKActivity.class);
 
-													it.putExtra("username",
-															username);
-													it.putExtra("amount",
-															amount);
-													it.putExtra("balance",
-															lastBalance);
-
-													startActivity(it);
-
-													PurseCardActivity.this
-															.finish();
 													break;
 												}
 												default: {
@@ -328,6 +301,31 @@ public class PurseCardActivity extends Activity {
 												}
 											}
 										});
+
+								if (mac2.equals(MD5Util.md5String(_request
+										.getMac2String()))) {
+									Intent it = new Intent(
+											PurseCardActivity.this,
+											PurseResultOKActivity.class);
+									it.putExtra("username", username);
+									it.putExtra("amount", amount);
+									it.putExtra("balance", lastBalance);
+									startActivity(it);
+									PurseCardActivity.this.finish();
+								} else {
+									ZCLog.i(TAG,
+											"mac2 check failed:"
+													+ MD5Util.md5String(_request
+															.getMac2String()));
+
+									Intent it = new Intent(
+											PurseCardActivity.this,
+											PurseResultFailedActivity.class);
+
+									it.putExtra("res", "卡片异常");
+
+									startActivity(it);
+								}
 
 							} else {
 
@@ -339,6 +337,13 @@ public class PurseCardActivity extends Activity {
 								updateInfo.setBalance("");
 
 								ZCLog.i(TAG, updateInfo.toString());
+
+								Intent it = new Intent(PurseCardActivity.this,
+										PurseResultFailedActivity.class);
+
+								it.putExtra("res", "卡片操作失败");
+
+								startActivity(it);
 
 								ZCWebService.getInstance().updateForPurchase(
 										updateInfo, new Handler() {
@@ -353,14 +358,6 @@ public class PurseCardActivity extends Activity {
 													ZCLog.i(TAG, "消费结果上传失败");
 													addUpdateInfo(updateInfo);
 
-													// Intent it = new Intent(
-													// PurseCardActivity.this,
-													// PurseResultFailedActivity.class);
-													//
-													// it.putExtra("res",
-													// "消费结果上传失败");
-													//
-													// startActivity(it);
 													break;
 												}
 												case ZCWebServiceParams.HTTP_FAILED: {
@@ -373,29 +370,13 @@ public class PurseCardActivity extends Activity {
 														addUpdateInfo(updateInfo);
 													}
 
-													// Intent it = new Intent(
-													// PurseCardActivity.this,
-													// PurseResultFailedActivity.class);
-													//
-													// it.putExtra("res",
-													// msg.obj.toString());
-													//
-													// startActivity(it);
 													break;
 												}
 												case ZCWebServiceParams.HTTP_PURCHASE_SUCCESS: {
 													ZCLog.i(TAG, "消费结果上传成功");
-
 													break;
 												}
 												case ZCWebServiceParams.HTTP_FINISH: {
-													Intent it = new Intent(
-															PurseCardActivity.this,
-															PurseResultFailedActivity.class);
-
-													it.putExtra("res", "卡片操作失败");
-
-													startActivity(it);
 													break;
 												}
 												default: {

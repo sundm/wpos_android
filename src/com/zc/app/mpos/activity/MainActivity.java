@@ -304,7 +304,7 @@ public class MainActivity extends FragmentActivity implements
 						posInfo = mapper.readValue(detailString, PosInfo.class);
 						ZCLog.i(TAG, posInfo.toString());
 						storeNumberString = posInfo.getMerchantId();
-						termailNumberString = posInfo.getTerminalSeq();
+						termailNumberString = posInfo.getTerminalId();
 						posStateString = posInfo.getWposDisplayStatus();
 						isPOSActive = true;
 					} catch (JsonParseException e1) {
@@ -804,7 +804,7 @@ public class MainActivity extends FragmentActivity implements
 					posInfo = mapper.readValue(detailString, PosInfo.class);
 					ZCLog.i(TAG, posInfo.toString());
 					storeNumberString = posInfo.getMerchantId();
-					termailNumberString = posInfo.getTerminalSeq();
+					termailNumberString = posInfo.getTerminalId();
 					posStateString = posInfo.getWposDisplayStatus();
 					isPOSActive = true;
 

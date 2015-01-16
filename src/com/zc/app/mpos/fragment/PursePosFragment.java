@@ -209,26 +209,23 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 
 	}
 
-	private void updateView(Bundle bundle) {
-
-	}
-
-	private float appendAmount(float n) {
-		if (amount > 100.00f) {
-			return amount;
+	private String appendAmount(float n) {
+		if ((amount > 99.999f && amount < 100.001f && n > 0.0001f)
+				|| (amount > 100.001f)) {
+			return amountTextView.getText().toString();
 		}
 
-		// float m = (float) (amount * 10 + n);
-
 		BigDecimal v1 = new BigDecimal(String.valueOf(amount));
-		BigDecimal v2 = new BigDecimal("10.0");
+		BigDecimal v2 = new BigDecimal("10.00");
 		BigDecimal v3 = new BigDecimal(n);
-		amount = v1.multiply(v2).add(v3).setScale(2, BigDecimal.ROUND_HALF_UP)
-				.floatValue();
+		String mString = v1.multiply(v2).add(v3)
+				.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
 
-		// BigDecimal b = new BigDecimal(m);
-		// amount = b.setScale(2, BigDecimal.ROUND_HALF_UP).floatValue();
-		return amount;
+		ZCLog.i(TAG, mString);
+
+		amount = Float.valueOf(mString);
+
+		return mString;
 	}
 
 	private void setAmount(String w) {
@@ -254,7 +251,7 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.purse_active_button: {
 			Log.i(TAG, "do purse");
-			
+
 			amountString = amountTextView.getText().toString();
 			mCallback.onDoPurse(amountString);
 			break;
