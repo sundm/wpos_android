@@ -242,7 +242,7 @@ public class ChangePOSActivity extends Activity {
 			case ZCWebServiceParams.HTTP_UNAUTH: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
-						Toast.LENGTH_LONG).show();
+						Toast.LENGTH_SHORT).show();
 
 				Intent intent = new Intent(ChangePOSActivity.this,
 						MainActivity.class);

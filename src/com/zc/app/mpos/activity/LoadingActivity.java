@@ -30,11 +30,11 @@ public class LoadingActivity extends Activity {
 			public void run() {
 				second++;
 
-				if (second >= 50) {
+				if (second >= 40) {
 					second = 0;
 					LoadingActivity.this.finish();
 				} else {
-					handler.postDelayed(this, 100);
+					handler.postDelayed(this, 1000);
 				}
 
 			}

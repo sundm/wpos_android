@@ -69,8 +69,6 @@ public class MircoPOState {
 				}
 				case ZCWebServiceParams.HTTP_FAILED: {
 					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(_context, msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
 
 					Message msg2 = _handler.obtainMessage();
 					msg2.what = ZCWebServiceParams.HTTP_FAILED;
@@ -120,8 +118,7 @@ public class MircoPOState {
 				}
 				case ZCWebServiceParams.HTTP_UNAUTH: {
 					ZCLog.i(TAG, msg.obj.toString());
-					Toast.makeText(_context, msg.obj.toString(),
-							Toast.LENGTH_LONG).show();
+
 					Message msg2 = _handler.obtainMessage();
 					msg2.what = ZCWebServiceParams.HTTP_UNAUTH;
 					_handler.sendMessage(msg2);

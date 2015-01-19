@@ -208,9 +208,20 @@ public class RegisterPage extends Activity {
 							if (checkPassword(passwordString)) {
 								passwordImageView
 										.setImageResource(R.drawable.ok);
+
+								String passwordAgainString = userPasswordAgainBootstrapEditText
+										.getText().toString();
+								if (passwordString.equals(passwordAgainString)) {
+									passwordAgainImageView
+											.setImageResource(R.drawable.ok);
+								} else {
+									passwordAgainImageView
+											.setImageResource(R.drawable.fail);
+								}
 							} else {
 								passwordImageView
 										.setImageResource(R.drawable.fail);
+								passwordAgainImageView.setImageDrawable(null);
 								Toast.makeText(getApplicationContext(),
 										"密码格式错误", Toast.LENGTH_SHORT).show();
 							}

@@ -75,7 +75,7 @@
     <string name="purse_result_pos_balance_txt">钱包余额</string>
     <string name="purse_result_pos_hint_txt">交易信息</string>
     <string name="purse_result_pos_button_text">交易成功！</string>
-    <string name="empty_message">最近三月没有交易日志</string>
+    <string name="empty_message">最近60日没有交易日志</string>
     <string name="loading_message">正在查询,请稍后</string>
     <string name="error_message">糟糕，查询失败！</string>
     <string name="empty_button">再试一次</string>

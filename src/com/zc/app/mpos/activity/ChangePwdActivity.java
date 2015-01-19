@@ -93,11 +93,23 @@ public class ChangePwdActivity extends Activity {
 							String passwordString = userNewPasswordBootstrapEditText
 									.getText().toString();
 							if (checkPassword(passwordString)) {
+								String passwordAgainString = userPasswordAgainBootstrapEditText
+										.getText().toString();
+
 								passwordNewImageView
 										.setImageResource(R.drawable.ok);
+
+								if (passwordString.equals(passwordAgainString)) {
+									passwordAgainImageView
+											.setImageResource(R.drawable.ok);
+								} else {
+									passwordAgainImageView
+											.setImageResource(R.drawable.fail);
+								}
 							} else {
 								passwordNewImageView
 										.setImageResource(R.drawable.fail);
+								passwordAgainImageView.setImageDrawable(null);
 								Toast.makeText(getApplicationContext(),
 										"密码格式错误", Toast.LENGTH_SHORT).show();
 							}
@@ -268,7 +280,7 @@ public class ChangePwdActivity extends Activity {
 
 					ZCLog.i(TAG, requestObj.getDetail().toString());
 					Intent intent = new Intent(ChangePwdActivity.this,
-							LoginPage.class);
+							MainActivity.class);
 
 					ChangePwdActivity.this.setResult(CHANGEPWD, intent);
 					ChangePwdActivity.this.finish();
@@ -291,7 +303,7 @@ public class ChangePwdActivity extends Activity {
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
 				Intent intent = new Intent(ChangePwdActivity.this,
-						LoginPage.class);
+						MainActivity.class);
 
 				ChangePwdActivity.this.setResult(CHANGEPWD, intent);
 				ChangePwdActivity.this.finish();
@@ -321,7 +333,6 @@ public class ChangePwdActivity extends Activity {
 
 		NfcEnv.enableNfcForegroundDispatch(this);
 
-		
 		// Intent intent_finish = new Intent("closeDL.broadcast.action");
 		// intent_finish.putExtra("data", 1);
 		// sendBroadcast(intent_finish);

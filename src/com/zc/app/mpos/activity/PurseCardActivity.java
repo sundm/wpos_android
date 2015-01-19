@@ -105,6 +105,7 @@ public class PurseCardActivity extends Activity {
 		if (NfcEnv.media == null || NfcEnv.media.connect() != 0) {
 			return;
 		}
+		
 		purchase(amount);
 	}
 
@@ -118,6 +119,8 @@ public class PurseCardActivity extends Activity {
 	}
 
 	private void setAmount(String w) {
+		ZCLog.i(TAG, "set amount:" + w);
+
 		int start_amount = w.indexOf(":") + 1;
 
 		int start = w.indexOf('.');

@@ -283,7 +283,7 @@ public class MainActivity extends FragmentActivity implements
 					ZCLog.i(TAG, msg.obj.toString());
 					Toast.makeText(getApplicationContext(), msg.obj.toString(),
 							Toast.LENGTH_SHORT).show();
-					isPOSActive = false;
+					isPOSActive = true;
 					break;
 				}
 				case ZCWebServiceParams.HTTP_SUCCESS: {
@@ -631,6 +631,7 @@ public class MainActivity extends FragmentActivity implements
 							.setText(Html
 									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
 
+					role = userRole.ACTIVE;
 				} else {
 					shopCodeView.setText("商户号: " + storeNumberString);
 					termailView.setText("终端号: " + termailNumberString);
@@ -669,9 +670,12 @@ public class MainActivity extends FragmentActivity implements
 
 				switch (position) {
 				case 0: {
+
 					Intent it = new Intent(MainActivity.this,
 							ChangePwdActivity.class);
+
 					startActivityForResult(it, CHANGEPWD);
+
 					break;
 				}
 				default: {
@@ -780,10 +784,50 @@ public class MainActivity extends FragmentActivity implements
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
 
-				shopCodeView.setText(Html
-						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
 				isPOSActive = false;
+
+				if (requestLoginUtilObj.getRole().equals("Normal")
+						&& !isPOSActive) {
+					role = userRole.NORMAL;
+					Toast.makeText(getApplicationContext(), "非绑定终端，请先绑定",
+							Toast.LENGTH_SHORT).show();
+					shopCodeView.setText(Html
+							.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
+				} else if (requestLoginUtilObj.getRole().equals("Normal")
+						&& isPOSActive) {
+					role = userRole.NORMAL;
+
+					if (storeNumberString == null
+							|| termailNumberString == null
+							|| storeNumberString.isEmpty()
+							|| termailNumberString.isEmpty()) {
+						shopCodeView
+								.setText(Html
+										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+					} else {
+						shopCodeView.setText("商户号: " + storeNumberString);
+						termailView.setText("终端号: " + termailNumberString);
+					}
+				} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
+					role = userRole.ACTIVE;
+
+					if (storeNumberString == null
+							|| termailNumberString == null
+							|| storeNumberString.isEmpty()
+							|| termailNumberString.isEmpty()) {
+						shopCodeView
+								.setText(Html
+										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+					} else {
+						shopCodeView.setText("商户号: " + storeNumberString);
+						termailView.setText("终端号: " + termailNumberString);
+					}
+				}
+
+				ZCLog.i(TAG, "role:" + String.valueOf(role));
+
 				break;
 			}
 			case ZCWebServiceParams.HTTP_SUCCESS: {
@@ -947,6 +991,9 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		ZCLog.i(TAG, "resultCode:" + String.valueOf(resultCode));
+
 		switch (resultCode) {
 		case RESULT_OK: {
 			ZCLog.i(TAG, "result_ok");
@@ -1004,19 +1051,6 @@ public class MainActivity extends FragmentActivity implements
 			startActivity(loadingIntent);
 
 			ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
-
-			// role = userRole.ACTIVE;
-			//
-			// if (storeNumberString == null || termailNumberString == null
-			// || storeNumberString.isEmpty()
-			// || termailNumberString.isEmpty()) {
-			// shopCodeView.setText(Html
-			// .fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-			//
-			// } else {
-			// shopCodeView.setText("商户号: " + storeNumberString);
-			// termailView.setText("终端号: " + termailNumberString);
-			// }
 
 			break;
 		}
@@ -1120,29 +1154,50 @@ public class MainActivity extends FragmentActivity implements
 		mContent = getCurrentFragment();
 	}
 
-	@Override
-	public void onDoPurse(final String amountString) {
-		// TODO Auto-generated method stub
-		Log.i("onLinster", "onDoPurse");
+	private void doPurse(final String amountString) {
+		if (requestLoginUtilObj.getRole().equals("Normal") && !isPOSActive) {
+			role = userRole.NORMAL;
+			Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
+			shopCodeView.setText(Html
+					.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
+		} else if (requestLoginUtilObj.getRole().equals("Normal")
+				&& isPOSActive) {
+			role = userRole.NORMAL;
 
-		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
-			notEnable();
-			return;
+			if (storeNumberString == null || termailNumberString == null
+					|| storeNumberString.isEmpty()
+					|| termailNumberString.isEmpty()) {
+				shopCodeView.setText(Html
+						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+			} else {
+				shopCodeView.setText("商户号: " + storeNumberString);
+				termailView.setText("终端号: " + termailNumberString);
+			}
+		} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
+			role = userRole.ACTIVE;
+
+			if (storeNumberString == null || termailNumberString == null
+					|| storeNumberString.isEmpty()
+					|| termailNumberString.isEmpty()) {
+				shopCodeView.setText(Html
+						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+			} else {
+				shopCodeView.setText("商户号: " + storeNumberString);
+				termailView.setText("终端号: " + termailNumberString);
+			}
 		}
+
+		ZCLog.i(TAG, "role:" + String.valueOf(role));
 
 		switch (role) {
 		case ACTIVE: {
 			// purchase(amountString);
-			if (Float.valueOf(amountString) < 0.00001f
-					&& Float.valueOf(amountString) > -0.00001f) {
-				Toast.makeText(getApplicationContext(), "请输入金额",
-						Toast.LENGTH_SHORT).show();
-				break;
-			}
 
-			Intent loadingIntent = new Intent();
-			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
-			startActivity(loadingIntent);
+			// Intent loadingIntent = new Intent();
+			// loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+			// startActivity(loadingIntent);
 
 			state.getPOSInfoFromServer(new Handler() {
 				@Override
@@ -1203,6 +1258,10 @@ public class MainActivity extends FragmentActivity implements
 			break;
 		}
 		case NORMAL: {
+			Intent intent_finish = new Intent(LoadingActivity.action);
+			intent_finish.putExtra("data", 1);
+			sendBroadcast(intent_finish);
+
 			if (isPOSActive) {
 				Toast.makeText(getApplicationContext(), "请重新绑定",
 						Toast.LENGTH_SHORT).show();
@@ -1226,6 +1285,122 @@ public class MainActivity extends FragmentActivity implements
 			break;
 		}
 		}
+	}
+
+	@Override
+	public void onDoPurse(final String amountString) {
+		// TODO Auto-generated method stub
+		Log.i("onLinster", "onDoPurse");
+
+		if (!NfcEnv.isNfcEnabled(getApplicationContext())) {
+			notEnable();
+			return;
+		}
+
+		if (Float.valueOf(amountString) < 0.00001f
+				&& Float.valueOf(amountString) > -0.00001f) {
+			Toast.makeText(getApplicationContext(), "请输入金额", Toast.LENGTH_SHORT)
+					.show();
+			return;
+		}
+
+		Intent loadingIntent = new Intent();
+		loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+		startActivity(loadingIntent);
+
+		ZCWebService.getInstance().queryPOS(new Handler() {
+			@Override
+			public void dispatchMessage(Message msg) {
+
+				switch (msg.what) {
+				case ZCWebServiceParams.HTTP_START: {
+
+					break;
+				}
+				case ZCWebServiceParams.HTTP_FAILED: {
+					ZCLog.i(TAG, msg.obj.toString());
+					Toast.makeText(getApplicationContext(), msg.obj.toString(),
+							Toast.LENGTH_SHORT).show();
+					isPOSActive = false;
+
+					if (!msg.obj.toString().equals("网络不给力")) {
+						doPurse(amountString);
+					} else {
+						Intent intent_finish = new Intent(
+								LoadingActivity.action);
+						intent_finish.putExtra("data", 1);
+						sendBroadcast(intent_finish);
+					}
+
+					break;
+				}
+				case ZCWebServiceParams.HTTP_SUCCESS: {
+					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						requestUtil requestObj = mapper.readValue(
+								msg.obj.toString(), requestUtil.class);
+
+						if (requestObj.getDetail() == null) {
+							// todo
+							return;
+						}
+
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+						posInfo = mapper.readValue(detailString, PosInfo.class);
+						ZCLog.i(TAG, posInfo.toString());
+						storeNumberString = posInfo.getMerchantId();
+						termailNumberString = posInfo.getTerminalId();
+						posStateString = posInfo.getWposDisplayStatus();
+						isPOSActive = true;
+
+						doPurse(amountString);
+
+					} catch (JsonParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (JsonMappingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_UNAUTH: {
+					ZCLog.i(TAG, msg.obj.toString());
+
+					Intent intent_finish = new Intent(LoadingActivity.action);
+					intent_finish.putExtra("data", 1);
+					sendBroadcast(intent_finish);
+
+					isAuth = false;
+					Intent intent = new Intent(MainActivity.this,
+							LoginPage.class);
+
+					startActivity(intent);
+					MainActivity.this.finish();
+
+					break;
+				}
+
+				case ZCWebServiceParams.HTTP_FINISH: {
+
+					break;
+				}
+
+				default: {
+					ZCLog.i(TAG, "http nothing to do");
+					break;
+				}
+
+				}
+			}
+		});
 
 	}
 
