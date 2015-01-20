@@ -17,6 +17,7 @@ import com.zc.app.utils.ZCLog;
 public class LoadingActivity extends Activity {
 
 	public static final String action = "loading.broadcast.action";
+	private final static int LOADING = 20;
 	private int second = 0;
 
 	@Override
@@ -51,6 +52,15 @@ public class LoadingActivity extends Activity {
 			ZCLog.i("loading", intent.toString());
 			int result = intent.getExtras().getInt("data", 0);
 			if (1 == result) {
+				LoadingActivity.this.finish();
+			}
+			if (2 == result) {
+				Intent intent_result = new Intent(LoadingActivity.this,
+						MainActivity.class);
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("needResume", false);
+				intent_result.putExtras(bundle);
+				LoadingActivity.this.setResult(LOADING, intent_result);
 				LoadingActivity.this.finish();
 			}
 

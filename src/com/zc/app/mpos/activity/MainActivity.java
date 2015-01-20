@@ -101,12 +101,14 @@ public class MainActivity extends FragmentActivity implements
 
 	private userRole role;
 	private boolean isAuth = false;
+	private boolean isNeedResume = true;
 	private boolean dragIsOpened = false;
 
 	private final static String TAG = "main";
 	public final static String USER_INFO_STATE = "user_state";
+	public static boolean isFromLogin = true;
 
-	private requestLoginUtil requestLoginUtilObj = null;
+	private requestLoginUtil requestLoginUtilObj;
 	private MircoPOState state;
 	private PosInfo posInfo;
 	private String keyIDString;
@@ -117,6 +119,7 @@ public class MainActivity extends FragmentActivity implements
 	private final static int ACTIVEPOS = 12;
 	private final static int PURSECARD = 13;
 	private final static int QUERYLOG = 14;
+	private final static int LOADING = 20;
 
 	private String userNameString;
 	private String posStateString;
@@ -159,6 +162,8 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		ZCLog.i(TAG, "onCreate");
+
 		setContentView(R.layout.activity_main);
 
 		// getServerVersion();
@@ -175,11 +180,14 @@ public class MainActivity extends FragmentActivity implements
 
 		initUpdateAlarm();
 
-		Intent loadingIntent = new Intent();
-		loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
-		startActivity(loadingIntent);
+		initDragLayout();
+		initView();
+		setPursePOSFragment();
 
-		getPOSInfo();
+		// Intent loadingIntent = new Intent();
+		// loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+		// startActivity(loadingIntent);
+		// getPOSInfo();
 
 		onNewIntent(getIntent());
 	}
@@ -201,6 +209,7 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	public void onNewIntent(Intent intent) {
+		ZCLog.i(TAG, "onNewIntent");
 		setIntent(intent);
 		NfcEnv.initNfcEnvironment(intent);
 	}
@@ -215,7 +224,6 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		ZCLog.i(TAG, "onResume!");
 
 		NfcEnv.enableNfcForegroundDispatch(this);
 
@@ -228,12 +236,25 @@ public class MainActivity extends FragmentActivity implements
 		}
 
 		mLocationClient.start();
+
+		if (isNeedResume) {
+
+			Intent loadingIntent = new Intent();
+			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+			startActivity(loadingIntent);
+
+			startActivityForResult(loadingIntent, LOADING);
+
+			ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
+		} else {
+			isNeedResume = true;
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		Log.d(TAG, "onPause");
+		ZCLog.i(TAG, "onPause");
 		NfcEnv.disableNfcForegroundDispatch(this);
 
 		mLocationClient.stop();
@@ -338,8 +359,6 @@ public class MainActivity extends FragmentActivity implements
 					intent_finish.putExtra("data", 1);
 					sendBroadcast(intent_finish);
 
-					initDragLayout();
-					initView();
 					break;
 				}
 
@@ -538,10 +557,10 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	private void initView() {
-		requestLoginUtilObj = null;
-
 		userNameView = (TextView) findViewById(R.id.iv_text);
 		shopCodeView = (TextView) findViewById(R.id.tv_shop_text);
+		termailView = (TextView) findViewById(R.id.tv_ter_text);
+
 		shopCodeView.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -571,8 +590,6 @@ public class MainActivity extends FragmentActivity implements
 			}
 		});
 
-		termailView = (TextView) findViewById(R.id.tv_ter_text);
-
 		user_icon = (ImageView) findViewById(R.id.user_icon);
 		more_icon = (RelativeLayout) findViewById(R.id.iv_funcation);
 		ll = (LinearLayout) findViewById(R.id.ll1);
@@ -580,84 +597,6 @@ public class MainActivity extends FragmentActivity implements
 
 		role = userRole.UNAUTH;
 		state = new MircoPOState(this);
-
-		pursePosPageFragment = new PursePosFragment();
-
-		Intent intent = getIntent();
-
-		if (intent != null) {
-			Bundle bundle = intent.getExtras();
-			if (bundle != null) {
-				String userString = bundle.getString(USER_INFO_STATE, "");
-
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					requestLoginUtilObj = mapper.readValue(userString,
-							requestLoginUtil.class);
-				} catch (JsonParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-
-		}
-
-		if (requestLoginUtilObj != null) {
-			isAuth = true;
-
-			userNameString = requestLoginUtilObj.getUsername();
-			phoneString = requestLoginUtilObj.getPhoneNumber();
-			userNameView.setText(userNameString);
-
-			if (requestLoginUtilObj.getRole().equals("Normal") && !isPOSActive) {
-				role = userRole.NORMAL;
-				Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
-				shopCodeView.setText(Html
-						.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
-			} else if (requestLoginUtilObj.getRole().equals("Normal")
-					&& isPOSActive) {
-				role = userRole.NORMAL;
-
-				if (storeNumberString == null || termailNumberString == null
-						|| storeNumberString.isEmpty()
-						|| termailNumberString.isEmpty()) {
-					shopCodeView
-							.setText(Html
-									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
-					role = userRole.ACTIVE;
-				} else {
-					shopCodeView.setText("商户号: " + storeNumberString);
-					termailView.setText("终端号: " + termailNumberString);
-				}
-			} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
-				role = userRole.ACTIVE;
-
-				if (storeNumberString == null || termailNumberString == null
-						|| storeNumberString.isEmpty()
-						|| termailNumberString.isEmpty()) {
-					shopCodeView
-							.setText(Html
-									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
-				} else {
-					shopCodeView.setText("商户号: " + storeNumberString);
-					termailView.setText("终端号: " + termailNumberString);
-				}
-			}
-
-		} else {
-			isAuth = false;
-			role = userRole.UNAUTH;
-		}
-
-		ZCLog.i(TAG, "role:" + String.valueOf(role));
 
 		lv.setAdapter(new MenuArrayAdapter(this, new String[] { "修改密码" }));
 		lv.setOnItemClickListener(new OnItemClickListener() {
@@ -686,45 +625,6 @@ public class MainActivity extends FragmentActivity implements
 
 			}
 		});
-
-		switch (role) {
-		case ACTIVE: {
-			break;
-		}
-		case NORMAL: {
-
-			if (isPOSActive) {
-				Intent it = new Intent(MainActivity.this,
-						ChangePOSActivity.class);
-
-				it.putExtra("uniqueID", state.getUniqueIDString());
-				it.putExtra("phone", phoneString);
-
-				startActivityForResult(it, CHANGEPOS);
-			} else {
-				Intent it = new Intent(MainActivity.this,
-						ActivePOSActivity.class);
-
-				it.putExtra("uniqueID", state.getUniqueIDString());
-
-				startActivityForResult(it, ACTIVEPOS);
-			}
-
-			break;
-		}
-		case UNAUTH: {
-			ZCLog.i(TAG, "user is unauth!");
-			Intent it = new Intent(MainActivity.this, LoginPage.class);
-			startActivity(it);
-			MainActivity.this.finish();
-			break;
-		}
-
-		default: {
-
-			break;
-		}
-		}
 
 		user_icon.setOnClickListener(new OnClickListener() {
 			@Override
@@ -757,8 +657,170 @@ public class MainActivity extends FragmentActivity implements
 			}
 		});
 
+	}
+
+	private void setPursePOSFragment() {
+		pursePosPageFragment = new PursePosFragment();
+
 		switchContent((android.support.v4.app.Fragment) pursePosPageFragment,
 				false, PursePosFragment.TAG);
+	}
+
+	private void updateUserInfo() {
+
+		if (requestLoginUtilObj != null) {
+			isAuth = true;
+
+			userNameString = requestLoginUtilObj.getUsername();
+			phoneString = requestLoginUtilObj.getPhoneNumber();
+			userNameView.setText(userNameString);
+			termailView.setText("");
+			shopCodeView.setText("");
+
+		} else {
+			ZCLog.i(TAG, "requestLoginUtilObj is null");
+			isAuth = false;
+			role = userRole.UNAUTH;
+		}
+	}
+
+	private void updateInfo() {
+
+		ZCLog.i(TAG, "role:" + String.valueOf(role));
+
+		if (requestLoginUtilObj != null) {
+			isAuth = true;
+
+			userNameString = requestLoginUtilObj.getUsername();
+			phoneString = requestLoginUtilObj.getPhoneNumber();
+			userNameView.setText(userNameString);
+
+			if (requestLoginUtilObj.getRole().equals("Normal") && !isPOSActive) {
+				role = userRole.NORMAL;
+				termailView.setText("");
+				shopCodeView.setText(Html
+						.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
+			} else if (requestLoginUtilObj.getRole().equals("Normal")
+					&& isPOSActive) {
+				role = userRole.NORMAL;
+
+				if (storeNumberString == null || termailNumberString == null
+						|| storeNumberString.isEmpty()
+						|| termailNumberString.isEmpty()) {
+					termailView.setText("");
+					shopCodeView
+							.setText(Html
+									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+					role = userRole.ACTIVE;
+				} else {
+					shopCodeView.setText("商户号: " + storeNumberString);
+					termailView.setText("终端号: " + termailNumberString);
+				}
+			} else {
+				role = userRole.ACTIVE;
+
+				if (storeNumberString == null || termailNumberString == null
+						|| storeNumberString.isEmpty()
+						|| termailNumberString.isEmpty()) {
+					termailView.setText("");
+					shopCodeView
+							.setText(Html
+									.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
+
+				} else {
+					shopCodeView.setText("商户号: " + storeNumberString);
+					termailView.setText("终端号: " + termailNumberString);
+				}
+			}
+
+		} else {
+			ZCLog.i(TAG, "requestLoginUtilObj is null");
+			isAuth = false;
+			role = userRole.UNAUTH;
+		}
+
+		ZCLog.i(TAG, "role:" + String.valueOf(role));
+	}
+
+	private void getInfoFromLogin() {
+		Intent intent = getIntent();
+
+		if (intent != null) {
+			Bundle bundle = intent.getExtras();
+			if (bundle != null) {
+				String userString = bundle.getString(USER_INFO_STATE, "");
+
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					requestLoginUtilObj = mapper.readValue(userString,
+							requestLoginUtil.class);
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} else {
+			requestLoginUtilObj = null;
+		}
+	}
+
+	private void setActivity() {
+		ZCLog.i(TAG, "role:" + String.valueOf(role));
+		switch (role) {
+		case ACTIVE: {
+			break;
+		}
+		case NORMAL: {
+
+			if (isPOSActive) {
+
+				Toast.makeText(getApplicationContext(), "请重新绑定",
+						Toast.LENGTH_SHORT).show();
+
+				Intent it = new Intent(MainActivity.this,
+						ChangePOSActivity.class);
+
+				it.putExtra("uniqueID", state.getUniqueIDString());
+				it.putExtra("phone", phoneString);
+
+				startActivityForResult(it, CHANGEPOS);
+			} else {
+				Toast.makeText(getApplicationContext(), "请先开通",
+						Toast.LENGTH_SHORT).show();
+
+				Intent it = new Intent(MainActivity.this,
+						ActivePOSActivity.class);
+
+				it.putExtra("uniqueID", state.getUniqueIDString());
+
+				startActivityForResult(it, ACTIVEPOS);
+			}
+
+			break;
+		}
+		case UNAUTH: {
+			ZCLog.i(TAG, "user is unauth!");
+			Intent it = new Intent(MainActivity.this, LoginPage.class);
+			startActivity(it);
+			MainActivity.this.finish();
+			break;
+		}
+
+		default: {
+			ZCLog.i(TAG, "user is unauth!");
+			Intent it = new Intent(MainActivity.this, LoginPage.class);
+			startActivity(it);
+			MainActivity.this.finish();
+			break;
+		}
+		}
 	}
 
 	class readUserStatusHandler extends Handler {
@@ -769,64 +831,36 @@ public class MainActivity extends FragmentActivity implements
 			switch (msg.what) {
 			case ZCWebServiceParams.HTTP_START: {
 				ZCLog.i(TAG, msg.obj.toString());
-
+				initView();
 				break;
 			}
 			case ZCWebServiceParams.HTTP_FINISH: {
 				ZCLog.i(TAG, msg.obj.toString());
+				isFromLogin = false;
 				Intent intent_finish = new Intent(LoadingActivity.action);
-				intent_finish.putExtra("data", 1);
+				intent_finish.putExtra("data", 2);
 				sendBroadcast(intent_finish);
+
 				break;
 			}
 			case ZCWebServiceParams.HTTP_FAILED: {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
-
 				isPOSActive = false;
 
-				if (requestLoginUtilObj.getRole().equals("Normal")
-						&& !isPOSActive) {
-					role = userRole.NORMAL;
-					Toast.makeText(getApplicationContext(), "非绑定终端，请先绑定",
-							Toast.LENGTH_SHORT).show();
-					shopCodeView.setText(Html
-							.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
-				} else if (requestLoginUtilObj.getRole().equals("Normal")
-						&& isPOSActive) {
-					role = userRole.NORMAL;
-
-					if (storeNumberString == null
-							|| termailNumberString == null
-							|| storeNumberString.isEmpty()
-							|| termailNumberString.isEmpty()) {
-						shopCodeView
-								.setText(Html
-										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
+				if (msg.obj.toString().equals("网络不给力")) {
+					getInfoFromLogin();
+					updateUserInfo();
+				} else {
+					if (isFromLogin) {
+						getInfoFromLogin();
+						updateInfo();
+						setActivity();
 					} else {
-						shopCodeView.setText("商户号: " + storeNumberString);
-						termailView.setText("终端号: " + termailNumberString);
-					}
-				} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
-					role = userRole.ACTIVE;
-
-					if (storeNumberString == null
-							|| termailNumberString == null
-							|| storeNumberString.isEmpty()
-							|| termailNumberString.isEmpty()) {
-						shopCodeView
-								.setText(Html
-										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
-					} else {
-						shopCodeView.setText("商户号: " + storeNumberString);
-						termailView.setText("终端号: " + termailNumberString);
+						updateInfo();
 					}
 				}
-
-				ZCLog.i(TAG, "role:" + String.valueOf(role));
 
 				break;
 			}
@@ -839,30 +873,24 @@ public class MainActivity extends FragmentActivity implements
 							msg.obj.toString(), requestUtil.class);
 
 					if (requestObj.getDetail() == null) {
-						// todo
-						return;
+						isPOSActive = false;
+					} else {
+						String detailString = mapper
+								.writeValueAsString(requestObj.getDetail());
+						posInfo = mapper.readValue(detailString, PosInfo.class);
+						ZCLog.i(TAG, posInfo.toString());
+						storeNumberString = posInfo.getMerchantId();
+						termailNumberString = posInfo.getTerminalId();
+						posStateString = posInfo.getWposDisplayStatus();
+						isPOSActive = true;
 					}
 
-					String detailString = mapper.writeValueAsString(requestObj
-							.getDetail());
-					posInfo = mapper.readValue(detailString, PosInfo.class);
-					ZCLog.i(TAG, posInfo.toString());
-					storeNumberString = posInfo.getMerchantId();
-					termailNumberString = posInfo.getTerminalId();
-					posStateString = posInfo.getWposDisplayStatus();
-					isPOSActive = true;
-
-					if (storeNumberString == null
-							|| termailNumberString == null
-							|| storeNumberString.isEmpty()
-							|| termailNumberString.isEmpty()) {
-						shopCodeView
-								.setText(Html
-										.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
+					if (isFromLogin) {
+						getInfoFromLogin();
+						updateInfo();
+						setActivity();
 					} else {
-						shopCodeView.setText("商户号: " + storeNumberString);
-						termailView.setText("终端号: " + termailNumberString);
+						updateInfo();
 					}
 
 				} catch (JsonParseException e1) {
@@ -885,7 +913,6 @@ public class MainActivity extends FragmentActivity implements
 				isAuth = false;
 
 				Intent intent = new Intent(MainActivity.this, LoginPage.class);
-
 				startActivity(intent);
 				MainActivity.this.finish();
 				break;
@@ -1024,6 +1051,7 @@ public class MainActivity extends FragmentActivity implements
 				MainActivity.this.finish();
 			} else {
 				role = userRole.ACTIVE;
+				requestLoginUtilObj.setRole("Active");
 			}
 
 			break;
@@ -1045,6 +1073,7 @@ public class MainActivity extends FragmentActivity implements
 			}
 
 			role = userRole.ACTIVE;
+			requestLoginUtilObj.setRole("Active");
 
 			Intent loadingIntent = new Intent();
 			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
@@ -1068,6 +1097,11 @@ public class MainActivity extends FragmentActivity implements
 				role = userRole.ACTIVE;
 			}
 
+			break;
+		}
+		case LOADING: {
+			ZCLog.i(TAG, "loading");
+			isNeedResume = data.getExtras().getBoolean("needResume", true);
 			break;
 		}
 		default: {
@@ -1155,49 +1189,10 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	private void doPurse(final String amountString) {
-		if (requestLoginUtilObj.getRole().equals("Normal") && !isPOSActive) {
-			role = userRole.NORMAL;
-			Toast.makeText(this, "非绑定终端，请先绑定", Toast.LENGTH_SHORT).show();
-			shopCodeView.setText(Html
-					.fromHtml("<a href=\"activePOS\">非绑定终端，点击绑定</a>"));
-		} else if (requestLoginUtilObj.getRole().equals("Normal")
-				&& isPOSActive) {
-			role = userRole.NORMAL;
-
-			if (storeNumberString == null || termailNumberString == null
-					|| storeNumberString.isEmpty()
-					|| termailNumberString.isEmpty()) {
-				shopCodeView.setText(Html
-						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
-			} else {
-				shopCodeView.setText("商户号: " + storeNumberString);
-				termailView.setText("终端号: " + termailNumberString);
-			}
-		} else {// if (requestLoginUtilObj.getRole().equals("Active")) {
-			role = userRole.ACTIVE;
-
-			if (storeNumberString == null || termailNumberString == null
-					|| storeNumberString.isEmpty()
-					|| termailNumberString.isEmpty()) {
-				shopCodeView.setText(Html
-						.fromHtml("<a href=\"userStatus\">获取信息失败，点击重新获取</a>"));
-
-			} else {
-				shopCodeView.setText("商户号: " + storeNumberString);
-				termailView.setText("终端号: " + termailNumberString);
-			}
-		}
-
-		ZCLog.i(TAG, "role:" + String.valueOf(role));
+		updateInfo();
 
 		switch (role) {
 		case ACTIVE: {
-			// purchase(amountString);
-
-			// Intent loadingIntent = new Intent();
-			// loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
-			// startActivity(loadingIntent);
 
 			state.getPOSInfoFromServer(new Handler() {
 				@Override
@@ -1281,6 +1276,7 @@ public class MainActivity extends FragmentActivity implements
 			}
 			break;
 		}
+
 		default: {
 			break;
 		}
@@ -1306,7 +1302,7 @@ public class MainActivity extends FragmentActivity implements
 
 		Intent loadingIntent = new Intent();
 		loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
-		startActivity(loadingIntent);
+		startActivityForResult(loadingIntent, LOADING);
 
 		ZCWebService.getInstance().queryPOS(new Handler() {
 			@Override
@@ -1328,7 +1324,7 @@ public class MainActivity extends FragmentActivity implements
 					} else {
 						Intent intent_finish = new Intent(
 								LoadingActivity.action);
-						intent_finish.putExtra("data", 1);
+						intent_finish.putExtra("data", 2);
 						sendBroadcast(intent_finish);
 					}
 
@@ -1374,10 +1370,6 @@ public class MainActivity extends FragmentActivity implements
 				case ZCWebServiceParams.HTTP_UNAUTH: {
 					ZCLog.i(TAG, msg.obj.toString());
 
-					Intent intent_finish = new Intent(LoadingActivity.action);
-					intent_finish.putExtra("data", 1);
-					sendBroadcast(intent_finish);
-
 					isAuth = false;
 					Intent intent = new Intent(MainActivity.this,
 							LoginPage.class);
@@ -1389,7 +1381,7 @@ public class MainActivity extends FragmentActivity implements
 				}
 
 				case ZCWebServiceParams.HTTP_FINISH: {
-
+					ZCLog.i(TAG, "http finish");
 					break;
 				}
 

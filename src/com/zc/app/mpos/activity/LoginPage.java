@@ -290,6 +290,7 @@ public class LoginPage extends Activity {
 					bundle.putString(MainActivity.USER_INFO_STATE,
 							mapper.writeValueAsString(requestObj.getDetail()));
 
+					MainActivity.isFromLogin = true;
 					mainIntent.putExtras(bundle);
 
 					startActivity(mainIntent);
