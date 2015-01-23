@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -79,6 +80,7 @@ public class QueryLogOnlineActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				MainActivity.isNeedResume = false;
 				finish();
 			}
 		});
@@ -134,8 +136,13 @@ public class QueryLogOnlineActivity extends Activity {
 								.setLastUpdatedLabel(label);
 
 						// 加载任务
-						String date = addDate(dateString);
-						getMoreLog(date);
+						if (dateString != null) {
+							String date = addDate(dateString);
+							getMoreLog(date);
+						} else {
+							mPullRefreshListView.onRefreshComplete();
+						}
+
 						// new GetDataTask().execute();
 					}
 
@@ -165,6 +172,14 @@ public class QueryLogOnlineActivity extends Activity {
 		NfcEnv.disableNfcForegroundDispatch(this);
 	}
 
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			MainActivity.isNeedResume = false;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
 	private void getInitLog(final String date) {
 
 		ZCLog.i(TAG, date);
@@ -177,6 +192,7 @@ public class QueryLogOnlineActivity extends Activity {
 				case ZCWebServiceParams.HTTP_START: {
 					ZCLog.i(TAG, msg.obj.toString());
 					listPages.clear();
+					logPage = null;
 					mEmptyLayout.showLoading();
 					break;
 				}
@@ -269,6 +285,7 @@ public class QueryLogOnlineActivity extends Activity {
 				case ZCWebServiceParams.HTTP_START: {
 					ZCLog.i(TAG, msg.obj.toString());
 					listPages.clear();
+					logPage = null;
 					mEmptyLayout.showLoading();
 					break;
 				}
@@ -277,6 +294,7 @@ public class QueryLogOnlineActivity extends Activity {
 					ZCLog.i(TAG, msg.obj.toString());
 					// Toast.makeText(getActivity(), msg.obj.toString(),
 					// Toast.LENGTH_SHORT).show();
+					mPullRefreshListView.onRefreshComplete();
 					mEmptyLayout.setErrorMessage(msg.obj.toString());
 					mEmptyLayout.showError();
 					break;
@@ -288,6 +306,7 @@ public class QueryLogOnlineActivity extends Activity {
 				}
 				case ZCWebServiceParams.HTTP_SUCCESS: {
 					ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.obj.toString());
+					mPullRefreshListView.onRefreshComplete();
 
 					ObjectMapper mapper = new ObjectMapper();
 					try {
@@ -299,12 +318,8 @@ public class QueryLogOnlineActivity extends Activity {
 
 						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + detailString);
 
-						PurchaseLogPage logPage = mapper.readValue(
-								detailString, PurchaseLogPage.class);
-
-						listPages.add(logPage);
-
-						putMoreDatas();
+						logPage = mapper.readValue(detailString,
+								PurchaseLogPage.class);
 
 					} catch (JsonParseException e1) {
 						// TODO Auto-generated catch block
@@ -316,6 +331,13 @@ public class QueryLogOnlineActivity extends Activity {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+
+					if (logPage != null) {
+						listPages.add(logPage);
+					}
+
+					putMoreDatas();
+
 					break;
 				}
 
@@ -387,6 +409,11 @@ public class QueryLogOnlineActivity extends Activity {
 	private void putMoreDatas() {
 		// 添加数据和数据源
 		ZCLog.i(TAG, "old list is :" + logList.toString());
+
+		if (listPages.isEmpty()) {
+			mEmptyLayout.showEmpty();
+			return;
+		}
 
 		for (int i = 0; i < listPages.size(); i++) {
 

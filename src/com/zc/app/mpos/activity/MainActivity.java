@@ -101,12 +101,12 @@ public class MainActivity extends FragmentActivity implements
 
 	private userRole role;
 	private boolean isAuth = false;
-	private boolean isNeedResume = true;
+	public static boolean isNeedResume = true;
 	private boolean dragIsOpened = false;
 
 	private final static String TAG = "main";
 	public final static String USER_INFO_STATE = "user_state";
-	public static boolean isFromLogin = true;
+	public static boolean isFromLogin = false;
 
 	private requestLoginUtil requestLoginUtilObj;
 	private MircoPOState state;
@@ -223,6 +223,7 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	public void onResume() {
+		ZCLog.i(TAG, "onResume");
 		super.onResume();
 
 		NfcEnv.enableNfcForegroundDispatch(this);
@@ -582,7 +583,7 @@ public class MainActivity extends FragmentActivity implements
 					Intent loadingIntent = new Intent();
 					loadingIntent.setClass(MainActivity.this,
 							LoadingActivity.class);
-					startActivity(loadingIntent);
+					startActivityForResult(loadingIntent, LOADING);
 
 					ZCWebService.getInstance().queryPOS(
 							new readUserStatusHandler());
@@ -840,7 +841,6 @@ public class MainActivity extends FragmentActivity implements
 				Intent intent_finish = new Intent(LoadingActivity.action);
 				intent_finish.putExtra("data", 2);
 				sendBroadcast(intent_finish);
-
 				break;
 			}
 			case ZCWebServiceParams.HTTP_FAILED: {
@@ -850,7 +850,9 @@ public class MainActivity extends FragmentActivity implements
 				isPOSActive = false;
 
 				if (msg.obj.toString().equals("网络不给力")) {
-					getInfoFromLogin();
+					if (isFromLogin) {
+						getInfoFromLogin();
+					}
 					updateUserInfo();
 				} else {
 					if (isFromLogin) {
@@ -1052,6 +1054,7 @@ public class MainActivity extends FragmentActivity implements
 			} else {
 				role = userRole.ACTIVE;
 				requestLoginUtilObj.setRole("Active");
+				isNeedResume = true;
 			}
 
 			break;
@@ -1070,16 +1073,17 @@ public class MainActivity extends FragmentActivity implements
 				startActivity(it);
 				MainActivity.this.finish();
 				break;
+			} else {
+				role = userRole.ACTIVE;
+				requestLoginUtilObj.setRole("Active");
+				isNeedResume = true;
 			}
 
-			role = userRole.ACTIVE;
-			requestLoginUtilObj.setRole("Active");
-
-			Intent loadingIntent = new Intent();
-			loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
-			startActivity(loadingIntent);
-
-			ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
+			// Intent loadingIntent = new Intent();
+			// loadingIntent.setClass(MainActivity.this, LoadingActivity.class);
+			// startActivity(loadingIntent);
+			//
+			// ZCWebService.getInstance().queryPOS(new readUserStatusHandler());
 
 			break;
 		}
@@ -1101,7 +1105,7 @@ public class MainActivity extends FragmentActivity implements
 		}
 		case LOADING: {
 			ZCLog.i(TAG, "loading");
-			isNeedResume = data.getExtras().getBoolean("needResume", true);
+			isNeedResume = data.getExtras().getBoolean("needResume", false);
 			break;
 		}
 		default: {
@@ -1205,7 +1209,7 @@ public class MainActivity extends FragmentActivity implements
 								msg.obj.toString(), Toast.LENGTH_SHORT).show();
 						Intent intent_finish = new Intent(
 								LoadingActivity.action);
-						intent_finish.putExtra("data", 1);
+						intent_finish.putExtra("data", 2);
 						sendBroadcast(intent_finish);
 						break;
 					}
@@ -1232,7 +1236,7 @@ public class MainActivity extends FragmentActivity implements
 						ZCLog.i(TAG, msg.obj.toString());
 						Intent intent_finish = new Intent(
 								LoadingActivity.action);
-						intent_finish.putExtra("data", 1);
+						intent_finish.putExtra("data", 2);
 						sendBroadcast(intent_finish);
 						break;
 					}

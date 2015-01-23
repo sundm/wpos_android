@@ -18,3 +18,54 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-libraryjars libs/android-support-v4.jar
+-libraryjars libs/commons-codec.jar
+-libraryjars libs/guava-r09.jar
+-libraryjars libs/jackson-annotations-2.3.2.jar
+-libraryjars libs/jackson-core-asl-1.9.10.jar
+-libraryjars libs/jackson-mapper-asl-1.9.10.jar
+-libraryjars libs/locSDK_5.01.jar
+-libraryjars libs/nineoldandroids-2.4.0.jar
+-libraryjars libs/sqlcipher.jar
+-libraryjars libs/universal-image-loader-1.9.0.jar
+
+
+-dontwarn android.support.v4.** 
+-keep class android.support.v4.** { *; } 
+-keep public class * extends android.support.v4.** 
+-keep public class * extends android.app.Fragment
+
+-dontwarn org.apache.commons.codec.**
+-keep class org.apache.commons.codec.** { *;}
+
+-dontwarn com.google.commons.**
+-keep class com.google.commons.** { *;}
+
+-dontwarn com.fasterxml.jackson.annotation.**
+-keep class com.fasterxml.jackson.annotation.** { *;}
+
+-dontwarn org.codehaus.jackson.**
+-keep class org.codehaus.jackson.** { *;}
+
+-dontwarn com.baidu.location.**
+-keep class com.baidu.location.** { *;}
+
+-dontwarn com.nineoldandroids.**
+-keep class com.nineoldandroids.** { *;}
+
+-dontwarn net.sqlcipher.**
+-keep class net.sqlcipher.** { *;}
+
+-dontwarn com.nostra13.universalimageloader.**
+-keep class com.nostra13.universalimageloader.** { *;}
+
+-dontwarn javax.annotation.**
+-keep class javax.annotation.** { *;}
+
+-dontwarn sun.misc.**
+-keep class sun.misc.** { *;}
+
+-keepattributes *Annotation*,Signature
+
+-dontwarn com.zc.app.**
+-keep class com.zc.app.** { *;}

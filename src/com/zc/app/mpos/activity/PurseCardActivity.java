@@ -18,6 +18,7 @@ import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -79,6 +80,7 @@ public class PurseCardActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				MainActivity.isNeedResume = false;
 				finish();
 			}
 		});
@@ -105,7 +107,7 @@ public class PurseCardActivity extends Activity {
 		if (NfcEnv.media == null || NfcEnv.media.connect() != 0) {
 			return;
 		}
-		
+
 		purchase(amount);
 	}
 
@@ -457,6 +459,14 @@ public class PurseCardActivity extends Activity {
 
 		ZCDataBase.getInstance().getDatabase()
 				.insert("wpos_update", null, values);
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			MainActivity.isNeedResume = false;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 }

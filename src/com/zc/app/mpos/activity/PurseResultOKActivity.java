@@ -10,6 +10,7 @@ import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -57,6 +58,7 @@ public class PurseResultOKActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				MainActivity.isNeedResume = false;
 				finish();
 			}
 		});
@@ -149,5 +151,13 @@ public class PurseResultOKActivity extends Activity {
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
 		balanceTextView.setText(word);
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			MainActivity.isNeedResume = false;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }

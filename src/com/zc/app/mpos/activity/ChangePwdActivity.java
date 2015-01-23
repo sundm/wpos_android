@@ -15,6 +15,7 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -227,6 +228,7 @@ public class ChangePwdActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				MainActivity.isNeedResume = false;
 				finish();
 			}
 		});
@@ -370,5 +372,13 @@ public class ChangePwdActivity extends Activity {
 				setupUI(innerView);
 			}
 		}
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			MainActivity.isNeedResume = false;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }
