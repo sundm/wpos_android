@@ -176,4 +176,16 @@ public final class Transaction_Longxing {
 			String dataString) {
 		return SessionTrans_Longxing.creditForPurchase_Longxing(dataString);
 	}
+
+	public static LongxingcardRequest test_Longxing(Media media) {
+
+		return SessionTrans_Longxing.test(media);
+
+	}
+	
+	public static LongxingcardRequest purse_Longxing(Media media) {
+
+		return SessionTrans_Longxing.purse(media);
+
+	}
 }

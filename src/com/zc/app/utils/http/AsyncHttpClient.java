@@ -111,9 +111,7 @@ public class AsyncHttpClient {
 				DEFAULT_SOCKET_BUFFER_SIZE);
 
 		HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-		HttpProtocolParams.setUserAgent(httpParams, String.format(
-				"android-async-http/%s (http://loopj.com/android-async-http)",
-				VERSION));
+		HttpProtocolParams.setUserAgent(httpParams, "wpos");
 
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(new Scheme("http", PlainSocketFactory
@@ -358,13 +356,13 @@ public class AsyncHttpClient {
 	public void get(String url, Header _header,
 			AsyncHttpResponseHandler responseHandler) {
 		HttpUriRequest request = new HttpGet(getUrlWithQueryString(url, null));
-		
+
 		if (_header != null)
 			request.setHeader(_header);
-		
+
 		sendRequest(httpClient, httpContext, request, null, responseHandler,
 				null);
-		
+
 	}
 
 	/**
@@ -742,6 +740,16 @@ public class AsyncHttpClient {
 		if (contentType != null) {
 			uriRequest.addHeader("Content-Type", contentType);
 		}
+
+		// uriRequest.addHeader("Host", "121.42.14.104");
+		// uriRequest.addHeader("Connection", "keep-alive");
+		// uriRequest.addHeader("Cache-Control", "max-age=0");
+		// uriRequest
+		// .addHeader("Accept",
+		// "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		// uriRequest.addHeader("Accept-Encoding", "gzip, deflate, sdch");
+		// uriRequest.addHeader("Accept-Language",
+		// "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
 
 		Future<?> request = threadPool.submit(new AsyncHttpRequest(client,
 				httpContext, uriRequest, responseHandler));

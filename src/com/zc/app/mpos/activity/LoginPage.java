@@ -167,6 +167,66 @@ public class LoginPage extends Activity {
 				intent.putExtra("user", username);
 
 				startActivityForResult(intent, RESULT_OK);
+
+//				final RequestExecutor requestExecutor = RequestExecutor
+//						.getInstance(LoginPage.this);
+//				String url = "http://121.42.14.104/wpos/index.html";
+//				Request request = new Request("index", Request.GET, url, null);
+//				request.setListener(new RequestListener() {
+//
+//					@Override
+//					public void onSuccess(Object data) {
+//						String msg = new String((byte[]) data);
+//						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg);
+//					}
+//
+//					@Override
+//					public void onError(Object msg) {
+//						ZCLog.i(TAG, ">>>>>>>>>>>>>>>>" + msg.toString());
+//					}
+//
+//				});
+//				requestExecutor.execute(request);
+
+//				ZCWebService.getInstance().index(new Handler() {
+//					@Override
+//					public void dispatchMessage(Message msg) {
+//
+//						switch (msg.what) {
+//						case ZCWebServiceParams.HTTP_START:
+//							ZCLog.i(TAG, msg.obj.toString());
+//							break;
+//
+//						case ZCWebServiceParams.HTTP_FINISH:
+//							ZCLog.i(TAG, msg.obj.toString());
+//							break;
+//
+//						case ZCWebServiceParams.HTTP_FAILED:
+//							ZCLog.i(TAG, msg.obj.toString());
+//							break;
+//
+//						case ZCWebServiceParams.HTTP_SUCCESS:
+//							ZCLog.i(TAG,
+//									">>>>>>>>>>>>>>>>" + msg.obj.toString());
+//
+//							break;
+//
+//						case ZCWebServiceParams.HTTP_UNAUTH:
+//							ZCLog.i(TAG, msg.obj.toString());
+//
+//							break;
+//
+//						case ZCWebServiceParams.HTTP_THROWABLE:
+//							Throwable e = (Throwable) msg.obj;
+//							ZCLog.e(TAG, "catch thowable:", e);
+//							break;
+//
+//						default:
+//							ZCLog.i(TAG, "http nothing to do");
+//							break;
+//						}
+//					}
+//				});
 			}
 		});
 

@@ -10,6 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -109,6 +110,7 @@ public class PurseCardActivity extends Activity {
 		}
 
 		purchase(amount);
+		// test();
 	}
 
 	@Override
@@ -123,6 +125,14 @@ public class PurseCardActivity extends Activity {
 	private void setAmount(String w) {
 		ZCLog.i(TAG, "set amount:" + w);
 
+		Resources r = getResources();
+		int amount_normal_size = r.getInteger(R.integer.amount_normal_size);
+		int amount_size = r.getInteger(R.integer.amount_size);
+
+		ZCLog.i(TAG,
+				String.valueOf(amount_size) + ","
+						+ String.valueOf(amount_normal_size));
+
 		int start_amount = w.indexOf(":") + 1;
 
 		int start = w.indexOf('.');
@@ -131,11 +141,11 @@ public class PurseCardActivity extends Activity {
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(80), start, end,
+		word.setSpan(new AbsoluteSizeSpan(amount_normal_size), start, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(110), start_amount, start,
+		word.setSpan(new AbsoluteSizeSpan(amount_size), start_amount, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -151,13 +161,24 @@ public class PurseCardActivity extends Activity {
 
 		int end = w.length();
 
+		Resources r = getResources();
+		int user_size = r.getInteger(R.integer.user_size);
+
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(90), start_user, end,
+		word.setSpan(new AbsoluteSizeSpan(user_size), start_user, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
 		usernameTextView.setText(word);
+	}
+
+	private void test() {
+		LongxingcardRequest request = LongxingcardPurchase.test_Longxing();
+	}
+
+	private void purse() {
+		LongxingcardRequest request = LongxingcardPurchase.purse_Longxing();
 	}
 
 	private void purchase(final String amount) {
@@ -211,6 +232,10 @@ public class PurseCardActivity extends Activity {
 				public void dispatchMessage(Message msg) {
 
 					switch (msg.what) {
+					case ZCWebServiceParams.HTTP_START: {
+						// purse();
+						break;
+					}
 					case ZCWebServiceParams.HTTP_FAILED: {
 						ZCLog.i(TAG, "init通讯失败");
 

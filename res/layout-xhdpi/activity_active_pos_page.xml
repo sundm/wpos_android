@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
+    xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffffff"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/title_height"
+        android:background="#0088cf" >
+
+        <ImageView
+            android:id="@+id/activePOS_back"
+            style="@style/title_right_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/registerTitle"
+            android:src="@drawable/button_details_gohome" />
+
+        <TextView
+            android:id="@+id/textview_details_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/activePOSTitle"
+            android:textColor="#ffffffff"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+    <!--
+         padding 内边距   layout_margin 外边距  
+        android:layout_alignParentTop 布局的位置是否处于顶部
+    -->
+
+    <RelativeLayout
+        android:id="@+id/activePOS_div"
+        android:layout_width="285dp"
+        android:layout_height="81dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/background_login_div"
+        android:paddingLeft="9dp" >
+
+        <!-- 商户号 -->
+
+        <RelativeLayout
+            android:id="@+id/activePOS_StoreNumber_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="center" >
+
+            <RelativeLayout
+                android:id="@+id/activePOS_StoreNumber_txt_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <TextView
+                    android:id="@+id/activePOS_StoreNumber_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/activePOS_StoreNumber_txt"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/activePOS_StoreNumber_edit_layout"
+                android:layout_width="166dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/activePOS_StoreNumber_txt_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/activePOS_StoreNumber_txt_layout" >
+
+                <EditText
+                    android:id="@+id/activePOS_StoreNumber_edit"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/edittext_radius"
+                    android:hint="@string/activePOS_StoreNumber_hint"
+                    android:inputType="text"
+                    android:maxLength="15"
+                    android:textColor="@color/textColor"
+                    android:textColorHint="@color/hintColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="280dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/activePOS_StoreNumber_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+
+        <!-- 终端号 -->
+
+        <RelativeLayout
+            android:id="@+id/activePOS_POSNumber_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_alignLeft="@id/activePOS_StoreNumber_layout"
+            android:layout_below="@id/activePOS_StoreNumber_layout"
+            android:layout_gravity="center" >
+
+            <RelativeLayout
+                android:id="@+id/activePOS_POSNumber_txt_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <TextView
+                    android:id="@+id/activePOS_POSNumber_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/activePOS_POSNumber_txt"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/activePOS_POSNumber_edit_layout"
+                android:layout_width="166dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/activePOS_POSNumber_txt_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/activePOS_POSNumber_txt_layout" >
+
+                <EditText
+                    android:id="@+id/activePOS_POSNumber_edit"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/edittext_radius"
+                    android:hint="@string/activePOS_POSNumber_hint"
+                    android:inputType="text"
+                    android:maxLength="8"
+                    android:textColor="@color/textColor"
+                    android:textColorHint="@color/hintColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="280dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/activePOS_POSNumber_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+    </RelativeLayout>
+
+    <!-- 开通终端button -->
+
+    <Button
+        android:id="@+id/activePOS_active_button"
+        android:layout_width="285dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="27dp"
+        android:background="@drawable/bbuton_success_rounded"
+        android:text="@string/activePOS_active_txt"
+        android:textColor="#ffffff"
+        android:textSize="20sp" >
+    </Button>
+
+</LinearLayout>

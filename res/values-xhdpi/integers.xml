@@ -1,0 +1,8 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <integer name="amount_size">120</integer>
+    <integer name="amount_normal_size">100</integer>
+    <integer name="user_size">95</integer>
+
+</resources>

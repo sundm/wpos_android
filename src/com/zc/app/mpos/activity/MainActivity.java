@@ -143,6 +143,8 @@ public class MainActivity extends FragmentActivity implements
 	//
 	private AlarmManager am;
 
+	private AlertDialog dialog = null;
+
 	// apk 更新
 	// private PopDialog popDialog;
 
@@ -267,6 +269,12 @@ public class MainActivity extends FragmentActivity implements
 		unregisterReceiver(broadcastReceiver);
 		super.onDestroy();
 	};
+
+	@Override
+	protected void onUserLeaveHint() {
+		ZCLog.i(TAG, "onUserLeaveHint");
+		super.onUserLeaveHint();
+	}
 
 	private void initLocation() {
 		LocationClientOption option = new LocationClientOption();
@@ -561,6 +569,10 @@ public class MainActivity extends FragmentActivity implements
 		userNameView = (TextView) findViewById(R.id.iv_text);
 		shopCodeView = (TextView) findViewById(R.id.tv_shop_text);
 		termailView = (TextView) findViewById(R.id.tv_ter_text);
+
+		if (dialog != null) {
+			dialog.dismiss();
+		}
 
 		shopCodeView.setOnClickListener(new OnClickListener() {
 
@@ -989,28 +1001,14 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-		FragmentManager fm = getSupportFragmentManager();
-
-		int count = fm.getBackStackEntryCount();
-
-		Log.i("onKeyDown", "count is  " + count);
+		ZCLog.i("onKeyDown", "keyCode is  " + String.valueOf(keyCode));
 
 		if (keyCode == KeyEvent.KEYCODE_BACK && dragIsOpened) {
 			dl.close();
 			return true;
 		}
 
-		if (keyCode == KeyEvent.KEYCODE_BACK && count > 0) {
-
-			Log.i("onKeyDown", "back to list " + count);
-
-			fm.popBackStack(fragmentTag,
-					FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-			return true;
-		}
-
-		if (keyCode == KeyEvent.KEYCODE_BACK && count == 0) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			exit();
 			return true;
 		}
@@ -1130,7 +1128,8 @@ public class MainActivity extends FragmentActivity implements
 						}
 					});
 			builder.setNegativeButton("取消", null);
-			builder.show();
+			dialog = builder.show();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -9,8 +9,20 @@ public class LongxingcardPurchase {
 		return Transaction_Longxing.requestInitForPurchase_Longxing(
 				NfcEnv.media, strAmount, strPSAMID, strKeyID, true);
 	}
-	
-	public static LongxingcardRequest requestCreditForPurche_Longxing(String dataString){
-		return Transaction_Longxing.requestCreditForPurchase_Longxing(dataString);
+
+	public static LongxingcardRequest requestCreditForPurche_Longxing(
+			String dataString) {
+		return Transaction_Longxing
+				.requestCreditForPurchase_Longxing(dataString);
+	}
+
+	public static LongxingcardRequest test_Longxing() {
+
+		return Transaction_Longxing.test_Longxing(NfcEnv.media);
+	}
+
+	public static LongxingcardRequest purse_Longxing() {
+
+		return Transaction_Longxing.purse_Longxing(NfcEnv.media);
 	}
 }

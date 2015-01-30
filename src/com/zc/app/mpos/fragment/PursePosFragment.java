@@ -3,11 +3,14 @@ package com.zc.app.mpos.fragment;
 import java.math.BigDecimal;
 
 import android.app.Activity;
+import android.content.res.Resources;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -18,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zc.app.mpos.R;
 import com.zc.app.mpos.util.keyboardUtil;
@@ -228,18 +230,46 @@ public class PursePosFragment extends Fragment implements OnClickListener,
 		return mString;
 	}
 
+	private void getPixelDisplayMetrics() {
+		DisplayMetrics dm = new DisplayMetrics();
+		getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+		int screenWidth = dm.widthPixels;
+		int screenHeight = dm.heightPixels;
+
+		float density = dm.density;
+		int densityDpi = dm.densityDpi;
+
+		float xdpi = dm.xdpi;
+		float ydpi = dm.ydpi;
+
+		ZCLog.i(TAG, "宽:" + screenWidth + ", 高:" + screenHeight);
+		ZCLog.i(TAG, "密度 density:" + density + ",densityDpi:" + densityDpi);
+		ZCLog.i(TAG, "精确密度 xdpi:" + xdpi + ", ydpi:" + ydpi);
+	}
+
 	private void setAmount(String w) {
+		Resources r = getResources();
+		int amount_normal_size = r.getInteger(R.integer.amount_normal_size);
+		int amount_size = r.getInteger(R.integer.amount_size);
+
+		ZCLog.i(TAG,
+				String.valueOf(amount_size) + ","
+						+ String.valueOf(amount_normal_size));
+
+		getPixelDisplayMetrics();
+
 		int start = w.indexOf('.');
 
 		int end = w.length();
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(70), start, end,
+		word.setSpan(new AbsoluteSizeSpan(amount_normal_size), start, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(100), 0, start,
+		word.setSpan(new AbsoluteSizeSpan(amount_size), 0, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 

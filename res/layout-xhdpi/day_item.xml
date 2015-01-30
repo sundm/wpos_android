@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <View
+        android:id="@+id/day_top_line"
+        android:layout_width="2dp"
+        android:layout_height="18dp"
+        android:layout_marginLeft="82dp"
+        android:background="@color/line_color" />
+
+    <ImageView
+        android:id="@+id/img_day_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/day_top_line"
+        android:layout_marginLeft="78.5dp"
+        android:src="@drawable/history_bigdot" />
+
+    <View
+        android:id="@+id/day_bottom_line"
+        android:layout_width="2dp"
+        android:layout_height="10dp"
+        android:layout_alignLeft="@id/day_top_line"
+        android:layout_below="@id/img_day_icon"
+        android:background="@color/line_color" />
+
+    <TextView
+        android:id="@+id/tv_counter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="13dp"
+        android:layout_toRightOf="@id/img_day_icon" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="13dp"
+        android:layout_toRightOf="@id/tv_counter"
+        android:text="笔" />
+
+    <TextView
+        android:id="@+id/tv_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp" />
+
+</RelativeLayout>

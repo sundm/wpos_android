@@ -14,7 +14,7 @@ public class ZCWebServiceParams {
 
 	public static final String BASE_SSL_URL = "https://222.84.136.83:8081/wpos";
 
-	public static final String BASE_URL = "http://121.42.14.104/wpos";
+	public static final String BASE_URL = "http://114.215.85.135:8081/wpos";
 	// https://222.84.136.83:8081/wpos/
 	// "http://183.129.165.194:8088/wpos-front";
 	// "http://192.168.2.69:8080/wpos";
@@ -23,7 +23,11 @@ public class ZCWebServiceParams {
 	// "http://114.215.85.135:8081/wpos";
 	// "http://121.42.14.104/wpos";sit
 	// "https://222.84.136.83:8081/wpos";uat
+	// "http://61.234.50.195:8881/wpos"; uat_a
 	public static final String RES_URL = "http://192.168.2.117:8080/resources-console/version";
+
+	// wpos index.html
+	public static final String INDEX_URL = BASE_URL + "/index.html";
 
 	// 根据用户名,密码登录
 	public static final String LOGIN_URL = BASE_URL

@@ -26,7 +26,7 @@
             android:id="@+id/purse_title_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="37dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="42dp"
             android:text="@string/purse_pos_text"
             android:textColor="@color/textColor"

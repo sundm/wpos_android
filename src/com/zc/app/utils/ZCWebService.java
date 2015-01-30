@@ -257,6 +257,18 @@ public class ZCWebService {
 		return true;
 	}
 
+	public boolean index(final Handler _handler) {
+		if (_handler == null) {
+			return false;
+		}
+
+		String getURL = ZCWebServiceParams.INDEX_URL;
+
+		doBasicGet(getURL, null, _handler);
+
+		return true;
+	}
+
 	public boolean userLogout(final Handler _handler) {
 		if (_handler == null) {
 			return false;
@@ -652,7 +664,7 @@ public class ZCWebService {
 
 	private void doGet(String url, final Handler handler) {
 		setRequestTimeoutSeconds(5);
-
+		
 		_asyncHttpClient.get(url, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String response) {

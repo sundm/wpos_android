@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 
 import com.zc.app.mpos.R;
 import com.zc.app.sebc.lx.NfcEnv;
+import com.zc.app.utils.ZCLog;
 
 public class PurseResultOKActivity extends Activity {
 
@@ -92,6 +94,14 @@ public class PurseResultOKActivity extends Activity {
 	}
 
 	private void setAmount(String w) {
+		Resources r = getResources();
+		int amount_normal_size = r.getInteger(R.integer.amount_normal_size);
+		int amount_size = r.getInteger(R.integer.amount_size);
+
+		ZCLog.i(TAG,
+				String.valueOf(amount_size) + ","
+						+ String.valueOf(amount_normal_size));
+
 		int start_amount = w.indexOf(":") + 1;
 
 		int start = w.indexOf('.');
@@ -100,11 +110,11 @@ public class PurseResultOKActivity extends Activity {
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(80), start, end,
+		word.setSpan(new AbsoluteSizeSpan(amount_normal_size), start, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(120), start_amount, start,
+		word.setSpan(new AbsoluteSizeSpan(amount_size), start_amount, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -120,9 +130,12 @@ public class PurseResultOKActivity extends Activity {
 
 		int end = w.length();
 
+		Resources r = getResources();
+		int user_size = r.getInteger(R.integer.user_size);
+
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(100), start_user, end,
+		word.setSpan(new AbsoluteSizeSpan(user_size), start_user, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
@@ -130,6 +143,14 @@ public class PurseResultOKActivity extends Activity {
 	}
 
 	private void setBalance(String w) {
+		Resources r = getResources();
+		int amount_normal_size = r.getInteger(R.integer.amount_normal_size);
+		int amount_size = r.getInteger(R.integer.amount_size);
+
+		ZCLog.i(TAG,
+				String.valueOf(amount_size) + ","
+						+ String.valueOf(amount_normal_size));
+
 		int start_amount = w.indexOf(":") + 1;
 
 		int start = w.indexOf('.');
@@ -138,11 +159,11 @@ public class PurseResultOKActivity extends Activity {
 
 		Spannable word = new SpannableString(w);
 
-		word.setSpan(new AbsoluteSizeSpan(80), start, end,
+		word.setSpan(new AbsoluteSizeSpan(amount_normal_size), start, end,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-		word.setSpan(new AbsoluteSizeSpan(120), start_amount, start,
+		word.setSpan(new AbsoluteSizeSpan(amount_size), start_amount, start,
 
 		Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 

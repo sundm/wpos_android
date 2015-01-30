@@ -1,5 +1,7 @@
 package com.zc.app.sebc.lx;
 
+import android.os.SystemClock;
+
 import com.zc.app.sebc.bridge.LongXingTransDetailSetting;
 import com.zc.app.sebc.iso7816.CApdu;
 import com.zc.app.sebc.iso7816.RApdu;
@@ -754,34 +756,56 @@ public final class SessionTrans_Longxing {
 		return request;
 	}
 
-	public static LongxingcardRequest creditForPurchase_Longxing(String dataString){
+	public static LongxingcardRequest test(Media media) {
+		LongxingcardRequest request = new LongxingcardRequest();
+		media.close();
+
+		media.connect();
+
+		request = test_Longxing(media);
+
+		media.close();
+		return request;
+	}
+
+	public static LongxingcardRequest purse(Media media) {
+		LongxingcardRequest request = new LongxingcardRequest();
+
+		request = purse_Longxing(media);
+
+		return request;
+	}
+
+	public static LongxingcardRequest creditForPurchase_Longxing(
+			String dataString) {
 		LongxingcardRequest request = new LongxingcardRequest();
 
 		RApdu rApdu = null;
 
 		// purchase
-		//PbocCreditForPurchase pbocPurchase = new PbocCreditForPurchase(dataString);
+		// PbocCreditForPurchase pbocPurchase = new
+		// PbocCreditForPurchase(dataString);
 		CApdu cApdu = new CApdu(dataString);
 		rApdu = sessionMedia.sendApdu(cApdu);
 		if (rApdu.getSw1Sw2String().equals(Sw1Sw2.SW1SW2_OK) == false) {
 			request.setSwString(rApdu.getSw1Sw2String());
 			request.setOK(false);
-			ZCLog.i(Longxingcard.TAG, "select failed! sw:" + request.getSwString());
-			
+			ZCLog.i(Longxingcard.TAG,
+					"select failed! sw:" + request.getSwString());
+
 			return request;
-		}
-		else {
+		} else {
 			request.setOK(true);
 			request.setSwString(Sw1Sw2.SW1SW2_OK);
-			
+
 			String hexString = rApdu.getHexString();
-			
+
 			ZCLog.i(Longxingcard.TAG, hexString);
-			
+
 			request.setResponseString(hexString);
 			request.setTacString(hexString.substring(0, 8));
 			request.setMac2String(hexString.substring(8, 16));
-			
+
 			return request;
 		}
 	}
@@ -873,8 +897,8 @@ public final class SessionTrans_Longxing {
 		byte[] bytAmount = null;
 		long longAmount = Long.parseLong(strAmount);
 		bytAmount = BasicUtil.longToBytes(longAmount);
-		String amountString = BasicUtil.bytesToHexString(bytAmount,
-				0, bytAmount.length);
+		String amountString = BasicUtil.bytesToHexString(bytAmount, 0,
+				bytAmount.length);
 
 		request.setOK(true);
 		request.setSwString(Sw1Sw2.SW1SW2_OK);
@@ -887,6 +911,57 @@ public final class SessionTrans_Longxing {
 		request.setResponseString(strResp);
 
 		ZCLog.i(Longxingcard.TAG, "longxingcard request:" + request.toString());
+
+		return request;
+	}
+
+	private static LongxingcardRequest test_Longxing(Media media) {
+
+		LongxingcardRequest request = new LongxingcardRequest();
+
+		RApdu rApdu = null;
+
+		// select application
+		PbocSelect pbocSelect = new PbocSelect(Longxingcard.LongxingCardAID);
+		rApdu = media.sendApdu(pbocSelect);
+		if (rApdu.getSw1Sw2String().equals(Sw1Sw2.SW1SW2_OK) == false) {
+			request.setSwString(rApdu.getSw1Sw2String());
+			request.setOK(false);
+			ZCLog.i(Longxingcard.TAG,
+					"select failed! sw:" + request.getSwString());
+			return request;
+		}
+
+		PbocReadBinary pbocReadBinary = new PbocReadBinary((byte) 0x15,
+				(byte) 0x00);
+		rApdu = media.sendApdu(pbocReadBinary);
+		if (rApdu.getSw1Sw2String().equals(Sw1Sw2.SW1SW2_OK) == false) {
+			request.setSwString(rApdu.getSw1Sw2String());
+			request.setOK(false);
+			ZCLog.i(Longxingcard.TAG,
+					"read 15 file failed! sw:" + request.getSwString());
+			return request;
+		}
+
+		CApdu init_apdu = new CApdu("805001020B0100000001001122334455");
+		media.sendApdu(init_apdu);
+		
+		SystemClock.sleep(30000);
+
+		CApdu purse_apdu = new CApdu("805401000F001122330011223300112200112233");
+		media.sendApdu(purse_apdu);
+
+		ZCLog.i(Longxingcard.TAG, "longxingcard request:" + request.toString());
+
+		return request;
+	}
+
+	private static LongxingcardRequest purse_Longxing(Media media) {
+
+		LongxingcardRequest request = new LongxingcardRequest();
+
+		CApdu purse_apdu = new CApdu("805401000F001122330011223300112200112233");
+		media.sendApdu(purse_apdu);
 
 		return request;
 	}
