@@ -22,7 +22,7 @@
 
     <LinearLayout
         android:id="@+id/content_layout"
-        android:layout_width="220dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="3dp"
         android:layout_toRightOf="@+id/img_icon"
@@ -40,7 +40,7 @@
             android:id="@+id/tv_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="80dp" />
+            android:layout_marginLeft="60dp" />
 
         <TextView
             android:id="@+id/tv_yuan"

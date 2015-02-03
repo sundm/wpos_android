@@ -14,7 +14,7 @@ public class ZCWebServiceParams {
 
 	public static final String BASE_SSL_URL = "https://222.84.136.83:8081/wpos";
 
-	public static final String BASE_URL = "http://114.215.85.135:8081/wpos";
+	public static final String BASE_URL = "http://192.168.2.102:8081/wpos";
 	// https://222.84.136.83:8081/wpos/
 	// "http://183.129.165.194:8088/wpos-front";
 	// "http://192.168.2.69:8080/wpos";

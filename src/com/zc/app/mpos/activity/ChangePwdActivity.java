@@ -188,23 +188,26 @@ public class ChangePwdActivity extends Activity {
 
 				if (oldPassword.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "旧密码不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
-				} else if (passwordString.isEmpty()
-						|| passwordAgainString.isEmpty()) {
+				} else if (passwordString.isEmpty()) {
 					Toast.makeText(getApplicationContext(), "新密码不能为空",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
+					return;
+				} else if (passwordAgainString.isEmpty()) {
+					Toast.makeText(getApplicationContext(), "确认密码不能为空",
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (passwordString.length() < 6
 						|| passwordString.length() > 14
 						|| passwordAgainString.length() < 6
 						|| passwordAgainString.length() > 14) {
 					Toast.makeText(getApplicationContext(), "密码6-14位之间",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else if (!passwordString.equals(passwordAgainString)) {
 					Toast.makeText(getApplicationContext(), "密码不一致",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					return;
 				} else {
 					Intent loadingIntent = new Intent();
