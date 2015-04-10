@@ -74,7 +74,7 @@
             android:value="iDsNGMsOxMPnxtDL2hcaxzlN" />
 
         <activity
-            android:name=".activity.WelcomeA"
+            android:name=".activity.WPos"
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" >
@@ -163,6 +163,9 @@
             android:screenOrientation="portrait"
             android:theme="@style/LoadingStyle" >
         </activity>
+        <activity android:name=".activity.QueryLogListActivity"></activity>
+        <activity android:name=".activity.QueryLogResultActivity"></activity>
+        <activity android:name=".activity.pickDateActivity"></activity>
     </application>
 
 </manifest>

@@ -530,6 +530,41 @@ public class ZCWebService {
 		return true;
 	}
 
+	// 查询交易日志总数
+	public boolean queryLogTotal(final String start_date,
+			final String end_date, final Handler _handler) {
+		if (start_date == null || end_date == null || _handler == null) {
+			return false;
+		}
+
+		String postURL = ZCWebServiceParams.QUERY_LOG_TOTAL;
+
+		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
+		paramsMap.put("startDate", start_date);
+		paramsMap.put("endDate", end_date);
+
+		doBasicGet(postURL, paramsMap, _handler);
+		return true;
+	}
+
+	// 查询交易日志-指定日期
+	public boolean queryLogWithDate(final int page, final String start_date,
+			final String end_date, final Handler _handler) {
+		if (start_date == null || end_date == null || _handler == null) {
+			return false;
+		}
+
+		String postURL = ZCWebServiceParams.QUERY_LOG_WITH_DATE;
+
+		ConcurrentHashMap<String, String> paramsMap = new ConcurrentHashMap<String, String>();
+		paramsMap.put("currentPage", String.valueOf(page));
+		paramsMap.put("startDate", start_date);
+		paramsMap.put("endDate", end_date);
+
+		doBasicGet(postURL, paramsMap, _handler);
+		return true;
+	}
+
 	// 申请POS验证码
 	public boolean changePOSCode(final Handler _handler) {
 		if (_handler == null) {
@@ -664,7 +699,7 @@ public class ZCWebService {
 
 	private void doGet(String url, final Handler handler) {
 		setRequestTimeoutSeconds(5);
-		
+
 		_asyncHttpClient.get(url, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String response) {
@@ -727,7 +762,7 @@ public class ZCWebService {
 			public void onFinish() {
 				ZCLog.i(tagString, "http get finish");
 				Message msg = handler.obtainMessage();
-				msg.what = ZCWebServiceParams.HTTP_START;
+				msg.what = ZCWebServiceParams.HTTP_FINISH;
 				msg.obj = "http get method finish";
 				handler.sendMessage(msg);
 			}

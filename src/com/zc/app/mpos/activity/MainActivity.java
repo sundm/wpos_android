@@ -611,7 +611,8 @@ public class MainActivity extends FragmentActivity implements
 		role = userRole.UNAUTH;
 		state = new MircoPOState(this);
 
-		lv.setAdapter(new MenuArrayAdapter(this, new String[] { "修改密码" }));
+		lv.setAdapter(new MenuArrayAdapter(this,
+				new String[] { "修改密码", "交易查询" }));
 		lv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1,
@@ -628,6 +629,15 @@ public class MainActivity extends FragmentActivity implements
 
 					startActivityForResult(it, CHANGEPWD);
 
+					break;
+				}
+				case 1: {
+
+					Intent it = new Intent(MainActivity.this,
+							QueryLogListActivity.class);
+
+					// startActivityForResult(it, CHANGEPWD);
+					startActivity(it);
 					break;
 				}
 				default: {

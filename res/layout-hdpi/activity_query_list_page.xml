@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
+    xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffffff"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/title_height"
+        android:background="#0088cf" >
+
+        <ImageView
+            android:id="@+id/query_list_back"
+            style="@style/title_right_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/changePwdTitle"
+            android:src="@drawable/button_details_gohome" />
+
+        <TextView
+            android:id="@+id/textview_details_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/query_list_title"
+            android:textColor="#ffffffff"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+    <!--
+         padding 内边距   layout_margin 外边距  
+        android:layout_alignParentTop 布局的位置是否处于顶部
+    -->
+
+    <RelativeLayout
+        android:id="@+id/log_list_div"
+        android:layout_width="285dp"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:paddingLeft="9dp" >
+
+        <RelativeLayout
+            android:id="@+id/today_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="center" >
+
+            <RelativeLayout
+                android:id="@+id/today_icon_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="30dp"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_today" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/today_text_layout"
+                android:layout_width="170dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/today_icon_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/today_icon_layout" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/today_text"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/today_img_layout"
+                android:layout_width="30dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/today_icon_layout"
+                android:layout_gravity="right"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@id/today_text_layout" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_arrow" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="285dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/today_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+
+        <RelativeLayout
+            android:id="@+id/month_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_below="@id/today_layout"
+            android:layout_gravity="center"
+            android:layout_marginTop="3dp" >
+
+            <RelativeLayout
+                android:id="@+id/month_icon_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="30dp"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_today" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/month_text_layout"
+                android:layout_width="170dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/month_icon_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/month_icon_layout" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/month_text"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/month_img_layout"
+                android:layout_width="30dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/month_icon_layout"
+                android:layout_gravity="right"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@id/month_text_layout" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_arrow" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="285dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/month_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+
+        <RelativeLayout
+            android:id="@+id/next_month_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_below="@id/month_layout"
+            android:layout_gravity="center"
+            android:layout_marginTop="3dp" >
+
+            <RelativeLayout
+                android:id="@+id/next_month_icon_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="30dp"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_today" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/next_month_text_layout"
+                android:layout_width="170dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/next_month_icon_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/next_month_icon_layout" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/next_month_text"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/next_month_img_layout"
+                android:layout_width="30dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/next_month_icon_layout"
+                android:layout_gravity="right"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@id/next_month_text_layout" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_arrow" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="285dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/next_month_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+
+        <RelativeLayout
+            android:id="@+id/user_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_below="@id/next_month_layout"
+            android:layout_gravity="center"
+            android:layout_marginTop="3dp" >
+
+            <RelativeLayout
+                android:id="@+id/user_icon_layout"
+                android:layout_width="65dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="30dp"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_today" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/user_text_layout"
+                android:layout_width="170dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/user_icon_layout"
+                android:layout_gravity="center"
+                android:layout_toRightOf="@id/user_icon_layout" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/user_text"
+                    android:textColor="@color/textColor"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/user_img_layout"
+                android:layout_width="30dp"
+                android:layout_height="fill_parent"
+                android:layout_alignTop="@id/user_icon_layout"
+                android:layout_gravity="right"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@id/user_text_layout" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/desc"
+                    android:src="@drawable/icon_arrow" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <!-- 分割线 -->
+
+        <TextView
+            android:layout_width="285dp"
+            android:layout_height="1.0px"
+            android:layout_below="@id/user_layout"
+            android:layout_centerHorizontal="true"
+            android:background="#b9b9b9" />
+    </RelativeLayout>
+
+</LinearLayout>

@@ -89,5 +89,15 @@
     <string name="drop_down_list_footer_loading_text">加载中…</string>
     <string name="drop_down_list_footer_no_more_text">没有更多了</string>
     <string name="drop_down_image_content">image</string>
+    <string name="query_list_title">交易查询</string>
+    <string name="today_text">当日查询</string>
+    <string name="month_text">当月查询</string>
+    <string name="next_month_text">上月查询</string>
+    <string name="user_text">自定义查询</string>
+    <string name="query_text">查询</string>
+    <string name="query_log_result_title">查询结果</string>
+    <string name="start_date">起始日期:</string>
+    <string name="date_hint">点击选择日期</string>
+    <string name="end_date">截止日期:</string>
 
 </resources>

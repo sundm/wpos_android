@@ -25,7 +25,7 @@ import com.zc.app.mpos.R;
 import com.zc.app.utils.ZCWebService;
 
 /** 开场欢迎动画 */
-public class WelcomeA extends Activity {
+public class WPos extends Activity {
 
 	private SharedPreferences sharepreferences;
 
@@ -91,9 +91,9 @@ public class WelcomeA extends Activity {
 					e.printStackTrace();
 				}
 
-				Intent intent = new Intent(WelcomeA.this, LoginPage.class);
+				Intent intent = new Intent(WPos.this, LoginPage.class);
 				startActivity(intent);
-				WelcomeA.this.finish();
+				WPos.this.finish();
 
 				// if (!fristload) {
 				//

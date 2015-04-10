@@ -350,5 +350,7 @@
     <color name="amountColor">#cf0005</color>
     <color name="textview_blue">#87cefa</color>
     <color name="textview_background">#ffffff</color>
-	<color name="line_color">#0088cf</color>
+    <color name="line_color">#0088cf</color>
+    <color name="query_log_bg">#d1eaf6</color>
+
 </resources>

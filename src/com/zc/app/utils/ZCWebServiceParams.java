@@ -77,6 +77,14 @@ public class ZCWebServiceParams {
 	public static final String QUERY_LOG_URL = BASE_URL
 			+ "/purchase/querypurchaselog.json";
 
+	// 查询交易笔数金额
+	public static final String QUERY_LOG_TOTAL = BASE_URL
+			+ "/purchase/sumofamount.json";
+
+	// 查询交易日志-指定日期
+	public static final String QUERY_LOG_WITH_DATE = BASE_URL
+			+ "/purchase/querypurchaselogs.json";
+
 	public static final String ZIP_URL = RES_URL + "/checkZip.json";
 	public static final String ZIP_DOWNLOAD = RES_URL + "/hdp.zip/download.do";
 	public static final String FILE_CHECK = RES_URL + "/checkFileMd5.json";
