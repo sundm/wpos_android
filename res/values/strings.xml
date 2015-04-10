@@ -9,7 +9,7 @@
     <string name="purseTitle">消费交易</string>
     <string name="resultTitle">柳州一卡通移动金融平台</string>
     <string name="settingTitle">设置</string>
-    <string name="changePwdTitle">修改钱包密码</string>
+    <string name="changePwdTitle">修改密码</string>
     <string name="activePOSTitle">开通终端</string>
     <string name="changePOSTitle">更换终端</string>
     <string name="applyChangePOSTitle">申请更新终端</string>
