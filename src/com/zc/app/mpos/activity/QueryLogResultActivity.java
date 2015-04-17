@@ -109,6 +109,11 @@ public class QueryLogResultActivity extends Activity {
 		end = getIntent().getStringExtra(END);
 		index = getIntent().getIntExtra(INDEX, 0);
 
+		if (count == null || sum == null) {
+			count = "0";
+			sum = "0";
+		}
+
 		TextView dateView = (TextView) findViewById(R.id.date_text);
 		TextView countView = (TextView) findViewById(R.id.number_counter_text);
 		TextView sumView = (TextView) findViewById(R.id.amount_counter_text);
@@ -152,7 +157,10 @@ public class QueryLogResultActivity extends Activity {
 		mEmptyLayout = new EmptyLayout(this, mPullRefreshListView);
 
 		// 设置你需要的模式可选值为：disabled,pullFromStart,PULL_FROM_END,both,manualOnly
-		mPullRefreshListView.setMode(Mode.BOTH);
+		if (sum.equals("0") || count.equals("0"))
+			mPullRefreshListView.setMode(Mode.DISABLED);
+		else
+			mPullRefreshListView.setMode(Mode.BOTH);
 
 		// 设置适配器
 		mAdapter = new QueryLogAdapter(this, listPages);
@@ -238,7 +246,7 @@ public class QueryLogResultActivity extends Activity {
 		int end = w.length();
 
 		Resources r = getResources();
-		int user_size = r.getInteger(R.integer.count_size);
+		int user_size = r.getInteger(R.integer.counter);
 
 		Spannable word = new SpannableString(w);
 
@@ -274,10 +282,14 @@ public class QueryLogResultActivity extends Activity {
 
 						case ZCWebServiceParams.HTTP_FAILED: {
 							ZCLog.i(TAG, msg.obj.toString());
-							// Toast.makeText(getActivity(), msg.obj.toString(),
-							// Toast.LENGTH_SHORT).show();
+							// Toast.makeText(getApplicationContext(),
+							// msg.obj.toString(), Toast.LENGTH_SHORT)
+							// .show();
 							mEmptyLayout.setErrorMessage(msg.obj.toString());
 							mEmptyLayout.showError();
+							page = page - 1;
+							if (page < 0)
+								page = 0;
 							break;
 						}
 						case ZCWebServiceParams.HTTP_FINISH: {
@@ -391,10 +403,14 @@ public class QueryLogResultActivity extends Activity {
 
 						case ZCWebServiceParams.HTTP_FAILED: {
 							ZCLog.i(TAG, msg.obj.toString());
-							// Toast.makeText(getActivity(),
-							// msg.obj.toString(),
-							// Toast.LENGTH_SHORT).show();
-							mPullRefreshListView.onRefreshComplete();
+
+							// mPullRefreshListView.onRefreshComplete();
+							Toast.makeText(getApplicationContext(),
+									msg.obj.toString(), Toast.LENGTH_SHORT)
+									.show();
+							page = page - 1;
+							if (page < 0)
+								page = 0;
 							mEmptyLayout.setErrorMessage(msg.obj.toString());
 							mEmptyLayout.showError();
 							break;
@@ -426,7 +442,8 @@ public class QueryLogResultActivity extends Activity {
 								String contentString = mapper
 										.writeValueAsString(logResult
 												.getContent());
-								if (last || contentString.isEmpty())
+								ZCLog.i(TAG, "content:" + contentString);
+								if (last && contentString.equals("[]"))
 									Toast.makeText(getApplicationContext(),
 											"最后一页啦", Toast.LENGTH_SHORT).show();
 								else {

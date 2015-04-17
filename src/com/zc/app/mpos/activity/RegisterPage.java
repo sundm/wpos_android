@@ -60,7 +60,7 @@ public class RegisterPage extends Activity {
 
 	private String userNameRegex = "[a-zA-Z0-9_]+$";
 	private String passwordRegex = "[a-zA-Z0-9_]{6,14}";
-	private String phoneRegex = "^((13[0-9])|(15[^4,\\D])|(18[0,5-9]))\\d{8}$";
+	// private String phoneRegex = "^((13[0-9])|(15[0-9])|(18[0-9]))\\d{8}$";
 	private String checkCodeRegex = "[a-zA-Z0-9]{6}";
 
 	@Override
@@ -562,7 +562,7 @@ public class RegisterPage extends Activity {
 	}
 
 	private boolean checkPhone(String s) {
-		return s.matches(phoneRegex);
+		return s.length() == 11;
 	}
 
 	private boolean checkCode(String s) {

@@ -55,7 +55,7 @@ public class EmptyLayout {
 	// ---------------------------
 	private int mEmptyType = TYPE_LOADING;
 	private String mErrorMessage = "糟糕，查询失败";
-	private String mEmptyMessage = "最近60日没有交易日志";
+	private String mEmptyMessage = "没有交易日志";
 	private String mLoadingMessage = "正在查询,请稍后";
 	private int mLoadingViewButtonId = R.id.buttonLoading;
 	private int mErrorViewButtonId = R.id.buttonError;

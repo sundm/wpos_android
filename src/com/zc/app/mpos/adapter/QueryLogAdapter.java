@@ -21,6 +21,7 @@ public class QueryLogAdapter extends BaseAdapter {
 	private Context context;
 
 	private static class logViewHolder {
+		private TextView tvPanTextView;
 		private TextView tvDateTextView;
 		private TextView tvAmountTextView;
 	}
@@ -70,10 +71,14 @@ public class QueryLogAdapter extends BaseAdapter {
 		viewHolder.tvDateTextView = (TextView) convertView
 				.findViewById(R.id.log_date);
 
+		viewHolder.tvPanTextView = (TextView) convertView
+				.findViewById(R.id.log_pan);
+
 		viewHolder.tvAmountTextView = (TextView) convertView
 				.findViewById(R.id.log_amount);
 
-		viewHolder.tvDateTextView.setText(item.getCreateTime());
+		viewHolder.tvPanTextView.setText("钱包号:" + item.getPan());
+		viewHolder.tvDateTextView.setText("              " + item.getCreateTime());
 
 		viewHolder.tvAmountTextView.setText(item.getAmount() + " 元");
 

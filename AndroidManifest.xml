@@ -163,9 +163,18 @@
             android:screenOrientation="portrait"
             android:theme="@style/LoadingStyle" >
         </activity>
-        <activity android:name=".activity.QueryLogListActivity"></activity>
-        <activity android:name=".activity.QueryLogResultActivity"></activity>
-        <activity android:name=".activity.pickDateActivity"></activity>
+        <activity
+            android:name=".activity.QueryLogListActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".activity.QueryLogResultActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".activity.pickDateActivity"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
 
 </manifest>

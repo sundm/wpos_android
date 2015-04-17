@@ -120,6 +120,7 @@ public class MainActivity extends FragmentActivity implements
 	private final static int PURSECARD = 13;
 	private final static int QUERYLOG = 14;
 	private final static int LOADING = 20;
+	private final static int LOG = 15;
 
 	private String userNameString;
 	private String posStateString;
@@ -1043,6 +1044,14 @@ public class MainActivity extends FragmentActivity implements
 		}
 		case CHANGEPWD: {
 			ZCLog.i(TAG, "result_change_pwd");
+			role = userRole.UNAUTH;
+			Intent it = new Intent(MainActivity.this, LoginPage.class);
+			startActivity(it);
+			MainActivity.this.finish();
+			break;
+		}
+		case LOG: {
+			ZCLog.i(TAG, "result_log");
 			role = userRole.UNAUTH;
 			Intent it = new Intent(MainActivity.this, LoginPage.class);
 			startActivity(it);

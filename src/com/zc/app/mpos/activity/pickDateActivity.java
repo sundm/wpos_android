@@ -1,7 +1,10 @@
 package com.zc.app.mpos.activity;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -46,6 +49,7 @@ public class pickDateActivity extends Activity {
 	Button queryButton;
 
 	private final static String TAG = "pick_date_pag";
+	private final static int LOG = 15;
 	private int query_index = 3;
 	private String start;
 	private String end;
@@ -113,7 +117,27 @@ public class pickDateActivity extends Activity {
 
 				start = startDateEditText.getText().toString();
 				end = endDateEditText.getText().toString();
-				queryTotal(start, end);
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+				Date d1 = null, d2 = null, d3 = null;
+				try {
+					d1 = df.parse(start);
+					d2 = df.parse(end);
+
+					String d3String = df.format(new java.util.Date());
+					d3 = df.parse(d3String);
+
+					if (d1.after(d2) || d3.before(d1)) {
+						Toast.makeText(getApplicationContext(), "请重新选择日期",
+								Toast.LENGTH_SHORT).show();
+					} else {
+						queryTotal(start, end);
+					}
+
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 		});
 
@@ -261,13 +285,13 @@ public class pickDateActivity extends Activity {
 					bundle.putInt(QueryLogResultActivity.INDEX, query_index);
 
 					resultIntent.putExtras(bundle);
-					if (total.getCount().equals("0")) {
-						Toast.makeText(getApplicationContext(), "交易日志为空",
-								Toast.LENGTH_SHORT).show();
-					} else {
-						startActivity(resultIntent);
-						finish();
-					}
+					// if (total.getCount().equals("0")) {
+					// Toast.makeText(getApplicationContext(), "交易日志为空",
+					// Toast.LENGTH_SHORT).show();
+					// } else {
+					startActivity(resultIntent);
+					finish();
+					// }
 
 				} catch (JsonParseException e1) {
 					// TODO Auto-generated catch block
@@ -286,6 +310,14 @@ public class pickDateActivity extends Activity {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
+
+				Toast.makeText(getApplicationContext(), msg.obj.toString(),
+						Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(pickDateActivity.this,
+						MainActivity.class);
+
+				pickDateActivity.this.setResult(LOG, intent);
+				pickDateActivity.this.finish();
 
 				break;
 

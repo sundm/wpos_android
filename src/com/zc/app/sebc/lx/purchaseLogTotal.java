@@ -1,5 +1,7 @@
 package com.zc.app.sebc.lx;
 
+import java.math.BigDecimal;
+
 public class purchaseLogTotal {
 	private String count;
 	private String sumOfAmount;
@@ -17,6 +19,9 @@ public class purchaseLogTotal {
 	}
 
 	public void setSumOfAmount(String sumOfAmount) {
+		BigDecimal v1 = new BigDecimal(sumOfAmount);
+		BigDecimal v2 = new BigDecimal("100.00");
+		sumOfAmount = v1.divide(v2, 2, BigDecimal.ROUND_DOWN).toString();
 		this.sumOfAmount = sumOfAmount;
 	}
 

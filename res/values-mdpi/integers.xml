@@ -4,5 +4,6 @@
     <integer name="amount_size">70</integer>
     <integer name="amount_normal_size">50</integer>
     <integer name="user_size">65</integer>
-
+	<integer name="counter">20</integer>
+    <integer name="sum">20</integer>
 </resources>

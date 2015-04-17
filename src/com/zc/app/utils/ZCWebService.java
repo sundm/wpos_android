@@ -698,7 +698,7 @@ public class ZCWebService {
 	}
 
 	private void doGet(String url, final Handler handler) {
-		setRequestTimeoutSeconds(5);
+		setRequestTimeoutSeconds(30);
 
 		_asyncHttpClient.get(url, new AsyncHttpResponseHandler() {
 			@Override
@@ -730,31 +730,16 @@ public class ZCWebService {
 			public void onFailure(Throwable e, String response) {
 				ZCLog.e(tagString, response, e);
 				Message msg = handler.obtainMessage();
-
-				HttpResponseException _e = null;
-
-				try {
-					_e = (HttpResponseException) e;
-				} catch (Exception e2) {
-					// TODO: handle exception
-				}
-
-				if (_e == null) {
-					msg.what = ZCWebServiceParams.HTTP_FAILED;
-					msg.obj = e.toString();
-					handler.sendMessage(msg);
-					return;
-				}
-
-				if (_e.getStatusCode() == 401) {
-					msg.what = ZCWebServiceParams.HTTP_UNAUTH;
-					msg.obj = "Unauthorized";
-					handler.sendMessage(msg);
+				if (e.getClass() == ConnectException.class
+						|| e.getClass() == HttpHostConnectException.class
+						|| e.getClass() == SocketTimeoutException.class
+						|| e.getClass() == SocketException.class) {
+					msg.obj = "网络不给力";
 				} else {
-					msg.what = ZCWebServiceParams.HTTP_FAILED;
-					msg.obj = _e.getStatusCode();
-					handler.sendMessage(msg);
+					msg.obj = "服务器连接失败";
 				}
+				msg.what = ZCWebServiceParams.HTTP_FAILED;
+				handler.sendMessage(msg);
 
 			}
 

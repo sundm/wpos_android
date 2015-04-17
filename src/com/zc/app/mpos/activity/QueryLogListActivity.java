@@ -42,6 +42,7 @@ public class QueryLogListActivity extends Activity {
 	ImageView backImageView;
 
 	private final static String TAG = "query_log_list_page";
+	private final static int LOG = 15;
 
 	private int query_index = 0;
 	private String start;
@@ -202,12 +203,12 @@ public class QueryLogListActivity extends Activity {
 					bundle.putInt(QueryLogResultActivity.INDEX, query_index);
 
 					resultIntent.putExtras(bundle);
-					if (total.getCount().equals("0")) {
-						Toast.makeText(getApplicationContext(), "交易日志为空",
-								Toast.LENGTH_SHORT).show();
-					} else {
-						startActivity(resultIntent);
-					}
+					// if (total.getCount().equals("0")) {
+					// Toast.makeText(getApplicationContext(), "交易日志为空",
+					// Toast.LENGTH_SHORT).show();
+					// } else {
+					startActivity(resultIntent);
+					// }
 
 				} catch (JsonParseException e1) {
 					// TODO Auto-generated catch block
@@ -226,6 +227,14 @@ public class QueryLogListActivity extends Activity {
 				ZCLog.i(TAG, msg.obj.toString());
 				Toast.makeText(getApplicationContext(), msg.obj.toString(),
 						Toast.LENGTH_SHORT).show();
+
+				Toast.makeText(getApplicationContext(), msg.obj.toString(),
+						Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(QueryLogListActivity.this,
+						MainActivity.class);
+
+				QueryLogListActivity.this.setResult(LOG, intent);
+				QueryLogListActivity.this.finish();
 
 				break;
 
